@@ -1,0 +1,37 @@
+{% extends "nav.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row p-2 d-flex justify-content-center">
+        <div class="col">
+            <table id="device-table" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>
+                            Name
+                        </th>
+                        <th>
+                            Up
+                        </th>
+                        <th>
+                            UUID
+                        </th>
+                        <th>
+                            Firmware
+                        </th>
+                        <th>
+                            Last IP
+                        </th>
+                        <th>
+                            Last Seen
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="devices-list">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', path='js/index.js') }}"></script>
+{% endblock content %}

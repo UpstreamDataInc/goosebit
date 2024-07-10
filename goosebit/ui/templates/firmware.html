@@ -1,0 +1,47 @@
+{% extends "nav.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row p-2 pt-4 g-4 d-flex justify-content-center">
+        {% if "firmware.write" in request.user.permissions %}
+        <div class="col col-12 col-lg-6">
+            <div class="card border rounded">
+                <div class="card-header">
+                    <h3>Upload SWUpdate File</h3>
+                </div>
+                <div class="card-body">
+                    <form id="upload-form">
+                        <div class="row g-3 row-cols-1">
+                            <div class="col">
+                                <input class="form-control" type="file" accept=".swu" id="file-upload" name="file" />
+                            </div>
+                            <div class="col">
+                                <input class="btn btn-primary w-100" id="file-upload-submit" type="submit" value="Upload" />
+                            </div>
+                            <h3>Upload Progress</h3>
+                            <div class="col">
+                                <div class="progress w-100" style=" height: 40px;" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="upload-progress" style="width: 0%;">0%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="col-12 col-lg-6">
+            <div class="card border rounded">
+                <div class="card-header">
+                <h3>Firmware</h3>
+                </div>
+                <div class="card-body p-3">
+                    <ul class="list-group" id="firmware-list">
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', path='js/firmware.js') }}"></script>
+{% endblock content %}

@@ -1,0 +1,82 @@
+{% extends "nav.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row p-2 d-flex justify-content-center">
+        <div class="col">
+            <table id="device-table" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>
+                            Name
+                        </th>
+                        <th>
+                            Up
+                        </th>
+                        <th>
+                            UUID
+                        </th>
+                        <th>
+                            Firmware
+                        </th>
+                        <th>
+                            Force Update
+                        </th>
+                        <th>
+                            Update File
+                        </th>
+                        <th>
+                            Last IP
+                        </th>
+                        <th>
+                            Last Seen
+                        </th>
+                        <th>
+                            State
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="devices-list">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="modal" id="device-config-modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Configure Devices</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <select class="form-select" id="device-selected-fw">
+
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="updateDeviceConfig()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="device-rename-modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rename Device</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input id="device-selected-name" class="form-control" placeholder="Name"/>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="updateDeviceName()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', path='js/devices.js') }}"></script>
+{% endblock content %}

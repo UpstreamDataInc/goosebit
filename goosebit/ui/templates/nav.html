@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <script>
+            const PERMISSIONS = {{request.user.get_json_permissions() | safe}};
+        </script>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{{title}}</title>
+        <!--bootstrap-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <!--data tables-->
+        <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.1/b-3.0.0/r-3.0.0/sl-2.0.0/datatables.min.css" rel="stylesheet">
+        <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.1/b-3.0.0/r-3.0.0/sl-2.0.0/datatables.min.js"></script>
+        <!--favicon-->
+        <link rel="icon" href="{{ url_for('static', path='favicon.svg') }}">
+        <!--data tables alignment fix-->
+        <style>
+            th.dt-type-numeric {
+                text-align: left!important;
+            }
+            td.dt-type-numeric {
+                text-align: left!important;
+            }
+        </style>
+        <script>
+            const TABLE_UPDATE_TIME = 3000;
+        </script>
+    </head>
+    <body data-bs-theme="dark">
+        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/ui/home">
+                    <img src="{{ request.url_for('static', path='svg/goosebit-logo.svg') }}" class="me-2" style="height:30px; width: 30px;"/>
+                    GooseBit
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbar">
+                    <div class="navbar-nav">
+                        {% if "home.read" in request.user.permissions %}
+                            <a class="nav-link{% if request.url.path.endswith('home') %} active{% endif %}" href="/ui/home">Home</a>
+                        {% endif %}
+                        {% if "firmware.read" in request.user.permissions %}
+                            <a class="nav-link{% if request.url.path.endswith('firmware') %} active{% endif %}" href="/ui/firmware">Firmware</a>
+                        {% endif %}
+                        {% if "devices.read" in request.user.permissions %}
+                            <a class="nav-link{% if request.url.path.endswith('devices') %} active{% endif %}" href="/ui/devices">Devices</a>
+                        {% endif %}
+
+                    </div>
+                    <div class="navbar-nav d-flex flex-fill justify-content-end">
+                        <a class="nav-link" href="/logout">Logout<i class="bi bi-box-arrow-right ps-2"></i></a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        {% block content %}
+        {% endblock content %}
+    </body>
+</html>

@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "goosebit"
+version = "0.1.0"
+description = ""
+authors = ["Upstream Data <brett@upstreamdata.ca>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["uvicorn"], version = "^0.111.0"}
+python-multipart = "^0.0.9"
+jinja2 = "^3.1.4"
+itsdangerous = "^2.2.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = "^3.3.0"
+tortoise-orm = "^0.21.4"
+aerich = "^0.7.2"
+aiofiles = "^24.1.0"
+websockets = "^12.0"
+
+[tool.poetry.group.dev.dependencies]
+isort = "^5.13.2"
+black = "^24.2.0"
+pre-commit = "^3.6.2"
+
+[tool.aerich]
+tortoise_orm = "goosebit.db.TORTOISE_CONF"
+location = "./migrations"
+src_folder = "./."
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
