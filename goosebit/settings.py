@@ -1,31 +1,30 @@
+import secrets
 from dataclasses import dataclass
 from pathlib import Path
 
+import yaml
 from argon2 import PasswordHasher
 
-from goosebit import permissions
+from goosebit.permissions import Permissions
 
-POLL_SECONDS = 0
-POLL_MINUTES = 1
-POLL_HOURS = 0
-POLL_TIME = ":".join(
-    [
-        str(POLL_HOURS).rjust(2, "0"),
-        str(POLL_MINUTES).rjust(2, "0"),
-        str(POLL_SECONDS).rjust(2, "0"),
-    ]
-)
-
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 TOKEN_SWU_DIR = BASE_DIR.joinpath("swugen")
 SWUPDATE_FILES_DIR = BASE_DIR.joinpath("swupdate")
 UPDATES_DIR = BASE_DIR.joinpath("updates")
-DB_LOC = BASE_DIR.joinpath("db.sqlite3")
 DB_MIGRATIONS_LOC = BASE_DIR.joinpath("migrations")
+
+SECRET = secrets.token_hex(16)
+PWD_CXT = PasswordHasher()
+
+with open(BASE_DIR.joinpath("settings.yaml"), "r") as f:
+    config = yaml.safe_load(f.read())
+
+POLL_TIME = config.get("poll_time_default", "00:01:00")
+POLL_TIME_UPDATING = config.get("poll_time_updating", "00:00:05")
+
+DB_LOC = BASE_DIR.joinpath(config.get("db_location", "db.sqlite3"))
 DB_URI = f"sqlite:///{DB_LOC}"
 
-SECRET = "123456789"
-PWD_CXT = PasswordHasher()
 
 users = {}
 
@@ -34,22 +33,26 @@ users = {}
 class User:
     username: str
     hashed_pwd: str
-    permissions: list
+    permissions: set
 
     def get_json_permissions(self):
         return [str(p) for p in self.permissions]
 
 
-def add_user(user: User):
-    users[user.username] = user
+def add_user(u: User):
+    users[u.username] = u
 
 
-# User configuration
-add_user(
-    User(
-        username="admin@goosebit.local",
-        hashed_pwd=PWD_CXT.hash("admin"),
-        permissions=permissions.ADMIN,
+for user in config.get("users", []):
+    permissions = set()
+    for p in user["permissions"]:
+        permissions.update(Permissions.from_str(p))
+    add_user(
+        User(
+            username=user["email"],
+            hashed_pwd=PWD_CXT.hash(user["password"]),
+            permissions=permissions,
+        )
     )
-)
+
 USERS = users

@@ -90,15 +90,3 @@ async def logs_ui(request: Request, dev_id: str):
     return templates.TemplateResponse(
         "logs.html", context={"request": request, "title": "Log", "device": dev_id}
     )
-
-
-@router.get(
-    "/tunnels",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.TUNNEL.READ])
-    ],
-)
-async def tunnels_ui(request: Request):
-    return templates.TemplateResponse(
-        "tunnels.html", context={"request": request, "title": "Tunnels"}
-    )

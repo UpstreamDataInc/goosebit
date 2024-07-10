@@ -22,12 +22,6 @@ class DevicePermissions(PermissionsBase):
     DELETE = "devices.delete"
 
 
-class TunnelPermissions(PermissionsBase):
-    READ = "tunnels.read"
-    WRITE = "tunnels.write"
-    DELETE = "tunnels.delete"
-
-
 class HomePermissions(PermissionsBase):
     READ = "home.read"
 
@@ -36,14 +30,25 @@ class Permissions:
     HOME = HomePermissions
     FIRMWARE = FirmwarePermissions
     DEVICE = DevicePermissions
-    TUNNEL = TunnelPermissions
 
     @classmethod
     def full(cls):
         all_items = set()
-        for item in [cls.HOME, cls.FIRMWARE, cls.DEVICE, cls.TUNNEL]:
+        for item in [cls.HOME, cls.FIRMWARE, cls.DEVICE]:
             all_items.update(item.full())
         return list(all_items)
+
+    @classmethod
+    def from_str(cls, permission: str):
+        if permission == "*":
+            return cls.full()
+        permission_type = permission.split(".")[0]
+        if permission_type == "firmware":
+            return FirmwarePermissions(permission)
+        if permission_type == "devices":
+            return FirmwarePermissions(permission)
+        if permission_type == "home":
+            return FirmwarePermissions(permission)
 
 
 ADMIN = Permissions.full()

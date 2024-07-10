@@ -1,0 +1,8 @@
+db_location: db.sqlite3
+poll_time_default: 00:01:00
+poll_time_updating: 00:00:05
+users:
+- email: admin@goosebit.local
+  password: admin
+  permissions:
+  - '*'
