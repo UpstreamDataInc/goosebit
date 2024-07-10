@@ -1,0 +1,22 @@
+name: PyPI
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'docsrc/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Publish GH release
+        uses: softprops/action-gh-release@v0.1.14
+      - name: Build using poetry and publish to PyPi
+        uses: JRubics/poetry-publish@v1.11
+        with:
+          pypi_token: x
