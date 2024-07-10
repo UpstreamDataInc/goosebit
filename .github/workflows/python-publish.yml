@@ -17,6 +17,6 @@ jobs:
       - name: Publish GH release
         uses: softprops/action-gh-release@v2.0.6
       - name: Build using poetry and publish to PyPi
-        uses: JRubics/poetry-publish@v1.11
+        uses: JRubics/poetry-publish@v2.0
         with:
           pypi_token: x
