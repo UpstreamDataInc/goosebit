@@ -26,9 +26,6 @@ DB_LOC = BASE_DIR.joinpath(config.get("db_location", "db.sqlite3"))
 DB_URI = f"sqlite:///{DB_LOC}"
 
 
-users = {}
-
-
 @dataclass
 class User:
     username: str
@@ -37,6 +34,9 @@ class User:
 
     def get_json_permissions(self):
         return [str(p) for p in self.permissions]
+
+
+users: dict[str, User] = {}
 
 
 def add_user(u: User):
