@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
 
 from goosebit import permissions
 
@@ -25,7 +25,7 @@ DB_MIGRATIONS_LOC = BASE_DIR.joinpath("migrations")
 DB_URI = f"sqlite:///{DB_LOC}"
 
 SECRET = "123456789"
-PWD_CXT = CryptContext(schemes=["bcrypt"], deprecated="auto")
+PWD_CXT = PasswordHasher()
 
 users = {}
 
