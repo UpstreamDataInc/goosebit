@@ -13,9 +13,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4.1.7
       - name: Publish GH release
-        uses: softprops/action-gh-release@v0.1.14
+        uses: softprops/action-gh-release@v2.0.6
       - name: Build using poetry and publish to PyPi
         uses: JRubics/poetry-publish@v1.11
         with:
