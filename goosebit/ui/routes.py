@@ -1,5 +1,5 @@
 import aiofiles
-from fastapi import APIRouter, Depends, Form, Security, UploadFile
+from fastapi import APIRouter, Depends, Form, Security, UploadFile, HTTPException
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
@@ -8,6 +8,7 @@ from goosebit.auth import authenticate_session, validate_user_permissions
 from goosebit.permissions import Permissions
 from goosebit.settings import UPDATES_DIR
 from goosebit.ui.templates import templates
+from goosebit.updater.misc import validate_filename
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -46,6 +47,9 @@ async def upload_update(
     done: bool = Form(...),
     filename: str = Form(...),
 ):
+    if not validate_filename(filename):
+        raise HTTPException(400, detail="Invalid filename")
+
     file = UPDATES_DIR.joinpath(filename)
     tmpfile = file.with_suffix(".tmp")
     contents = await chunk.read()

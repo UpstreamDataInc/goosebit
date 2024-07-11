@@ -45,6 +45,10 @@ const sendFileChunks = async (file) => {
             const progress = (uploadedChunks / totalChunks) * 100;
             progressBar.style.width = `${progress}%`;
             progressBar.innerHTML = `${Math.round(progress)}%`;
+        } else {
+            if (response.status === 400) {
+                alert("Upload failed - likely incorrect file naming.")
+            }
         }
 
         start = end;
@@ -84,7 +88,7 @@ function updateFirmwareList() {
 
         data.forEach(item => {
             const listItem = document.createElement('li');
-            listItem.textContent = item["version"];
+            listItem.textContent = `${item["name"]}, size: ${(item["size"] / 1024 / 1024).toFixed(2)} MB`;
             listItem.classList = ["list-group-item d-flex justify-content-between align-items-center"];
 
             const btnGroup = document.createElement("div")

@@ -22,14 +22,22 @@ def get_newest_fw() -> str:
     return str(sorted(fw_files, key=lambda x: fw_sort_key(x), reverse=True)[0].name)
 
 
+def validate_filename(filename: str) -> bool:
+    try:
+        fw_sort_key(Path(filename))
+        return True
+    except ValueError:
+        return False
+
+
 def fw_sort_key(filename: Path) -> datetime.datetime:
     image_data = filename.stem.split("_")
     if len(image_data) == 3:
-        tenant, date, time = image_data
+        _, date, time = image_data
     elif len(image_data) == 4:
-        tenant, hw_version, date, time = image_data
+        _, _, date, time = image_data
     else:
-        return datetime.datetime.now()
+        raise ValueError(f"Invalid filename: {filename}")
 
     return datetime.datetime.strptime(f"{date}_{time}", "%Y%m%d_%H%M%S")
 
@@ -37,21 +45,21 @@ def fw_sort_key(filename: Path) -> datetime.datetime:
 def get_fw_components(filename: Path) -> dict:
     image_data = filename.stem.split("_")
     if len(image_data) == 3:
-        tenant, date, time = image_data
+        model, date, time = image_data
         return {
             "date": datetime.datetime.strptime(f"{date}_{time}", "%Y%m%d_%H%M%S"),
             "day": date,
             "time": time,
-            "tenant": tenant,
+            "model": model,
             "hw_version": 0,
         }
     elif len(image_data) == 4:
-        tenant, hw_version, date, time = image_data
+        model, hw_version, date, time = image_data
         return {
             "date": datetime.datetime.strptime(f"{date}_{time}", "%Y%m%d_%H%M%S"),
             "day": date,
             "time": time,
-            "tenant": tenant,
+            "model": model,
             "hw_version": int(hw_version.upper().replace("V", "")),
         }
 
