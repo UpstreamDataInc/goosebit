@@ -125,7 +125,7 @@ function updateBtnState() {
 
 function downloadLogins(devices) {
     let deviceLogins = devices.map(dev => {
-        return [dev["name"], `https://${dev["uuid"]}-access.loadsync.io`, dev["uuid"], dev["web_pwd"]];
+        return [dev["name"], `https://${dev["uuid"]}-access.loadsync.io`, dev["uuid"]];
     });
     deviceLogins.unshift(["Building", "Access Link", "Serial Number/Wifi SSID", "Login/Wifi Password"]);
 
