@@ -3,12 +3,11 @@ from __future__ import annotations
 import asyncio
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import Callable
 
-import aiofiles
-
 from goosebit.models import Device
-from goosebit.settings import POLL_TIME, SWUPDATE_FILES_DIR, TOKEN_SWU_DIR
+from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
 from goosebit.updater.misc import get_newest_fw
 from goosebit.updater.updates import FirmwareArtifact
 
@@ -56,6 +55,11 @@ class UpdateManager(ABC):
         finally:
             self.log_subscribers.remove(callback)
 
+    @property
+    def poll_seconds(self):
+        time_obj = datetime.strptime(self.poll_time, "%H:%M:%S")
+        return time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second
+
     async def publish_log(self, log_data: str | None):
         for cb in self.log_subscribers:
             await cb(log_data)
@@ -73,7 +77,7 @@ class UpdateManager(ABC):
 class UnknownUpdateManager(UpdateManager):
     def __init__(self, dev_id: str):
         super().__init__(dev_id)
-        self.poll_time = "00:00:05"
+        self.poll_time = POLL_TIME_UPDATING
 
     async def get_update_file(self) -> FirmwareArtifact:
         return FirmwareArtifact(get_newest_fw())

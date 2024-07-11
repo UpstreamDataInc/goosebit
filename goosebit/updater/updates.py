@@ -4,7 +4,7 @@ from typing import Optional
 
 from fastapi.requests import Request
 
-from goosebit.settings import TOKEN_SWU_DIR, UPDATES_DIR
+from goosebit.settings import UPDATES_DIR
 from goosebit.updater.misc import get_newest_fw, sha1_hash_file
 
 
