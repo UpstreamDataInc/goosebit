@@ -16,17 +16,23 @@ async def polling(
     dev_id: str,
     updater: UpdateManager = Depends(get_update_manager),
 ):
-    return {
-        "config": {"polling": {"sleep": updater.poll_time}},
-        "_links": {
+    update = await updater.get_update_mode()
+    if update == "skip":
+        deployment = {}
+    else:
+        deployment = {
             "deploymentBase": {
                 "href": str(
                     request.url_for(
                         "deployment_base", tenant=tenant, dev_id=dev_id, action_id=1
                     )
                 )
-            },
-        },
+            }
+        }
+
+    return {
+        "config": {"polling": {"sleep": updater.poll_time}},
+        "_links": deployment,
     }
 
 
