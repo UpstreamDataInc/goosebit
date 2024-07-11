@@ -79,6 +79,9 @@ async def deployment_feedback(
     try:
         state = data["status"]["result"]["finished"]
         await updater.update_device_state(state)
+        if state == "success":
+            file = await updater.get_update_file()
+            await updater.update_fw_version(file.name)
     except KeyError:
         pass
 
