@@ -3,12 +3,14 @@ import time
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
 
+from goosebit.settings import TENANT
+
 from . import controller, download
 from .manager import get_update_manager_sync
 
 
 async def verify_tenant(tenant: str):
-    if not tenant == "loadsync":
+    if not tenant == TENANT:
         raise HTTPException(404)
     return tenant
 
