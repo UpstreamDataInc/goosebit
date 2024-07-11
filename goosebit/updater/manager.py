@@ -37,9 +37,6 @@ class UpdateManager(ABC):
     async def update_last_seen(self, last_seen: int) -> None:
         return
 
-    async def update_web_pwd(self, web_pwd: str) -> None:
-        return
-
     async def update_last_ip(self, last_ip: str) -> None:
         return
 

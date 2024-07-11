@@ -30,7 +30,6 @@ async def devices_get_all() -> list[dict]:
             last_seen = round(time.time() - device.last_seen)
         return {
             "uuid": device.uuid,
-            "web_pwd": device.web_pwd,
             "name": device.name,
             "fw": device.fw_version,
             "fw_file": device.fw_file,
