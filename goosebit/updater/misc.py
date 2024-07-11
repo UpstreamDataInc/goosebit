@@ -22,6 +22,14 @@ def get_newest_fw() -> str:
     return str(sorted(fw_files, key=lambda x: fw_sort_key(x), reverse=True)[0].name)
 
 
+def validate_filename(filename: str) -> bool:
+    try:
+        fw_sort_key(Path(filename))
+        return True
+    except ValueError:
+        return False
+
+
 def fw_sort_key(filename: Path) -> datetime.datetime:
     image_data = filename.stem.split("_")
     if len(image_data) == 3:
@@ -29,7 +37,7 @@ def fw_sort_key(filename: Path) -> datetime.datetime:
     elif len(image_data) == 4:
         _, _, date, time = image_data
     else:
-        return datetime.datetime.now()
+        raise ValueError(f"Invalid filename: {filename}")
 
     return datetime.datetime.strptime(f"{date}_{time}", "%Y%m%d_%H%M%S")
 

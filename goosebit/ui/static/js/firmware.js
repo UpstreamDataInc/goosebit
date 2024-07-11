@@ -45,6 +45,10 @@ const sendFileChunks = async (file) => {
             const progress = (uploadedChunks / totalChunks) * 100;
             progressBar.style.width = `${progress}%`;
             progressBar.innerHTML = `${Math.round(progress)}%`;
+        } else {
+            if (response.status === 400) {
+                alert("Upload failed - likely incorrect file naming.")
+            }
         }
 
         start = end;
