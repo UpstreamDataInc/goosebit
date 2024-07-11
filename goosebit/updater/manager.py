@@ -16,6 +16,7 @@ from goosebit.updater.updates import FirmwareArtifact
 class UpdateManager(ABC):
     def __init__(self, dev_id: str):
         self.dev_id = dev_id
+        self.config_data = {}
         self.device = None
         self.force_update = False
         self.update_complete = False
@@ -40,14 +41,8 @@ class UpdateManager(ABC):
     async def update_last_ip(self, last_ip: str) -> None:
         return
 
-    async def update_cfd_status(self, status: bool) -> None:
-        return
-
-    async def create_cfd_token(self) -> str:
-        return ""
-
-    async def delete_cfd_token(self):
-        return
+    async def update_config_data(self, **kwargs):
+        self.config_data.update(kwargs)
 
     @asynccontextmanager
     async def subscribe_log(self, callback: Callable):
@@ -64,10 +59,6 @@ class UpdateManager(ABC):
     async def publish_log(self, log_data: str | None):
         for cb in self.log_subscribers:
             await cb(log_data)
-
-    @property
-    def cfd_provisioned(self) -> bool:
-        return False
 
     @abstractmethod
     async def get_update_file(self) -> FirmwareArtifact: ...

@@ -19,7 +19,7 @@ PWD_CXT = PasswordHasher()
 with open(BASE_DIR.joinpath("settings.yaml"), "r") as f:
     config = yaml.safe_load(f.read())
 
-TENANT = config.get("tenant")
+TENANT = config.get("tenant", "DEFAULT")
 
 POLL_TIME = config.get("poll_time_default", "00:01:00")
 POLL_TIME_UPDATING = config.get("poll_time_updating", "00:00:05")

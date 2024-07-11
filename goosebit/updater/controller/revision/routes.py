@@ -6,13 +6,14 @@ from fastapi.requests import Request
 from goosebit.updater.manager import UpdateManager, get_update_manager
 
 # v1 is hardware revision
-router = APIRouter(prefix="/v1")
+router = APIRouter(prefix="/{revision}")
 
 
 @router.get("/{dev_id}")
 async def polling(
     request: Request,
     tenant: str,
+    revision: str,
     dev_id: str,
     updater: UpdateManager = Depends(get_update_manager),
 ):
@@ -22,7 +23,11 @@ async def polling(
             "deploymentBase": {
                 "href": str(
                     request.url_for(
-                        "deployment_base", tenant=tenant, dev_id=dev_id, action_id=1
+                        "deployment_base",
+                        tenant=tenant,
+                        revision=revision,
+                        dev_id=dev_id,
+                        action_id=1,
                     )
                 )
             },
@@ -34,11 +39,13 @@ async def polling(
 async def config_data(
     request: Request,
     dev_id: str,
+    revision: str,
+    tenant: str,
     updater: UpdateManager = Depends(get_update_manager),
 ):
     data = await request.json()
     # TODO: make standard schema to deal with this
-    print(data)
+    await updater.update_config_data(**data["data"])
     return {"success": True, "message": "Updated swupdate data."}
 
 
@@ -46,6 +53,7 @@ async def config_data(
 async def deployment_base(
     request: Request,
     tenant: str,
+    revision: str,
     dev_id: str,
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),
@@ -59,7 +67,9 @@ async def deployment_base(
         "deployment": {
             "download": update,
             "update": update,
-            "chunks": artifact.generate_chunk(request, tenant=tenant, dev_id=dev_id),
+            "chunks": artifact.generate_chunk(
+                request, tenant=tenant, revision=revision, dev_id=dev_id
+            ),
         },
     }
 
@@ -68,6 +78,7 @@ async def deployment_base(
 async def deployment_feedback(
     request: Request,
     tenant: str,
+    revision: str,
     dev_id: str,
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),
