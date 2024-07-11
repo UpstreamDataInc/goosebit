@@ -31,8 +31,6 @@ class FirmwareArtifact:
     def file_exists(self) -> bool:
         if self.is_empty():
             return False
-        if self.file == "cloudflared.swu":
-            return True
         return self.path.exists()
 
     @property
@@ -52,14 +50,10 @@ class FirmwareArtifact:
     @property
     def path(self) -> Optional[Path]:
         if not self.is_empty():
-            if self.file == "cloudflared.swu":
-                return TOKEN_SWU_DIR.joinpath(self.dev_id, self.file)
             return UPDATES_DIR.joinpath(self.file)
 
     @property
     def dl_endpoint(self):
-        if self.file == "cloudflared.swu":
-            return "download_cfd_conf"
         return "download_file"
 
     def generate_chunk(
