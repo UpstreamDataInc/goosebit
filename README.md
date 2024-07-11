@@ -3,7 +3,7 @@
 
 ---
 
-A simplistic remote update server.
+A simplistic remote update server implementing hawkBit™'s [DDI API](https://eclipse.dev/hawkbit/apis/ddi_api/).
 
 
 ## Setup
