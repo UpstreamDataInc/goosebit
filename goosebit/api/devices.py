@@ -37,7 +37,9 @@ async def devices_get_all() -> list[dict]:
             "force_update": manager.force_update,
             "last_ip": device.last_ip,
             "last_seen": last_seen,
-            "online": last_seen < 120 if last_seen is not None else None,
+            "online": (
+                last_seen < manager.poll_seconds if last_seen is not None else None
+            ),
         }
 
     return list(await asyncio.gather(*[parse(d) for d in devices]))
