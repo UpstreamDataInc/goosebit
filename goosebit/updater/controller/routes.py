@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from . import v1
+from . import revision
 
 router = APIRouter(prefix="/controller")
-router.include_router(v1.router)
+router.include_router(revision.router)
