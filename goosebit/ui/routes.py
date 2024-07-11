@@ -1,5 +1,5 @@
 import aiofiles
-from fastapi import APIRouter, Depends, Form, Security, UploadFile, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException, Security, UploadFile
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
@@ -48,7 +48,7 @@ async def upload_update(
     filename: str = Form(...),
 ):
     if not validate_filename(filename):
-        raise HTTPException(400, detail="Invalid filename")
+        raise HTTPException(400, detail="Could not parse file data, invalid filename.")
 
     file = UPDATES_DIR.joinpath(filename)
     tmpfile = file.with_suffix(".tmp")

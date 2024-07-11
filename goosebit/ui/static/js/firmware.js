@@ -47,7 +47,12 @@ const sendFileChunks = async (file) => {
             progressBar.innerHTML = `${Math.round(progress)}%`;
         } else {
             if (response.status === 400) {
-                alert("Upload failed - likely incorrect file naming.")
+                result = await response.json()
+                alerts = document.getElementById("upload-alerts");
+                alerts.innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    ${result["detail"]}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>`
             }
         }
 
