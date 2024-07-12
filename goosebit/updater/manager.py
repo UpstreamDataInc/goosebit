@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -197,6 +198,9 @@ class DeviceUpdateManager(UpdateManager):
         if log_data is None:
             return
         device = await self.get_device()
+        matches = re.findall(r"Downloaded (\d+)%", log_data)
+        if matches:
+            device.download_percentage = matches[-1]
         if device.last_log is None:
             device.last_log = ""
         if log_data.startswith("Installing Update Chunk Artifacts."):
@@ -207,10 +211,12 @@ class DeviceUpdateManager(UpdateManager):
         if not log_data == "Skipped Update.":
             device.last_log += f"{log_data}\n"
             await self.publish_log(f"{log_data}\n")
+        await device.save()
 
     async def clear_log(self) -> None:
         device = await self.get_device()
         device.last_log = ""
+        await device.save()
         await self.publish_log(None)
 
 
