@@ -164,3 +164,4 @@ cython_debug/
 # application files
 /updates
 /db.sqlite3*
+/migrations
