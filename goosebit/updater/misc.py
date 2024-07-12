@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 import hashlib
 from pathlib import Path
+from typing import Optional
 
 from goosebit.models import Device
 from goosebit.settings import UPDATES_DIR
@@ -14,10 +15,10 @@ def sha1_hash_file(file_path: Path):
     return sha1_hash.hexdigest()
 
 
-def get_newest_fw() -> str:
+def get_newest_fw() -> Optional[str]:
     fw_files = [f for f in UPDATES_DIR.iterdir() if f.suffix == ".swu"]
     if len(fw_files) == 0:
-        return ""
+        return None
 
     return str(sorted(fw_files, key=lambda x: fw_sort_key(x), reverse=True)[0].name)
 
