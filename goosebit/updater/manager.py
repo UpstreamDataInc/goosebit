@@ -8,7 +8,6 @@ from typing import Callable
 
 from goosebit.models import Device
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
-from goosebit.updater.misc import get_newest_fw
 from goosebit.updater.updates import FirmwareArtifact
 
 
@@ -31,6 +30,12 @@ class UpdateManager(ABC):
     async def update_fw_version(self, version: str) -> None:
         return
 
+    async def update_hw_model(self, hw_model: str) -> None:
+        return
+
+    async def update_hw_revision(self, hw_revision: str) -> None:
+        return
+
     async def update_device_state(self, state: str) -> None:
         return
 
@@ -41,6 +46,11 @@ class UpdateManager(ABC):
         return
 
     async def update_config_data(self, **kwargs):
+        await self.update_hw_model(kwargs.get("hw_model") or "default")
+        await self.update_hw_revision(kwargs.get("hw_revision") or "default")
+        await self.update_device_state("registered")
+        await self.save()
+
         self.config_data.update(kwargs)
 
     @asynccontextmanager
@@ -80,7 +90,7 @@ class UnknownUpdateManager(UpdateManager):
         self.poll_time = POLL_TIME_UPDATING
 
     async def get_update_file(self) -> FirmwareArtifact:
-        return FirmwareArtifact(get_newest_fw())
+        return FirmwareArtifact("latest")
 
     async def get_update_mode(self) -> str:
         return "forced"
@@ -103,6 +113,14 @@ class DeviceUpdateManager(UpdateManager):
         device = await self.get_device()
         device.fw_version = version
 
+    async def update_hw_model(self, hw_model: str) -> None:
+        device = await self.get_device()
+        device.hw_model = hw_model
+
+    async def update_hw_revision(self, hw_revision: str) -> None:
+        device = await self.get_device()
+        device.hw_revision = hw_revision
+
     async def update_device_state(self, state: str) -> None:
         device = await self.get_device()
         device.last_state = state
@@ -120,7 +138,7 @@ class DeviceUpdateManager(UpdateManager):
 
     async def get_update_file(self) -> FirmwareArtifact:
         device = await self.get_device()
-        file = FirmwareArtifact(device.fw_file)
+        file = FirmwareArtifact(device.fw_file, device.hw_model, device.hw_revision)
 
         if self.force_update:
             return file
@@ -134,6 +152,9 @@ class DeviceUpdateManager(UpdateManager):
             mode = "skip"
             self.poll_time = POLL_TIME
         elif file.name == device.fw_version:
+            mode = "skip"
+            self.poll_time = POLL_TIME
+        elif device.last_state == "failure":
             mode = "skip"
             self.poll_time = POLL_TIME
         else:

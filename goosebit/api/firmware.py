@@ -4,7 +4,7 @@ from fastapi.requests import Request
 from goosebit.auth import validate_user_permissions
 from goosebit.permissions import Permissions
 from goosebit.settings import UPDATES_DIR
-from goosebit.updater.misc import fw_sort_key, get_newest_fw
+from goosebit.updater.misc import fw_sort_key
 from goosebit.updater.updates import FirmwareArtifact
 
 router = APIRouter(prefix="/firmware")
@@ -35,19 +35,6 @@ async def firmware_get_all() -> list[dict]:
         )
 
     return firmware
-
-
-@router.get(
-    "/latest",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])
-    ],
-)
-async def firmware_get_latest() -> dict:
-    UPDATES_DIR.mkdir(parents=True, exist_ok=True)
-
-    file_data = UPDATES_DIR.joinpath(get_newest_fw())
-    return {"name": file_data.name, "size": file_data.stat().st_size}
 
 
 @router.post(

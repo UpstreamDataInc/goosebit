@@ -40,6 +40,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             },
             { data: 'uuid' },
+            { data: 'hw_model' },
+            { data: 'hw_revision' },
             { data: 'fw' },
             {
                 data: 'force_update',
