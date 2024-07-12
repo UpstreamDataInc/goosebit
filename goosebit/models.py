@@ -11,6 +11,8 @@ class Device(Model):
     name = fields.CharField(max_length=255, null=True)
     fw_file = fields.CharField(max_length=255, default="latest")
     fw_version = fields.CharField(max_length=255, null=True)
+    hw_model = fields.CharField(max_length=255, null=True, default="default")
+    hw_revision = fields.CharField(max_length=255, null=True, default="default")
     last_state = fields.CharField(max_length=255, null=True)
     last_log = fields.TextField(null=True)
     last_seen = fields.BigIntField(null=True)

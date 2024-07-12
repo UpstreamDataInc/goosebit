@@ -9,14 +9,13 @@ from goosebit.updater.misc import get_newest_fw, sha1_hash_file
 
 
 class FirmwareArtifact:
-    def __init__(self, file: str = None, dev_id: str = None):
+    def __init__(self, file: str = None, hw_model: str = None, hw_revision: str = None):
         if file == "latest":
-            self.file = get_newest_fw()
+            self.file = get_newest_fw(hw_model, hw_revision)
         elif file == "pinned":
             self.file = None
         else:
             self.file = file
-        self.dev_id = dev_id
 
     def __eq__(self, other):
         if isinstance(other, str):
@@ -46,7 +45,6 @@ class FirmwareArtifact:
                 return "_".join(image_data[1:])
 
             return "_".join(image_data[2:])
-
 
     @property
     def timestamp(self):
@@ -82,7 +80,6 @@ class FirmwareArtifact:
                                     request.url_for(
                                         self.dl_endpoint,
                                         tenant=tenant,
-                                        revision=revision,
                                         dev_id=dev_id,
                                         file=self.file,
                                     )

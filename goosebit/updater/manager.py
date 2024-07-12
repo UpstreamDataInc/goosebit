@@ -30,6 +30,12 @@ class UpdateManager(ABC):
     async def update_fw_version(self, version: str) -> None:
         return
 
+    async def update_hw_model(self, hw_model: str) -> None:
+        return
+
+    async def update_hw_revision(self, hw_revision: str) -> None:
+        return
+
     async def update_device_state(self, state: str) -> None:
         return
 
@@ -40,6 +46,10 @@ class UpdateManager(ABC):
         return
 
     async def update_config_data(self, **kwargs):
+        await self.update_hw_model(kwargs.get("hw_model") or "default")
+        await self.update_hw_revision(kwargs.get("hw_revision") or "default")
+        await self.save()
+
         self.config_data.update(kwargs)
 
     @asynccontextmanager
@@ -102,6 +112,14 @@ class DeviceUpdateManager(UpdateManager):
         device = await self.get_device()
         device.fw_version = version
 
+    async def update_hw_model(self, hw_model: str) -> None:
+        device = await self.get_device()
+        device.hw_model = hw_model
+
+    async def update_hw_revision(self, hw_revision: str) -> None:
+        device = await self.get_device()
+        device.hw_revision = hw_revision
+
     async def update_device_state(self, state: str) -> None:
         device = await self.get_device()
         device.last_state = state
@@ -119,7 +137,7 @@ class DeviceUpdateManager(UpdateManager):
 
     async def get_update_file(self) -> FirmwareArtifact:
         device = await self.get_device()
-        file = FirmwareArtifact(device.fw_file)
+        file = FirmwareArtifact(device.fw_file, device.hw_model, device.hw_revision)
 
         if self.force_update:
             return file

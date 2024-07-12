@@ -15,8 +15,21 @@ def sha1_hash_file(file_path: Path):
     return sha1_hash.hexdigest()
 
 
-def get_newest_fw() -> Optional[str]:
-    fw_files = [f for f in UPDATES_DIR.iterdir() if f.suffix == ".swu"]
+def get_newest_fw(hw_model: str, hw_revision: str) -> Optional[str]:
+    def filter_filename(filename, hw_model, hw_revision) -> bool:
+        image_data = filename.split("_")
+        if len(image_data) == 3:
+            return image_data[0] == hw_model
+        elif len(image_data) == 4:
+            return image_data[0] == hw_model and image_data[1] == hw_revision
+        else:
+            return False
+
+    fw_files = [
+        f
+        for f in UPDATES_DIR.iterdir()
+        if f.suffix == ".swu" and filter_filename(f.name, hw_model, hw_revision)
+    ]
     if len(fw_files) == 0:
         return None
 
