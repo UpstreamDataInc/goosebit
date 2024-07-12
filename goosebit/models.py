@@ -16,7 +16,7 @@ class Device(Model):
     feed = fields.CharField(max_length=255, default="default")
     flavor = fields.CharField(max_length=255, default="default")
     last_state = fields.CharField(max_length=255, null=True, default="unknown")
-    download_percentage = fields.IntField(null=True)
+    progress = fields.IntField(null=True)
     last_log = fields.TextField(null=True)
     last_seen = fields.BigIntField(null=True)
     last_ip = fields.CharField(max_length=15, null=True)
