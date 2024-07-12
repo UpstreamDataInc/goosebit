@@ -6,14 +6,13 @@ from fastapi.requests import Request
 from goosebit.updater.manager import UpdateManager, get_update_manager
 
 # v1 is hardware revision
-router = APIRouter(prefix="/{revision}")
+router = APIRouter(prefix="/v1")
 
 
 @router.get("/{dev_id}")
 async def polling(
     request: Request,
     tenant: str,
-    revision: str,
     dev_id: str,
     updater: UpdateManager = Depends(get_update_manager),
 ):
@@ -27,7 +26,6 @@ async def polling(
                 request.url_for(
                     "config_data",
                     tenant=tenant,
-                    revision=revision,
                     dev_id=dev_id,
                 )
             )
@@ -43,7 +41,6 @@ async def polling(
                     request.url_for(
                         "deployment_base",
                         tenant=tenant,
-                        revision=revision,
                         dev_id=dev_id,
                         action_id=1,
                     )
@@ -60,7 +57,6 @@ async def polling(
 async def config_data(
     request: Request,
     dev_id: str,
-    revision: str,
     tenant: str,
     updater: UpdateManager = Depends(get_update_manager),
 ):
@@ -74,7 +70,6 @@ async def config_data(
 async def deployment_base(
     request: Request,
     tenant: str,
-    revision: str,
     dev_id: str,
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),
@@ -89,7 +84,7 @@ async def deployment_base(
             "download": update,
             "update": update,
             "chunks": artifact.generate_chunk(
-                request, tenant=tenant, revision=revision, dev_id=dev_id
+                request, tenant=tenant, dev_id=dev_id
             ),
         },
     }
@@ -99,7 +94,6 @@ async def deployment_base(
 async def deployment_feedback(
     request: Request,
     tenant: str,
-    revision: str,
     dev_id: str,
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),

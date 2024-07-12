@@ -60,7 +60,7 @@ class FirmwareArtifact:
         return "download_file"
 
     def generate_chunk(
-        self, request: Request, tenant: str, revision: str, dev_id: str
+        self, request: Request, tenant: str, dev_id: str
     ) -> list:
         if not self.file_exists():
             return []
