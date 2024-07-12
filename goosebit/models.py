@@ -13,7 +13,7 @@ class Device(Model):
     fw_version = fields.CharField(max_length=255, null=True)
     hw_model = fields.CharField(max_length=255, null=True, default="default")
     hw_revision = fields.CharField(max_length=255, null=True, default="default")
-    last_state = fields.CharField(max_length=255, null=True)
+    last_state = fields.CharField(max_length=255, null=True, default="unknown")
     last_log = fields.TextField(null=True)
     last_seen = fields.BigIntField(null=True)
     last_ip = fields.CharField(max_length=15, null=True)

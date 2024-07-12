@@ -48,6 +48,7 @@ class UpdateManager(ABC):
     async def update_config_data(self, **kwargs):
         await self.update_hw_model(kwargs.get("hw_model") or "default")
         await self.update_hw_revision(kwargs.get("hw_revision") or "default")
+        await self.update_device_state("registered")
         await self.save()
 
         self.config_data.update(kwargs)
@@ -151,6 +152,9 @@ class DeviceUpdateManager(UpdateManager):
             mode = "skip"
             self.poll_time = POLL_TIME
         elif file.name == device.fw_version:
+            mode = "skip"
+            self.poll_time = POLL_TIME
+        elif device.last_state == "failure":
             mode = "skip"
             self.poll_time = POLL_TIME
         else:

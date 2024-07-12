@@ -17,12 +17,28 @@ async def polling(
     dev_id: str,
     updater: UpdateManager = Depends(get_update_manager),
 ):
-    update = await updater.get_update_mode()
-    if update == "skip":
-        deployment = {}
+    links = {}
+
+    if updater.device.last_state == "unknown":
+        # device registration
+        sleep = "00:00:10"  # ensure that device will check back soon after registration
+        links["configData"] = {
+            "href": str(
+                request.url_for(
+                    "config_data",
+                    tenant=tenant,
+                    revision=revision,
+                    dev_id=dev_id,
+                )
+            )
+        }
+
     else:
-        deployment = {
-            "deploymentBase": {
+        # update poll
+        sleep = updater.poll_time
+        update = await updater.get_update_mode()
+        if update != "skip":
+            links["deploymentBase"] = {
                 "href": str(
                     request.url_for(
                         "deployment_base",
@@ -33,11 +49,10 @@ async def polling(
                     )
                 )
             }
-        }
 
     return {
-        "config": {"polling": {"sleep": updater.poll_time}},
-        "_links": deployment,
+        "config": {"polling": {"sleep": sleep}},
+        "_links": links,
     }
 
 
