@@ -14,6 +14,7 @@ router = APIRouter(prefix="/logs")
 
 class RealtimeLogModel(BaseModel):
     log: str | None
+    progress: int | None
     clear: bool = False
 
 
@@ -29,7 +30,7 @@ async def device_logs(websocket: WebSocket, dev_id: str):
     manager = await get_update_manager(dev_id)
 
     async def callback(log_update):
-        data = RealtimeLogModel(log=log_update)
+        data = RealtimeLogModel(log=log_update, progress=manager.device.download_percentage)
         if log_update is None:
             data.clear = True
             data.log = ""
