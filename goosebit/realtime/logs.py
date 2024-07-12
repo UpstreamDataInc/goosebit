@@ -30,7 +30,7 @@ async def device_logs(websocket: WebSocket, dev_id: str):
     manager = await get_update_manager(dev_id)
 
     async def callback(log_update):
-        data = RealtimeLogModel(log=log_update, progress=manager.device.download_percentage)
+        data = RealtimeLogModel(log=log_update, progress=manager.device.progress)
         if log_update is None:
             data.clear = True
             data.log = ""

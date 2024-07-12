@@ -178,7 +178,7 @@ class DeviceUpdateManager(UpdateManager):
         device = await self.get_device()
         matches = re.findall(r"Downloaded (\d+)%", log_data)
         if matches:
-            device.download_percentage = matches[-1]
+            device.progress = matches[-1]
         if device.last_log is None:
             device.last_log = ""
         if log_data.startswith("Installing Update Chunk Artifacts."):
