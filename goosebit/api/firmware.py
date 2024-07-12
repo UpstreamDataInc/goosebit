@@ -37,19 +37,6 @@ async def firmware_get_all() -> list[dict]:
     return firmware
 
 
-@router.get(
-    "/latest",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])
-    ],
-)
-async def firmware_get_latest() -> dict:
-    UPDATES_DIR.mkdir(parents=True, exist_ok=True)
-
-    file_data = UPDATES_DIR.joinpath(get_newest_fw())
-    return {"name": file_data.name, "size": file_data.stat().st_size}
-
-
 @router.post(
     "/delete",
     dependencies=[
