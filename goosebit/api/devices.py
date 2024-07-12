@@ -35,6 +35,7 @@ async def devices_get_all() -> list[dict]:
             "fw_file": device.fw_file,
             "hw_model": device.hw_model,
             "hw_revision": device.hw_revision,
+            "download_percentage": device.download_percentage,
             "state": device.last_state,
             "force_update": manager.force_update,
             "last_ip": device.last_ip,

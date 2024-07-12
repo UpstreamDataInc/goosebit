@@ -58,6 +58,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             },
             { data: 'fw_file' },
+            {
+                data: 'download_percentage',
+                render: function(data, type, row) {
+                    if ( type === 'display' || type === 'filter' ) {
+                        return (data || "❓") + "%";
+                    }
+                    return data;
+                }
+
+            },
             { data: 'last_ip' },
             {
                 data: 'last_seen',
