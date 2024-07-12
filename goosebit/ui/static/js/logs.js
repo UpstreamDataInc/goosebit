@@ -9,6 +9,10 @@ document.addEventListener("DOMContentLoaded", function() {
             logElem.textContent = ""
         }
         logElem.textContent += res["log"];
+
+        const progressElem = document.getElementById('install-progress');
+        progressElem.style.width = `${res.progress}%`;
+        progressElem.innerHTML = `${res.progress}%`;
     });
 });
 
