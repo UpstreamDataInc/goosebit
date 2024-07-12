@@ -4,7 +4,7 @@ from fastapi.requests import Request
 from goosebit.auth import validate_user_permissions
 from goosebit.permissions import Permissions
 from goosebit.settings import UPDATES_DIR
-from goosebit.updater.misc import fw_sort_key, get_newest_fw
+from goosebit.updater.misc import fw_sort_key
 from goosebit.updater.updates import FirmwareArtifact
 
 router = APIRouter(prefix="/firmware")

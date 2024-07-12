@@ -8,7 +8,6 @@ from typing import Callable
 
 from goosebit.models import Device
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
-from goosebit.updater.misc import get_newest_fw
 from goosebit.updater.updates import FirmwareArtifact
 
 
@@ -80,7 +79,7 @@ class UnknownUpdateManager(UpdateManager):
         self.poll_time = POLL_TIME_UPDATING
 
     async def get_update_file(self) -> FirmwareArtifact:
-        return FirmwareArtifact(get_newest_fw())
+        return FirmwareArtifact("latest")
 
     async def get_update_mode(self) -> str:
         return "forced"
