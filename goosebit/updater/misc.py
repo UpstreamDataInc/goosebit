@@ -19,7 +19,7 @@ def get_newest_fw(hw_model: str, hw_revision: str) -> Optional[str]:
     def filter_filename(filename, hw_model, hw_revision) -> bool:
         image_data = filename.split("_")
         if len(image_data) == 3:
-            return image_data[0] == hw_model
+            return image_data[0] == hw_model and "default" == hw_revision
         elif len(image_data) == 4:
             return image_data[0] == hw_model and image_data[1] == hw_revision
         else:
