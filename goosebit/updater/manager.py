@@ -159,11 +159,11 @@ class DeviceUpdateManager(UpdateManager):
             self.poll_time = POLL_TIME
         else:
             mode = "forced"
-            self.poll_time = "00:00:05"
+            self.poll_time = POLL_TIME_UPDATING
 
         if self.force_update:
             mode = "forced"
-            self.poll_time = "00:00:05"
+            self.poll_time = POLL_TIME_UPDATING
 
         if mode == "forced" and self.update_complete:
             self.update_complete = False

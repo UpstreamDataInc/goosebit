@@ -3,6 +3,7 @@ import json
 from fastapi import APIRouter, Depends
 from fastapi.requests import Request
 
+from goosebit.settings import POLL_TIME_REGISTRATION
 from goosebit.updater.manager import UpdateManager, get_update_manager
 
 # v1 is hardware revision
@@ -20,7 +21,7 @@ async def polling(
 
     if updater.device.last_state == "unknown":
         # device registration
-        sleep = "00:00:10"  # ensure that device will check back soon after registration
+        sleep = POLL_TIME_REGISTRATION
         links["configData"] = {
             "href": str(
                 request.url_for(
@@ -83,9 +84,7 @@ async def deployment_base(
         "deployment": {
             "download": update,
             "update": update,
-            "chunks": artifact.generate_chunk(
-                request, tenant=tenant, dev_id=dev_id
-            ),
+            "chunks": artifact.generate_chunk(request, tenant=tenant, dev_id=dev_id),
         },
     }
 
