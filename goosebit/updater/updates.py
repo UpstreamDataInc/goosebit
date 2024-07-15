@@ -14,6 +14,8 @@ class FirmwareArtifact:
             self.file = get_newest_fw(hw_model, hw_revision)
         elif file == "pinned":
             self.file = None
+        elif file == "none":
+            self.file = None
         else:
             self.file = file
 
@@ -59,9 +61,7 @@ class FirmwareArtifact:
     def dl_endpoint(self):
         return "download_file"
 
-    def generate_chunk(
-        self, request: Request, tenant: str, dev_id: str
-    ) -> list:
+    def generate_chunk(self, request: Request, tenant: str, dev_id: str) -> list:
         if not self.file_exists():
             return []
         return [
