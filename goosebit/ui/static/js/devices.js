@@ -213,16 +213,19 @@ function updateFirmwareSelection() {
         selectElem = document.getElementById("device-selected-fw");
 
         optionElem = document.createElement("option");
+        optionElem.value = "none";
+        optionElem.textContent = "none";
+        selectElem.appendChild(optionElem);
+
+        optionElem = document.createElement("option");
         optionElem.value = "latest";
         optionElem.textContent = "latest";
-
         selectElem.appendChild(optionElem);
 
         data.forEach(item => {
             optionElem = document.createElement("option");
             optionElem.value = item["name"];
             optionElem.textContent = item["name"];
-
             selectElem.appendChild(optionElem);
         });
     })
