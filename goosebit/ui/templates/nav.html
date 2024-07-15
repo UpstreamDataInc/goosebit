@@ -50,7 +50,9 @@
                         {% if "devices.read" in request.user.permissions %}
                             <a class="nav-link{% if request.url.path.endswith('devices') %} active{% endif %}" href="/ui/devices">Devices</a>
                         {% endif %}
-
+                        {% if "rollouts.read" in request.user.permissions %}
+                            <a class="nav-link{% if request.url.path.endswith('rollouts') %} active{% endif %}" href="/ui/rollouts">Rollouts</a>
+                        {% endif %}
                     </div>
                     <div class="navbar-nav d-flex flex-fill justify-content-end">
                         <a class="nav-link" href="/logout">Logout<i class="bi bi-box-arrow-right ps-2"></i></a>

@@ -19,7 +19,10 @@ async def polling(
 ):
     links = {}
 
-    if updater.device.last_state == "unknown":
+    sleep = updater.poll_time
+    last_state = updater.device.last_state
+
+    if last_state == "unknown":
         # device registration
         sleep = POLL_TIME_REGISTRATION
         links["configData"] = {
@@ -32,9 +35,13 @@ async def polling(
             )
         }
 
+    elif last_state == "error" and not updater.force_update:
+        # nothing to do
+        pass
+
     else:
-        # update poll
-        sleep = updater.poll_time
+        # provide update if available. Note: this is also required while in state "running", otherwise swupdate
+        # won't confirm a successful testing (might be a bug/problem in swupdate)
         update = await updater.get_update_mode()
         if update != "skip":
             links["deploymentBase"] = {
@@ -102,11 +109,46 @@ async def deployment_feedback(
     except json.JSONDecodeError:
         return
     try:
-        state = data["status"]["result"]["finished"]
-        await updater.update_device_state(state)
-        if state == "success":
-            file = await updater.get_update_file()
-            await updater.update_fw_version(file.name)
+        execution = data["status"]["execution"]
+
+        if execution == "proceeding":
+            await updater.update_device_state("running")
+
+        elif execution == "closed":
+            state = data["status"]["result"]["finished"]
+
+            updater.force_update = False
+            updater.update_complete = True
+
+            # From hawkBit docu: DDI defines also a status NONE which will not be interpreted by the update server
+            # and handled like SUCCESS.
+            if state == "success" or state == "none":
+                await updater.update_device_state("finished")
+
+                # not guaranteed to be the correct rollout - see next comment.
+                rollout = await updater.get_rollout()
+                if rollout:
+                    file = rollout.fw_file
+                    rollout.success_count += 1
+                    await rollout.save()
+                else:
+                    device = await updater.get_device()
+                    file = device.fw_file
+
+                # setting the currently installed version based on the current assigned firmware / existing rollouts
+                # is problematic. Better to assign custom action_id for each update (rollout id? firmware id? new id?).
+                # Alternatively - but requires customization on the gateway side - use version reported by the gateway.
+                await updater.update_fw_version(file)
+
+            elif state == "failure":
+                await updater.update_device_state("error")
+
+                # not guaranteed to be the correct rollout - see comment above.
+                rollout = await updater.get_rollout()
+                if rollout:
+                    rollout.failure_count += 1
+                    await rollout.save()
+
     except KeyError:
         pass
 

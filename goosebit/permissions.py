@@ -22,6 +22,12 @@ class DevicePermissions(PermissionsBase):
     DELETE = "devices.delete"
 
 
+class RolloutPermissions(PermissionsBase):
+    READ = "rollouts.read"
+    WRITE = "rollouts.write"
+    DELETE = "rollouts.delete"
+
+
 class HomePermissions(PermissionsBase):
     READ = "home.read"
 
@@ -30,11 +36,12 @@ class Permissions:
     HOME = HomePermissions
     FIRMWARE = FirmwarePermissions
     DEVICE = DevicePermissions
+    ROLLOUT = RolloutPermissions
 
     @classmethod
     def full(cls):
         all_items = set()
-        for item in [cls.HOME, cls.FIRMWARE, cls.DEVICE]:
+        for item in [cls.HOME, cls.FIRMWARE, cls.DEVICE, cls.ROLLOUT]:
             all_items.update(item.full())
         return list(all_items)
 
@@ -46,9 +53,11 @@ class Permissions:
         if permission_type == "firmware":
             return FirmwarePermissions(permission)
         if permission_type == "devices":
-            return FirmwarePermissions(permission)
+            return DevicePermissions(permission)
+        if permission_type == "rollouts":
+            return RolloutPermissions(permission)
         if permission_type == "home":
-            return FirmwarePermissions(permission)
+            return HomePermissions(permission)
 
 
 ADMIN = Permissions.full()

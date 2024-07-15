@@ -35,9 +35,8 @@ class FirmwareArtifact:
         return self.path.exists()
 
     @property
-    def name(self):
-        if not self.is_empty():
-            return self.file.split(".")[0]
+    def name(self) -> Optional[str]:
+        return self.file
 
     @property
     def version(self):
