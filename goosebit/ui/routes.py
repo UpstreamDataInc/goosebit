@@ -85,6 +85,18 @@ async def devices_ui(request: Request):
 
 
 @router.get(
+    "/rollouts",
+    dependencies=[
+        Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])
+    ],
+)
+async def rollouts_ui(request: Request):
+    return templates.TemplateResponse(
+        "rollouts.html", context={"request": request, "title": "Rollouts"}
+    )
+
+
+@router.get(
     "/logs/{dev_id}",
     dependencies=[
         Security(validate_user_permissions, scopes=[Permissions.DEVICE.READ])

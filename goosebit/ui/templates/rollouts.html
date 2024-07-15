@@ -1,0 +1,53 @@
+{% extends "nav.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row p-2 d-flex justify-content-center">
+        <div class="col">
+            <table id="rollout-table" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>
+                            Id
+                        </th>
+                        <th>
+                            Created
+                        </th>
+                        <th>
+                            Name
+                        </th>
+                        <th>
+                            Model
+                        </th>
+                        <th>
+                            Revision
+                        </th>
+                        <th>
+                            Feed
+                        </th>
+                        <th>
+                            Flavour
+                        </th>
+                        <th>
+                            Update File
+                        </th>
+                        <th>
+                            Paused
+                        </th>
+                        <th>
+                            Success Count
+                        </th>
+                        <th>
+                            Failure Count
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="rollouts-list">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', path='js/rollouts.js') }}"></script>
+{% endblock content %}

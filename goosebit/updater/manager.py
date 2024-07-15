@@ -4,9 +4,9 @@ import asyncio
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Optional
 
-from goosebit.models import Device
+from goosebit.models import Device, Rollout
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
 from goosebit.updater.updates import FirmwareArtifact
 
@@ -45,10 +45,16 @@ class UpdateManager(ABC):
     async def update_last_ip(self, last_ip: str) -> None:
         return
 
+    async def get_rollout(self) -> Optional[Rollout]:
+        return None
+
     async def update_config_data(self, **kwargs):
         await self.update_hw_model(kwargs.get("hw_model") or "default")
         await self.update_hw_revision(kwargs.get("hw_revision") or "default")
-        await self.update_device_state("registered")
+
+        device = await self.get_device()
+        if device.last_state == "unknown":
+            await self.update_device_state("registered")
         await self.save()
 
         self.config_data.update(kwargs)
@@ -136,13 +142,33 @@ class DeviceUpdateManager(UpdateManager):
         else:
             device.last_ip = last_ip
 
+    async def get_rollout(self) -> Optional[Rollout]:
+        device = await self.get_device()
+
+        if device.fw_file == "none":
+            return (
+                await Rollout.filter(
+                    hw_model=device.hw_model,
+                    hw_revision=device.hw_revision,
+                    feed=device.feed,
+                    flavor=device.flavor,
+                )
+                .order_by("-created_at")
+                .first()
+            )
+
+        return None
+
     async def get_update_file(self) -> FirmwareArtifact:
         device = await self.get_device()
-        file = FirmwareArtifact(device.fw_file, device.hw_model, device.hw_revision)
+        file = device.fw_file
 
-        if self.force_update:
-            return file
-        return file
+        if file == "none":
+            rollout = await self.get_rollout()
+            if rollout and not rollout.paused:
+                file = rollout.fw_file
+
+        return FirmwareArtifact(file, device.hw_model, device.hw_revision)
 
     async def get_update_mode(self) -> str:
         device = await self.get_device()
@@ -151,23 +177,19 @@ class DeviceUpdateManager(UpdateManager):
         if file.is_empty():
             mode = "skip"
             self.poll_time = POLL_TIME
-        elif file.name == device.fw_version:
+        elif file.name == device.fw_version and not self.force_update:
             mode = "skip"
             self.poll_time = POLL_TIME
-        elif device.last_state == "failure":
+        elif device.last_state == "error" and not self.force_update:
             mode = "skip"
             self.poll_time = POLL_TIME
         else:
             mode = "forced"
             self.poll_time = POLL_TIME_UPDATING
 
-        if self.force_update:
-            mode = "forced"
-            self.poll_time = POLL_TIME_UPDATING
-
-        if mode == "forced" and self.update_complete:
-            self.update_complete = False
-            await self.clear_log()
+            if self.update_complete:
+                self.update_complete = False
+                await self.clear_log()
 
         return mode
 
