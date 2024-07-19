@@ -53,9 +53,7 @@ class DatetimeVersion:
 
         firmware_date = datetime.strptime(f"{date}_{t}", "%Y%m%d_%H%M%S")
 
-        return cls(
-            timestamp=int(firmware_date.timestamp())
-        )
+        return cls(timestamp=int(firmware_date.timestamp()))
 
     def __gt__(self, other):
         return self.timestamp > other.timestamp

@@ -30,7 +30,11 @@ DB_LOC = BASE_DIR.joinpath(config.get("db_location", "db.sqlite3"))
 DB_URI = f"sqlite:///{DB_LOC}"
 
 UPDATE_VERSIONING = config.get("update_versioning")
-UPDATE_VERSION_PARSER = UpdateVersionParser.create(parse_mode=UPDATE_VERSIONING.get("format", "datetime"), delimiter=UPDATE_VERSIONING.get("delimiter", "_"))
+UPDATE_VERSION_PARSER = UpdateVersionParser.create(
+    parse_mode=UPDATE_VERSIONING.get("format", "datetime"),
+    delimiter=UPDATE_VERSIONING.get("delimiter", "_"),
+)
+
 
 @dataclass
 class User:
