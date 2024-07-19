@@ -50,9 +50,10 @@ async def upload_update(
     if not validate_filename(filename):
         raise HTTPException(400, detail="Could not parse file data, invalid filename.")
 
-
     if not UPDATES_DIR.local:
-        raise HTTPException(500, detail="Firmware is located on a remote server, could not push.")
+        raise HTTPException(
+            500, detail="Firmware is located on a remote server, could not push."
+        )
 
     file = UPDATES_DIR.join(filename)
     tmpfile = file.path.with_suffix(".tmp")

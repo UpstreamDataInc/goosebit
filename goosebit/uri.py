@@ -27,12 +27,16 @@ class FirmwareURI:
     def mkdir(self, *args, **kwargs):
         if self.local:
             return self.path.mkdir(*args, **kwargs)
-        raise AttributeError(f"Could not create remote directory on server: {str(self)}")
+        raise AttributeError(
+            f"Could not create remote directory on server: {str(self)}"
+        )
 
     def iterdir(self):
         if self.local:
             return self.path.iterdir()
-        raise AttributeError(f"Could not iterate remote directory on server: {str(self)}")
+        raise AttributeError(
+            f"Could not iterate remote directory on server: {str(self)}"
+        )
 
     def __str__(self):
         return str(self.path)
