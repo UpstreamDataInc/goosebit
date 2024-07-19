@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi.requests import Request
 from fastapi.responses import FileResponse
 
-from goosebit.settings import TOKEN_SWU_DIR, UPDATES_DIR
-from goosebit.updater.manager import UpdateManager, get_update_manager
+from goosebit.settings import UPDATES_DIR
 
 router = APIRouter(prefix="/v1")
 

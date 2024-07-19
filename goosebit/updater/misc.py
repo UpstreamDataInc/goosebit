@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from goosebit.models import Device
-from goosebit.settings import UPDATES_DIR, UPDATE_VERSION_PARSER
+from goosebit.settings import UPDATE_VERSION_PARSER, UPDATES_DIR
 
 
 def sha1_hash_file(file_path: Path):
