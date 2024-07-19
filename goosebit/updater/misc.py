@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from goosebit.models import Device
-from goosebit.settings import UPDATES_DIR
+from goosebit.settings import UPDATES_DIR,UPDATE_VERSION_PARSER
 
 
 def sha1_hash_file(file_path: Path):
@@ -44,16 +44,8 @@ def validate_filename(filename: str) -> bool:
         return False
 
 
-def fw_sort_key(filename: Path) -> datetime.datetime:
-    image_data = filename.stem.split("_")
-    if len(image_data) == 3:
-        _, date, time = image_data
-    elif len(image_data) == 4:
-        _, _, date, time = image_data
-    else:
-        raise ValueError(f"Invalid filename: {filename}")
-
-    return datetime.datetime.strptime(f"{date}_{time}", "%Y%m%d_%H%M%S")
+def fw_sort_key(filename: Path):
+    UPDATE_VERSION_PARSER.parse(filename)
 
 
 def get_fw_components(filename: Path) -> dict:

@@ -6,6 +6,7 @@ import yaml
 from argon2 import PasswordHasher
 
 from goosebit.permissions import Permissions
+from goosebit.updates import UpdateVersionParser
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TOKEN_SWU_DIR = BASE_DIR.joinpath("swugen")
@@ -28,6 +29,8 @@ POLL_TIME_REGISTRATION = config.get("poll_time_registration", "00:00:10")
 DB_LOC = BASE_DIR.joinpath(config.get("db_location", "db.sqlite3"))
 DB_URI = f"sqlite:///{DB_LOC}"
 
+UPDATE_VERSIONING = config.get("update_versioning")
+UPDATE_VERSION_PARSER = UpdateVersionParser.create(parse_mode=UPDATE_VERSIONING.get("format", "datetime"), delimiter=UPDATE_VERSIONING.get("delimiter", "_"))
 
 @dataclass
 class User:

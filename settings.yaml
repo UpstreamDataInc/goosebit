@@ -3,6 +3,12 @@ poll_time_default: 00:01:00
 poll_time_registration: 00:00:10
 poll_time_updating: 00:00:05
 tenant: DEFAULT
+update_versioning:
+  delimiter: _
+#  Allowed formats:
+#  - `datetime`: Update file should end with `YYYYMMDD{delimiter}HHmmSS`
+#  - `semantic`: Update file should end with `MAJOR{delimiter}MINOR{delimiter}PATCH`
+  format: datetime
 users:
 - email: admin@goosebit.local
   password: admin
