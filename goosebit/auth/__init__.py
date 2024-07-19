@@ -89,7 +89,6 @@ def get_user_from_session(session_id: str):
         pass
 
 
-
 def get_current_user(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_user_from_session(session_id)
