@@ -45,7 +45,7 @@ def validate_filename(filename: str) -> bool:
 
 
 def fw_sort_key(filename: Path):
-    UPDATE_VERSION_PARSER.parse(filename)
+    return UPDATE_VERSION_PARSER.parse(filename)
 
 
 def get_fw_components(filename: Path) -> dict:

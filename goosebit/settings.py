@@ -6,7 +6,7 @@ import yaml
 from argon2 import PasswordHasher
 
 from goosebit.permissions import Permissions
-from goosebit.updates import UpdateVersionParser
+from goosebit.updates.version import UpdateVersionParser
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TOKEN_SWU_DIR = BASE_DIR.joinpath("swugen")
