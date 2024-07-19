@@ -16,5 +16,5 @@ router = APIRouter(prefix="/download")
     ],
 )
 async def download_file(request: Request, file: str):
-    filename = UPDATES_DIR.joinpath(file)
+    filename = UPDATES_DIR.join(file)
     return FileResponse(filename, media_type="application/octet-stream")

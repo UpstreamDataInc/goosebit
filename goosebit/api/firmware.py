@@ -44,8 +44,9 @@ async def firmware_get_all() -> list[dict]:
     ],
 )
 async def firmware_delete(request: Request, file: str = Body()) -> dict:
-    file_path = UPDATES_DIR.joinpath(file)
-    if file_path.exists():
-        file_path.unlink()
-        return {"success": True}
+    file_path = UPDATES_DIR.join(file)
+    if file_path.local:
+        if file_path.exists():
+            file_path.path.unlink()
+            return {"success": True}
     return {"success": False}

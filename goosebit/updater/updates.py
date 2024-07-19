@@ -54,7 +54,7 @@ class FirmwareArtifact:
     @property
     def path(self) -> Optional[Path]:
         if not self.is_empty():
-            return UPDATES_DIR.joinpath(self.file)
+            return UPDATES_DIR.join(self.file).path
 
     @property
     def dl_endpoint(self):

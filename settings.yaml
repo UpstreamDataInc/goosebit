@@ -3,6 +3,7 @@ poll_time_default: 00:01:00
 poll_time_registration: 00:00:10
 poll_time_updating: 00:00:05
 tenant: DEFAULT
+firmware_path: file://./updates
 users:
 - email: admin@goosebit.local
   password: admin

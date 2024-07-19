@@ -50,16 +50,20 @@ async def upload_update(
     if not validate_filename(filename):
         raise HTTPException(400, detail="Could not parse file data, invalid filename.")
 
-    file = UPDATES_DIR.joinpath(filename)
-    tmpfile = file.with_suffix(".tmp")
+
+    if not UPDATES_DIR.local:
+        raise HTTPException(500, detail="Firmware is located on a remote server, could not push.")
+
+    file = UPDATES_DIR.join(filename)
+    tmpfile = file.path.with_suffix(".tmp")
     contents = await chunk.read()
     if init:
-        file.unlink(missing_ok=True)
+        file.path.unlink(missing_ok=True)
 
     async with aiofiles.open(tmpfile, mode="ab") as f:
         await f.write(contents)
     if done:
-        tmpfile.replace(file)
+        tmpfile.replace(file.path)
 
 
 @router.get(
