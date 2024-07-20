@@ -4,7 +4,8 @@ from fastapi import Depends, HTTPException
 from fastapi.requests import Request
 from fastapi.security import SecurityScopes
 from fastapi.websockets import WebSocket
-from jose import jwt
+from joserfc import jwt
+from joserfc.errors import BadSignatureError
 
 from goosebit.settings import PWD_CXT, SECRET, USERS
 
@@ -30,7 +31,9 @@ async def authenticate_user(request: Request):
 
 
 def create_session(username: str) -> str:
-    return jwt.encode({"username": username}, SECRET)
+    return jwt.encode(
+        header={"alg": "HS256"}, claims={"username": username}, key=SECRET
+    )
 
 
 def authenticate_session(request: Request):
@@ -83,8 +86,8 @@ def get_user_from_session(session_id: str):
         return
     try:
         session_data = jwt.decode(session_id, SECRET)
-        return session_data["username"]
-    except (jwt.JWTError, LookupError):
+        return session_data.claims["username"]
+    except (BadSignatureError, LookupError):
         pass
 
 
