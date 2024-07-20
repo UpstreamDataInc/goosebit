@@ -23,6 +23,11 @@ isort = "^5.13.2"
 black = "^24.2.0"
 pre-commit = "^3.6.2"
 
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.6.0"
+mkdocs-material = "^9.5.29"
+
 [tool.aerich]
 tortoise_orm = "goosebit.db.TORTOISE_CONF"
 location = "./migrations"
