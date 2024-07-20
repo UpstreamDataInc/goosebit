@@ -2,7 +2,6 @@ import copy
 import dataclasses
 import urllib.parse
 from pathlib import Path
-from urllib.parse import ParseResultBytes
 
 
 @dataclasses.dataclass
