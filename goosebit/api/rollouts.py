@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import asyncio
-
 from fastapi import APIRouter, Security
 
 from goosebit.auth import validate_user_permissions
