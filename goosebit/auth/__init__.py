@@ -30,8 +30,7 @@ async def authenticate_user(request: Request):
 
 
 def create_session(username: str) -> str:
-    token = jwt.encode({"username": username}, SECRET)
-    return token
+    return jwt.encode({"username": username}, SECRET)
 
 
 def authenticate_session(request: Request):
