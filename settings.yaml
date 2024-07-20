@@ -3,7 +3,10 @@ poll_time_default: 00:01:00
 poll_time_registration: 00:00:10
 poll_time_updating: 00:00:05
 tenant: DEFAULT
-firmware_path: file://./updates
+# firmware_path may be a local path, either absolute or relative, or a remote location such as a web server.
+# if firmware path is a webserver, the full URL should be specified, including the scheme.
+# no scheme is required for local files, just the path to the directory.
+firmware_path: ./updates
 users:
 - email: admin@goosebit.local
   password: admin

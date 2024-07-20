@@ -7,7 +7,7 @@ import yaml
 from argon2 import PasswordHasher
 
 from goosebit.permissions import Permissions
-from goosebit.uri import FirmwareURI
+from goosebit.uri import LocalFirmwareURI, RemoteFirmwareURI
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -17,20 +17,18 @@ PWD_CXT = PasswordHasher()
 with open(BASE_DIR.joinpath("settings.yaml"), "r") as f:
     config = yaml.safe_load(f.read())
 
-FIRMWARE_LOCATION = config.get("firmware_path", "file://./updates")
+FIRMWARE_LOCATION = config.get("firmware_path", "./updates")
 FIRMWARE_LOCATION_URI = urllib.parse.urlparse(FIRMWARE_LOCATION)
 
-if FIRMWARE_LOCATION_URI.scheme == "file":
-    firmware_files_path = FIRMWARE_LOCATION_URI.netloc + FIRMWARE_LOCATION_URI.path
-    if firmware_files_path.startswith("."):
-        # relative path
-        UPDATES_DIR = FirmwareURI(BASE_DIR.joinpath(firmware_files_path))
-    else:
-        # absolute path
-        UPDATES_DIR = FirmwareURI(Path(firmware_files_path))
+if FIRMWARE_LOCATION_URI.scheme == "":
+    # local path
+    fw_local_path = Path(FIRMWARE_LOCATION_URI.path)
+    if not fw_local_path.is_absolute():
+        fw_local_path = BASE_DIR.joinpath(fw_local_path)
+    UPDATES_DIR = LocalFirmwareURI(fw_local_path)
 elif FIRMWARE_LOCATION_URI.scheme.startswith("http"):
     # web path
-    UPDATES_DIR = FirmwareURI(FIRMWARE_LOCATION_URI)
+    UPDATES_DIR = RemoteFirmwareURI(FIRMWARE_LOCATION_URI)
 
 TOKEN_SWU_DIR = BASE_DIR.joinpath("swugen")
 SWUPDATE_FILES_DIR = BASE_DIR.joinpath("swupdate")
