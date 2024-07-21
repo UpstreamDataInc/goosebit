@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Literal
 
-import semver
+from semver import Version as SemanticVersion
 
 
 @dataclasses.dataclass
@@ -11,17 +11,8 @@ class DatetimeVersion:
     timestamp: int
 
     @classmethod
-    def parse(cls, filename: Path, delimiter: str):
-        image_data = filename.stem.split(delimiter)
-        if len(image_data) == 3:
-            _, date, t = image_data
-        elif len(image_data) == 4:
-            _, _, date, t = image_data
-        else:
-            raise ValueError(f"Invalid filename: {filename}")
-
-        firmware_date = datetime.strptime(f"{date}_{t}", "%Y%m%d_%H%M%S")
-
+    def parse(cls, version: str):
+        firmware_date = datetime.strptime(version, "%Y%m%d-%H%M%S")
         return cls(timestamp=int(firmware_date.timestamp()))
 
     def __gt__(self, other):
@@ -34,14 +25,14 @@ class DatetimeVersion:
 @dataclasses.dataclass
 class UpdateVersionParser:
     parser: Callable
-    delimiter: str
 
     def parse(self, filename: Path):
-        return self.parser(filename=filename, delimiter=self.delimiter)
+        tenant, hardware, version = filename.stem.split("_")
+        return self.parser(version)
 
     @classmethod
-    def create(cls, parse_mode: Literal["semantic", "datetime"], delimiter: str):
+    def create(cls, parse_mode: Literal["semantic", "datetime"]):
         if parse_mode == "semantic":
-            return cls(parser=semver.parse, delimiter=delimiter)
+            return cls(parser=SemanticVersion.parse)
         if parse_mode == "datetime":
-            return cls(parser=DatetimeVersion.parse, delimiter=delimiter)
+            return cls(parser=DatetimeVersion.parse)

@@ -20,9 +20,8 @@ The default login credentials for testing are `admin@goosebit.local`, `admin`.
 ## Current Feature Set
 
 ### Firmware repository
-Uploading firmware images through frontend. Accepted file naming patterns are `model_revision_date_time.swu` /
-`model_date_time.swu`. Date and time is used to determine the most current version for a device with a give model
-and revision.
+Uploading firmware images through frontend. All files should follow the format `{model}_{revision}_{version}`, where
+`version` is either a semantic version or a datetime version in the format `YYYYMMDD-HHmmSS`.
 
 ### Automatic device registration
 First time a new device connects, its configuration data is requested. `hw_model` and `hw_revision` are captured from
