@@ -78,8 +78,6 @@ class FirmwareArtifact:
                                 "href": str(
                                     request.url_for(
                                         self.dl_endpoint,
-                                        tenant=tenant,
-                                        dev_id=dev_id,
                                         file=self.file,
                                     )
                                 )

@@ -9,12 +9,7 @@ from goosebit.settings import UPDATES_DIR
 router = APIRouter(prefix="/download")
 
 
-@router.get(
-    "/{file}",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])
-    ],
-)
+@router.get("/{file}")
 async def download_file(request: Request, file: str):
     filename = UPDATES_DIR.join(file)
     return FileResponse(filename, media_type="application/octet-stream")
