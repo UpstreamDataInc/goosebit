@@ -3,38 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Literal
 
-
-@dataclasses.dataclass
-class SemanticVersion:
-    major: int
-    minor: int
-    patch: int
-
-    @classmethod
-    def parse(cls, filename: Path, delimiter: str):
-        image_data = filename.stem.split(delimiter)
-        if len(image_data) == 4:
-            _, major, minor, patch = image_data
-        elif len(image_data) == 5:
-            _, _, major, minor, patch = image_data
-        else:
-            raise ValueError(f"Invalid filename: {filename}")
-
-        return cls(major=int(major), minor=int(minor), patch=int(patch))
-
-    def __gt__(self, other):
-        if not self.major == other.major:
-            return self.major > other.major
-        if not self.minor == other.minor:
-            return self.minor > other.minor
-        return self.patch > other.patch
-
-    def __lt__(self, other):
-        if not self.major == other.major:
-            return self.major < other.major
-        if not self.minor == other.minor:
-            return self.minor < other.minor
-        return self.patch < other.patch
+import semver
 
 
 @dataclasses.dataclass
@@ -73,6 +42,6 @@ class UpdateVersionParser:
     @classmethod
     def create(cls, parse_mode: Literal["semantic", "datetime"], delimiter: str):
         if parse_mode == "semantic":
-            return cls(parser=SemanticVersion.parse, delimiter=delimiter)
+            return cls(parser=semver.parse, delimiter=delimiter)
         if parse_mode == "datetime":
             return cls(parser=DatetimeVersion.parse, delimiter=delimiter)
