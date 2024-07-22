@@ -1,0 +1,5 @@
+site_name: gooseBit
+theme:
+  name: material
+  logo: img/goosebit-logo.svg
+  favicon: img/goosebit-logo.svg
