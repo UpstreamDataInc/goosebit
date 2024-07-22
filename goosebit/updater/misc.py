@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import datetime
 import hashlib
 from pathlib import Path
 from typing import Optional
@@ -18,12 +17,9 @@ def sha1_hash_file(file_path: Path):
 def get_newest_fw(hw_model: str, hw_revision: str) -> Optional[str]:
     def filter_filename(filename, hw_model, hw_revision) -> bool:
         image_data = filename.split("_")
-        if len(image_data) == 3:
-            return image_data[0] == hw_model and "default" == hw_revision
-        elif len(image_data) == 4:
-            return image_data[0] == hw_model and image_data[1] == hw_revision
-        else:
-            return False
+        assert len(image_data) == 3
+        model, revision, _ = image_data
+        return model == hw_model and revision == hw_revision
 
     fw_files = [
         f
@@ -46,28 +42,6 @@ def validate_filename(filename: str) -> bool:
 
 def fw_sort_key(filename: Path):
     return UPDATE_VERSION_PARSER.parse(filename)
-
-
-def get_fw_components(filename: Path) -> dict:
-    image_data = filename.stem.split("_")
-    if len(image_data) == 3:
-        model, date, time = image_data
-        return {
-            "date": datetime.datetime.strptime(f"{date}_{time}", "%Y%m%d_%H%M%S"),
-            "day": date,
-            "time": time,
-            "model": model,
-            "hw_version": 0,
-        }
-    elif len(image_data) == 4:
-        model, hw_version, date, time = image_data
-        return {
-            "date": datetime.datetime.strptime(f"{date}_{time}", "%Y%m%d_%H%M%S"),
-            "day": date,
-            "time": time,
-            "model": model,
-            "hw_version": int(hw_version.upper().replace("V", "")),
-        }
 
 
 async def get_device_by_uuid(dev_id: str) -> Device:

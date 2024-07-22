@@ -27,7 +27,7 @@ class UpdateVersionParser:
     parser: Callable
 
     def parse(self, filename: Path):
-        tenant, hardware, version = filename.stem.split("_")
+        _, _, version = filename.stem.split("_")
         return self.parser(version)
 
     @classmethod
