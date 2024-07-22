@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import asyncio
-
 from fastapi import APIRouter, Security
 
 from goosebit.auth import validate_user_permissions
@@ -20,7 +18,7 @@ router = APIRouter(prefix="/rollouts")
 async def rollouts_get_all() -> list[dict]:
     rollouts = await Rollout.all()
 
-    async def parse(rollout: Rollout) -> dict:
+    def parse(rollout: Rollout) -> dict:
         return {
             "id": rollout.id,
             "created_at": rollout.created_at,
@@ -35,4 +33,4 @@ async def rollouts_get_all() -> list[dict]:
             "failure_count": rollout.failure_count,
         }
 
-    return list(await asyncio.gather(*[parse(r) for r in rollouts]))
+    return [parse(r) for r in rollouts]
