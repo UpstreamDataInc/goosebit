@@ -2,12 +2,12 @@ from tortoise import Model, fields
 
 
 class Tag(Model):
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     name = fields.CharField(max_length=255)
 
 
 class Device(Model):
-    uuid = fields.CharField(max_length=255, pk=True)
+    uuid = fields.CharField(max_length=255, primary_key=True)
     name = fields.CharField(max_length=255, null=True)
     fw_file = fields.CharField(max_length=255, default="latest")
     fw_version = fields.CharField(max_length=255, null=True)
@@ -27,7 +27,7 @@ class Device(Model):
 
 
 class Rollout(Model):
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     created_at = fields.DatetimeField(auto_now_add=True)
     name = fields.CharField(max_length=255, null=True)
     hw_model = fields.CharField(max_length=255, default="default")
