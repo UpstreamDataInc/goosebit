@@ -42,10 +42,8 @@ class FirmwareArtifact:
     def version(self):
         if not self.is_empty():
             image_data = self.name.split("_")
-            if len(image_data) == 3:
-                return "_".join(image_data[1:])
-
-            return "_".join(image_data[2:])
+            assert len(image_data) == 3
+            return "_".join(image_data[1:])
 
     @property
     def timestamp(self):

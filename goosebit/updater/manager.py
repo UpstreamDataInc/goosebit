@@ -9,7 +9,7 @@ from typing import Callable, Optional
 
 from goosebit.models import Device, Rollout
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
-from goosebit.updater.updates import FirmwareArtifact
+from goosebit.updates.artifacts import FirmwareArtifact
 
 
 class UpdateManager(ABC):
