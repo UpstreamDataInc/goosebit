@@ -9,6 +9,10 @@ tenant: DEFAULT
 #  - `semantic`: Update file should end with a semantic version (https://semver.org/)
 version_format: datetime
 
+metrics:
+  prometheus:
+    port: 9090
+
 users:
 - email: admin@goosebit.local
   password: admin
