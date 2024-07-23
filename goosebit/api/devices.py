@@ -38,6 +38,8 @@ async def devices_get_all() -> list[dict]:
             ),
             "hw_model": device.hardware.model,
             "hw_revision": device.hardware.revision,
+            "feed": device.feed,
+            "flavor": device.flavor,
             "progress": device.progress,
             "state": device.last_state,
             "update_mode": str(device.update_mode),

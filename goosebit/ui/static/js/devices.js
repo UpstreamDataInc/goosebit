@@ -42,6 +42,8 @@ document.addEventListener("DOMContentLoaded", function() {
             { data: 'uuid' },
             { data: 'hw_model' },
             { data: 'hw_revision' },
+            { data: 'feed' },
+            { data: 'flavor' },
             { data: 'fw' },
             { data: 'update_mode' },
             {
