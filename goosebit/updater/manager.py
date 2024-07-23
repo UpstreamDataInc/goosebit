@@ -9,6 +9,7 @@ from typing import Callable, Optional
 
 from goosebit.models import Device, Rollout
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
+from goosebit.telemetry import devices_count
 from goosebit.updates.artifacts import FirmwareArtifact
 
 
@@ -227,6 +228,7 @@ async def get_update_manager(dev_id: str) -> UpdateManager:
     global device_managers
     if device_managers.get(dev_id) is None:
         device_managers[dev_id] = DeviceUpdateManager(dev_id)
+    devices_count.set(len(await Device.all()))
     return device_managers[dev_id]
 
 
