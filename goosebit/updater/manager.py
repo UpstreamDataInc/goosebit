@@ -10,7 +10,6 @@ from typing import Callable, Optional
 from goosebit.models import Device, FirmwareCompatibility, FirmwareUpdate, Rollout
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING, UPDATES_DIR
 from goosebit.telemetry import devices_count
-from goosebit.updates.artifacts import FirmwareArtifact
 
 
 class UpdateManager(ABC):

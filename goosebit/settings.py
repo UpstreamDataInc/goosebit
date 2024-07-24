@@ -1,3 +1,4 @@
+import secrets
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -12,7 +13,7 @@ SWUPDATE_FILES_DIR = BASE_DIR.joinpath("swupdate")
 UPDATES_DIR = BASE_DIR.joinpath("updates")
 DB_MIGRATIONS_LOC = BASE_DIR.joinpath("migrations")
 
-SECRET = "1"  # secrets.token_hex(16)
+SECRET = secrets.token_hex(16)
 PWD_CXT = PasswordHasher()
 
 with open(BASE_DIR.joinpath("settings.yaml"), "r") as f:

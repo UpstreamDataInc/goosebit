@@ -23,16 +23,15 @@ async def firmware_get_all() -> list[dict]:
         key=lambda x: semver.Version.parse(x.version),
         reverse=True,
     ):
-        for i in range(100):
-            firmware.append(
-                {
-                    "uuid": update.id,
-                    "name": update.path.name,
-                    "size": update.path.stat().st_size,
-                    "version": update.version,
-                    "compatibility": list(await update.compatibility.all().values()),
-                }
-            )
+        firmware.append(
+            {
+                "uuid": update.id,
+                "name": update.path.name,
+                "size": update.path.stat().st_size,
+                "version": update.version,
+                "compatibility": list(await update.compatibility.all().values()),
+            }
+        )
     return firmware
 
 
