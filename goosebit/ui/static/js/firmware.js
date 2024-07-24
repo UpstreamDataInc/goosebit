@@ -108,7 +108,7 @@ function updateFirmwareList() {
             const downloadBtn = document.createElement('button');
             downloadBtn.innerHTML = "<i class='bi bi-cloud-download'></i>";
             downloadBtn.classList = ["btn btn-primary"];
-            downloadBtn.onclick = function() {window.location.href = `/api/download/${item["name"]}`};
+            downloadBtn.onclick = function() {window.location.href = `/api/download/by_name/${item["name"]}`};
 
             btnGroup.appendChild(deleteBtn);
             btnGroup.appendChild(downloadBtn);

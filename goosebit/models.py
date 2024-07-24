@@ -82,26 +82,23 @@ class FirmwareUpdate(Model):
     def path(self):
         return Path(url2pathname(unquote(urlparse(self.uri).path)))
 
-    def generate_chunk(self, request: Request, tenant: str, dev_id: str) -> list:
-        path = Path(self.uri)
+    def generate_chunk(self, request: Request) -> list:
         return [
             {
                 "part": "os",
                 "version": "1",
-                "name": path.name,
+                "name": self.path.name,
                 "artifacts": [
                     {
-                        "filename": path.name,
-                        "hashes": {"sha1": sha1_hash_file(path)},
-                        "size": path.stat().st_size,
+                        "filename": self.path.name,
+                        "hashes": {"sha1": sha1_hash_file(self.path)},
+                        "size": self.path.stat().st_size,
                         "_links": {
                             "download": {
                                 "href": str(
                                     request.url_for(
-                                        "download_firmware",
-                                        tenant=tenant,
-                                        dev_id=dev_id,
-                                        file=path,
+                                        "download_file_by_id",
+                                        file_id=self.id,
                                     )
                                 )
                             }
