@@ -87,7 +87,7 @@ def get_user_from_session(session_id: str):
     try:
         session_data = jwt.decode(session_id, SECRET)
         return session_data.claims["username"]
-    except (BadSignatureError, LookupError):
+    except (BadSignatureError, LookupError, ValueError):
         pass
 
 

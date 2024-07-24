@@ -1,11 +1,11 @@
+import semver
 from fastapi import APIRouter, Body, Security
 from fastapi.requests import Request
 
 from goosebit.auth import validate_user_permissions
+from goosebit.models import FirmwareUpdate
 from goosebit.permissions import Permissions
 from goosebit.settings import UPDATES_DIR
-from goosebit.updater.misc import fw_sort_key
-from goosebit.updates.artifacts import FirmwareArtifact
 
 router = APIRouter(prefix="/firmware")
 
@@ -17,23 +17,20 @@ router = APIRouter(prefix="/firmware")
     ],
 )
 async def firmware_get_all() -> list[dict]:
-    UPDATES_DIR.mkdir(parents=True, exist_ok=True)
-
+    updates = await FirmwareUpdate.all()
     firmware = []
-    for file in sorted(
-        [f for f in UPDATES_DIR.iterdir() if f.suffix == ".swu"],
-        key=lambda x: fw_sort_key(x),
+    for update in sorted(
+        updates,
+        key=lambda x: semver.Version.parse(x.version),
         reverse=True,
     ):
-        artifact = FirmwareArtifact(file.name)
         firmware.append(
             {
-                "name": file.name,
-                "size": artifact.path.stat().st_size,
-                "version": artifact.version,
+                "name": update.path.name,
+                "size": update.path.stat().st_size,
+                "version": update.version,
             }
         )
-
     return firmware
 
 

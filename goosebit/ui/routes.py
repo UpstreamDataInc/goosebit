@@ -5,10 +5,11 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 
 from goosebit.auth import authenticate_session, validate_user_permissions
+from goosebit.misc import validate_filename
 from goosebit.permissions import Permissions
 from goosebit.settings import UPDATES_DIR
 from goosebit.ui.templates import templates
-from goosebit.updater.misc import validate_filename
+from goosebit.updates import create_firmware_update
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -60,6 +61,7 @@ async def upload_update(
         await f.write(contents)
     if done:
         tmpfile.replace(file)
+        await create_firmware_update(file)
 
 
 @router.get(

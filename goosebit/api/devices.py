@@ -8,10 +8,10 @@ from fastapi.requests import Request
 from pydantic import BaseModel
 
 from goosebit.auth import validate_user_permissions
+from goosebit.misc import get_device_by_uuid
 from goosebit.models import Device
 from goosebit.permissions import Permissions
 from goosebit.updater.manager import delete_device, get_update_manager
-from goosebit.updater.misc import get_device_by_uuid
 
 router = APIRouter(prefix="/devices")
 

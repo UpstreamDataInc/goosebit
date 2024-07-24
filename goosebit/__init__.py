@@ -49,7 +49,9 @@ async def login_ui(request: Request):
 
 
 @app.post("/login", include_in_schema=False, dependencies=[Depends(authenticate_user)])
-async def login(request: Request, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+async def login(
+    request: Request, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+):
     resp = RedirectResponse(request.url_for("ui_root"), status_code=302)
     resp.set_cookie(key="session_id", value=create_session(form_data.username))
     return resp

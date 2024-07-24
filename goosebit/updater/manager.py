@@ -7,9 +7,8 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Callable, Optional
 
-from goosebit.models import Device, Rollout
-from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
-from goosebit.updates.artifacts import FirmwareArtifact
+from goosebit.models import Device, FirmwareCompatibility, FirmwareUpdate, Rollout
+from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING, UPDATES_DIR
 
 
 class UpdateManager(ABC):
@@ -82,7 +81,7 @@ class UpdateManager(ABC):
             await cb(log_data)
 
     @abstractmethod
-    async def get_update_file(self) -> FirmwareArtifact: ...
+    async def get_update_file(self) -> FirmwareUpdate: ...
 
     @abstractmethod
     async def get_update_mode(self) -> str: ...
@@ -96,8 +95,8 @@ class UnknownUpdateManager(UpdateManager):
         super().__init__(dev_id)
         self.poll_time = POLL_TIME_UPDATING
 
-    async def get_update_file(self) -> FirmwareArtifact:
-        return FirmwareArtifact("latest")
+    async def get_update_file(self) -> FirmwareUpdate:
+        return await FirmwareUpdate.latest()
 
     async def get_update_mode(self) -> str:
         return "forced"
@@ -160,7 +159,7 @@ class DeviceUpdateManager(UpdateManager):
 
         return None
 
-    async def get_update_file(self) -> FirmwareArtifact:
+    async def get_update_file(self) -> FirmwareUpdate:
         device = await self.get_device()
         file = device.fw_file
 
@@ -169,16 +168,26 @@ class DeviceUpdateManager(UpdateManager):
             if rollout and not rollout.paused:
                 file = rollout.fw_file
 
-        return FirmwareArtifact(file, device.hw_model, device.hw_revision)
+        if file == "latest":
+            return await FirmwareUpdate.latest()
+        if file == "pinned":
+            return await FirmwareUpdate.get(
+                uri=UPDATES_DIR.joinpath(device.fw_file).absolute().as_uri()
+            )
+
+        compat = FirmwareCompatibility.get(
+            hw_model=device.hw_model, hw_revision=device.hw_revision
+        )
+        return await FirmwareUpdate.get(
+            uri=UPDATES_DIR.joinpath(device.fw_file).absolute().as_uri(),
+            compatibility=compat,
+        )
 
     async def get_update_mode(self) -> str:
         device = await self.get_device()
 
         file = await self.get_update_file()
-        if file.is_empty():
-            mode = "skip"
-            self.poll_time = POLL_TIME
-        elif file.name == device.fw_version and not self.force_update:
+        if file.path.name.split(".")[0] == device.fw_version and not self.force_update:
             mode = "skip"
             self.poll_time = POLL_TIME
         elif device.last_state == "error" and not self.force_update:

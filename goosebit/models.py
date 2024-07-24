@@ -1,4 +1,17 @@
+import hashlib
+from pathlib import Path
+from urllib.parse import unquote, urlparse
+from urllib.request import url2pathname
+
+import semver
+from fastapi.requests import Request
 from tortoise import Model, fields
+
+
+def sha1_hash_file(file_path: Path):
+    with file_path.open("rb") as f:
+        sha1_hash = hashlib.file_digest(f, "sha1")
+    return sha1_hash.hexdigest()
 
 
 class Tag(Model):
@@ -51,5 +64,49 @@ class FirmwareUpdate(Model):
     uri = fields.CharField(max_length=255)
     version = fields.CharField(max_length=255)
     compatibility = fields.ManyToManyField(
-        "models.Tag", related_name="devices", through="device_tags"
+        "models.FirmwareCompatibility",
+        related_name="updates",
+        through="update_compatibility",
     )
+
+    @classmethod
+    async def latest(cls):
+        updates = await cls.all()
+        return sorted(
+            updates,
+            key=lambda x: semver.Version.parse(x.version),
+            reverse=True,
+        )[0]
+
+    @property
+    def path(self):
+        return Path(url2pathname(unquote(urlparse(self.uri).path)))
+
+    def generate_chunk(self, request: Request, tenant: str, dev_id: str) -> list:
+        path = Path(self.uri)
+        return [
+            {
+                "part": "os",
+                "version": "1",
+                "name": path.name,
+                "artifacts": [
+                    {
+                        "filename": path.name,
+                        "hashes": {"sha1": sha1_hash_file(path)},
+                        "size": path.stat().st_size,
+                        "_links": {
+                            "download": {
+                                "href": str(
+                                    request.url_for(
+                                        "download_firmware",
+                                        tenant=tenant,
+                                        dev_id=dev_id,
+                                        file=path,
+                                    )
+                                )
+                            }
+                        },
+                    }
+                ],
+            }
+        ]
