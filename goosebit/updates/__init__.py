@@ -18,7 +18,7 @@ async def create_firmware_update(file: Path):
 
     for comp in update_info["compatibility"]:
         await update.compatibility.add(
-            await FirmwareCompatibility.get_or_create(**comp)
+            (await FirmwareCompatibility.get_or_create(**comp))[0]
         )
     await update.save()
     return update

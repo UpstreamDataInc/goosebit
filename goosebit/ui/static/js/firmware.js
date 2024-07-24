@@ -69,63 +69,106 @@ function resetProgress() {
     fileSubmit.disabled = false;
     progressBar.style.width = `0%`;
     progressBar.innerHTML = `0%`;
-    updateFirmwareList();
+
+    dataTable = $("#firmware-table").DataTable();
+    dataTable.ajax.reload(null, false);
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    updateFirmwareList();
+    var dataTable = new DataTable("#firmware-table", {
+        responsive: true,
+        paging: false,
+        scrollCollapse: true,
+        scroller: true,
+        scrollY: "60vh",
+        stateSave: true,
+        ajax: {
+            url: "/api/firmware/all",
+            dataSrc: "",
+        },
+        initComplete:function(){
+            updateBtnState();
+        },
+        columnDefs: [
+            {
+                targets: "_all",
+                render: function(data, type, row) {
+                    return data || "❓";
+                },
+            }
+        ],
+        columns: [
+            { data: 'name' },
+            { data: 'uuid' },
+            { data: 'version' },
+            {
+                data: 'size',
+                render: function(data, type, row) {
+                    if ( type === 'display' || type === 'filter' ) {
+                        return (data / 1024 / 1024).toFixed(2) + "MB";
+                    }
+                    return data;
+                }
+            }
+        ],
+        select: true,
+        rowId: "uuid",
+        layout: {
+            bottom1Start: {
+                buttons: [
+                    {
+                        text: '<i class="bi bi-cloud-download" ></i>',
+                        action: function (e, dt, node, config) {
+                            selectedFirmware = dt.rows( {selected:true} ).data().toArray().map(d => d["uuid"]);
+                            downloadFirmware(selectedFirmware[0]);
+                        },
+                        className: "buttons-download",
+                        titleAttr: 'Download Firmware'
+                    },
+                    {
+                        text: '<i class="bi bi-trash" ></i>',
+                        action: function (e, dt, node, config) {
+                            selectedFirmware = dt.rows( {selected:true} ).data().toArray().map(d => d["uuid"]);
+                            deleteFirmware(selectedFirmware);
+                        },
+                        className: "buttons-delete",
+                        titleAttr: 'Delete Firmware'
+                    },
+                ]
+            }
+        }
+    });
+
+
+    dataTable.on( 'select', function ( e, dt, type, indexes ) {
+        updateBtnState();
+    } ).on( 'deselect', function ( e, dt, type, indexes ) {
+        updateBtnState();
+    } );
+
+    setInterval(function () {
+        dataTable.ajax.reload(null, false);
+    }, TABLE_UPDATE_TIME);
 });
 
-
-function updateFirmwareList() {
-    const url = '/api/firmware/all';
-
-    fetch(url)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Request failed');
-        }
-        return response.json();
-    })
-    .then(data => {
-        const list = document.getElementById('firmware-list');
-        list.innerHTML = "";
-
-        data.forEach(item => {
-            const listItem = document.createElement('li');
-            listItem.textContent = `${item["name"]}, size: ${(item["size"] / 1024 / 1024).toFixed(2)} MB`;
-            listItem.classList = ["list-group-item d-flex justify-content-between align-items-center"];
-
-            const btnGroup = document.createElement("div")
-            btnGroup.classList = "btn-group"
-            btnGroup.role = "group"
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.innerHTML =  "<i class='bi bi-trash'></i>";
-            deleteBtn.classList = ["btn btn-danger"];
-            deleteBtn.onclick = function() {deleteFirmware(item["name"])};
-
-            const downloadBtn = document.createElement('button');
-            downloadBtn.innerHTML = "<i class='bi bi-cloud-download'></i>";
-            downloadBtn.classList = ["btn btn-primary"];
-            downloadBtn.onclick = function() {window.location.href = `/api/download/by_name/${item["name"]}`};
-
-            btnGroup.appendChild(deleteBtn);
-            btnGroup.appendChild(downloadBtn);
-
-            listItem.appendChild(btnGroup);
-            list.appendChild(listItem);
-        });
-    })
-    .catch(error => {
-        console.error('Failed to fetch firmware data:', error);
-    });
+function updateBtnState() {
+    dataTable = $("#firmware-table").DataTable();
+    if (dataTable.rows( {selected:true} ).any()){
+        document.querySelector('button.buttons-delete').classList.remove('disabled');
+    } else {
+        document.querySelector('button.buttons-delete').classList.add('disabled');
+    }
+    if (dataTable.rows( {selected:true} ).count() == 1){
+        document.querySelector('button.buttons-download').classList.remove('disabled');
+    } else {
+        document.querySelector('button.buttons-download').classList.add('disabled');
+    }
 }
 
-function deleteFirmware(file) {
+function deleteFirmware(files) {
     fetch('/api/firmware/delete', {
         method: 'POST',
-        body: file,
+        body: files,
     })
     .then(response => {
         if (!response.ok) {
@@ -137,4 +180,9 @@ function deleteFirmware(file) {
     .catch(error => {
         console.error('Error:', error);
     });
+}
+
+
+function downloadFirmware(file) {
+    window.location.href = `/api/download/by_id/${file}`
 }

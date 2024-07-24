@@ -6,6 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 from goosebit.auth import authenticate_session, validate_user_permissions
 from goosebit.misc import validate_filename
+from goosebit.models import FirmwareUpdate
 from goosebit.permissions import Permissions
 from goosebit.settings import UPDATES_DIR
 from goosebit.ui.templates import templates
@@ -52,6 +53,10 @@ async def upload_update(
         raise HTTPException(400, detail="Could not parse file data, invalid filename.")
 
     file = UPDATES_DIR.joinpath(filename)
+    update = await FirmwareUpdate.get_or_none(uri=file.absolute().as_uri())
+    if update is not None:
+        await update.delete()
+
     tmpfile = file.with_suffix(".tmp")
     contents = await chunk.read()
     if init:
