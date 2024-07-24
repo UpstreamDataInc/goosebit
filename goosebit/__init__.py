@@ -5,8 +5,9 @@ from fastapi import Depends, FastAPI
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrumentor
 
-from goosebit import api, db, realtime, ui, updater
+from goosebit import api, db, realtime, telemetry, ui, updater
 from goosebit.auth import (
     authenticate_user,
     auto_redirect,
@@ -20,6 +21,7 @@ from goosebit.ui.templates import templates
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     await db.init()
+    await telemetry.init()
     yield
     await db.close()
 
@@ -30,6 +32,7 @@ app.include_router(ui.router)
 app.include_router(api.router)
 app.include_router(realtime.router)
 app.mount("/static", static, name="static")
+Instrumentor.instrument_app(app)
 
 
 @app.middleware("http")
