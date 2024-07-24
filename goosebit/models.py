@@ -38,3 +38,18 @@ class Rollout(Model):
     paused = fields.BooleanField(default=False)
     success_count = fields.IntField(default=0)
     failure_count = fields.IntField(default=0)
+
+
+class FirmwareCompatibility(Model):
+    id = fields.IntField(primary_key=True)
+    hw_model = fields.CharField(max_length=255)
+    hw_revision = fields.CharField(max_length=255)
+
+
+class FirmwareUpdate(Model):
+    id = fields.IntField(primary_key=True)
+    uri = fields.CharField(max_length=255)
+    version = fields.CharField(max_length=255)
+    compatibility = fields.ManyToManyField(
+        "models.Tag", related_name="devices", through="device_tags"
+    )
