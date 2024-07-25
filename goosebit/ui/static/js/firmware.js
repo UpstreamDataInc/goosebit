@@ -221,5 +221,5 @@ function deleteFirmware(files) {
 
 
 function downloadFirmware(file) {
-    window.location.href = `/api/download/by_id/${file}`
+    window.location.href = `/api/download/${file}`
 }

@@ -47,7 +47,7 @@ def generate_chunk(request: Request, firmware: FirmwareUpdate | None) -> list:
     if firmware.local:
         href = str(
             request.url_for(
-                "download_file_by_id",
+                "download_file",
                 file_id=firmware.id,
             )
         )
