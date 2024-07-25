@@ -4,7 +4,7 @@ from urllib.request import url2pathname
 
 from fastapi.requests import Request
 
-from goosebit.models import FirmwareCompatibility, FirmwareUpdate
+from goosebit.models import Firmware, Hardware
 
 from . import swdesc
 
@@ -25,7 +25,7 @@ async def create_firmware_update(uri: str):
         return
 
     update = (
-        await FirmwareUpdate.get_or_create(
+        await Firmware.get_or_create(
             uri=uri,
             version=str(update_info["version"]),
             size=update_info["size"],
@@ -34,14 +34,12 @@ async def create_firmware_update(uri: str):
     )[0]
 
     for comp in update_info["compatibility"]:
-        await update.compatibility.add(
-            (await FirmwareCompatibility.get_or_create(**comp))[0]
-        )
+        await update.compatibility.add((await Hardware.get_or_create(**comp))[0])
     await update.save()
     return update
 
 
-def generate_chunk(request: Request, firmware: FirmwareUpdate | None) -> list:
+def generate_chunk(request: Request, firmware: Firmware | None) -> list:
     if firmware is None:
         return []
     if firmware.local:

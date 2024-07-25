@@ -47,20 +47,20 @@ class Rollout(Model):
     failure_count = fields.IntField(default=0)
 
 
-class FirmwareCompatibility(Model):
+class Hardware(Model):
     id = fields.IntField(primary_key=True)
     hw_model = fields.CharField(max_length=255)
     hw_revision = fields.CharField(max_length=255)
 
 
-class FirmwareUpdate(Model):
+class Firmware(Model):
     id = fields.IntField(primary_key=True)
     uri = fields.CharField(max_length=255)
     size = fields.BigIntField()
     hash = fields.CharField(max_length=255)
     version = fields.CharField(max_length=255)
     compatibility = fields.ManyToManyField(
-        "models.FirmwareCompatibility",
+        "models.Hardware",
         related_name="updates",
         through="update_compatibility",
     )

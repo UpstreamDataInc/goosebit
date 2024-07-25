@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Callable, Literal, Optional
 
-from goosebit.models import Device, FirmwareCompatibility, FirmwareUpdate, Rollout
+from goosebit.models import Device, Firmware, Hardware, Rollout
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING, UPDATES_DIR
 from goosebit.telemetry import devices_count
 
@@ -88,7 +88,7 @@ class UpdateManager(ABC):
             await cb(log_data)
 
     @abstractmethod
-    async def get_firmware(self) -> FirmwareUpdate: ...
+    async def get_firmware(self) -> Firmware: ...
 
     @abstractmethod
     async def get_update_mode(self) -> UpdateMode: ...
@@ -102,8 +102,8 @@ class UnknownUpdateManager(UpdateManager):
         super().__init__(dev_id)
         self.poll_time = POLL_TIME_UPDATING
 
-    async def get_firmware(self) -> FirmwareUpdate:
-        return await FirmwareUpdate.latest()
+    async def get_firmware(self) -> Firmware:
+        return await Firmware.latest()
 
     async def get_update_mode(self) -> str:
         return UpdateMode.FORCED
@@ -166,7 +166,7 @@ class DeviceUpdateManager(UpdateManager):
 
         return None
 
-    async def get_firmware(self) -> FirmwareUpdate | None:
+    async def get_firmware(self) -> Firmware | None:
         device = await self.get_device()
         file = device.fw_file
 
@@ -177,14 +177,12 @@ class DeviceUpdateManager(UpdateManager):
             else:
                 return None
         if file == "latest":
-            return await FirmwareUpdate.latest()
+            return await Firmware.latest()
         if file == "pinned":
             return None
 
-        compat = FirmwareCompatibility.get(
-            hw_model=device.hw_model, hw_revision=device.hw_revision
-        )
-        return await FirmwareUpdate.get(
+        compat = Hardware.get(hw_model=device.hw_model, hw_revision=device.hw_revision)
+        return await Firmware.get(
             uri=UPDATES_DIR.joinpath(device.fw_file).absolute().as_uri(),
             compatibility=compat,
         )

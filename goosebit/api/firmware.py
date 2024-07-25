@@ -3,7 +3,7 @@ from fastapi import APIRouter, Body, Security
 from fastapi.requests import Request
 
 from goosebit.auth import validate_user_permissions
-from goosebit.models import FirmwareUpdate
+from goosebit.models import Firmware
 from goosebit.permissions import Permissions
 
 router = APIRouter(prefix="/firmware")
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/firmware")
     ],
 )
 async def firmware_get_all() -> list[dict]:
-    updates = await FirmwareUpdate.all()
+    updates = await Firmware.all()
     firmware = []
     for update in sorted(
         updates,
@@ -45,7 +45,7 @@ async def firmware_get_all() -> list[dict]:
 async def firmware_delete(request: Request, files: list[str] = Body()) -> dict:
     success = False
     for f_id in files:
-        update = await FirmwareUpdate.get_or_none(id=f_id)
+        update = await Firmware.get_or_none(id=f_id)
         if update is None:
             continue
         if update.local:

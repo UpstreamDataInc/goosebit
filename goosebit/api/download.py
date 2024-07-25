@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.requests import Request
 from fastapi.responses import FileResponse, RedirectResponse
 
-from goosebit.models import FirmwareUpdate
+from goosebit.models import Firmware
 from goosebit.settings import UPDATES_DIR
 
 router = APIRouter(prefix="/download")
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/download")
 
 @router.get("/{file_id}")
 async def download_file(request: Request, file_id: int):
-    file = await FirmwareUpdate.get_or_none(id=file_id)
+    file = await Firmware.get_or_none(id=file_id)
     if file is None:
         raise HTTPException(404)
     if file.local:

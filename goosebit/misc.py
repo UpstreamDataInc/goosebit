@@ -6,7 +6,7 @@ from typing import Optional
 
 import semver
 
-from goosebit.models import Device, FirmwareCompatibility, FirmwareUpdate
+from goosebit.models import Device, Firmware, Hardware
 
 
 def sha1_hash_file(file_path: Path):
@@ -16,10 +16,10 @@ def sha1_hash_file(file_path: Path):
 
 
 async def get_newest_fw(hw_model: str, hw_revision: str) -> Optional[str]:
-    compatibility = await FirmwareCompatibility.get_or_none(
+    compatibility = await Hardware.get_or_none(
         hw_model=hw_model, hw_revision=hw_revision
     )
-    firmware = await FirmwareUpdate.filter(compatibility=compatibility).all()
+    firmware = await Firmware.filter(compatibility=compatibility).all()
     if len(firmware) == 0:
         return None
 
