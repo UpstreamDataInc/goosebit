@@ -196,7 +196,7 @@ class DeviceUpdateManager(UpdateManager):
         if file is None:
             self.poll_time = POLL_TIME
             return UpdateMode.SKIP
-        if file.path.name.split(".")[0] == device.fw_version and not self.force_update:
+        if file.version == device.fw_version and not self.force_update:
             mode = UpdateMode.SKIP
             self.poll_time = POLL_TIME
         elif device.last_state == "error" and not self.force_update:
