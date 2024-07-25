@@ -37,7 +37,7 @@ async def firmware_ui(request: Request):
 
 
 @router.post(
-    "/upload",
+    "/upload/local",
     dependencies=[
         Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])
     ],
@@ -66,7 +66,24 @@ async def upload_update(
         await f.write(contents)
     if done:
         tmpfile.replace(file)
-        await create_firmware_update(file)
+        await create_firmware_update(file.absolute().as_uri())
+
+
+@router.post(
+    "/upload/remote",
+    dependencies=[
+        Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])
+    ],
+)
+async def upload_update(request: Request, url: str = Form(...)):
+    if not validate_filename(url):
+        raise HTTPException(400, detail="Could not parse file data, invalid filename.")
+
+    update = await FirmwareUpdate.get_or_none(uri=url)
+    if update is not None:
+        await update.delete()
+
+    await create_firmware_update(url)
 
 
 @router.get(

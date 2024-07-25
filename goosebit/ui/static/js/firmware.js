@@ -1,21 +1,23 @@
 const CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB chunk size
-const form = document.getElementById('upload-form');
-const fileInput = document.getElementById('file-upload');
-const fileSubmit = document.getElementById('file-upload-submit');
-const progressBar = document.getElementById('upload-progress');
+const uploadForm = document.getElementById('upload-form');
+const uploadFileInput = document.getElementById('file-upload');
+const uploadFileSubmit = document.getElementById('file-upload-submit');
+const uploadProgressBar = document.getElementById('upload-progress');
 
-form.addEventListener('submit', e => {
+uploadForm.addEventListener('submit', e => {
     e.preventDefault();
-    sendFileChunks(fileInput.files[0])
+    sendFileChunks(uploadFileInput.files[0])
 });
 
-const sendFileChunks = async (file) => {
+async function sendFileChunks(file) {
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
     let start = 0;
     let uploadedChunks = 0;
 
-    fileSubmit.disabled = true
-    fileInput.disabled = true
+    uploadFileSubmit.disabled = true
+    uploadFileSubmit.classList.add("d-none")
+    uploadFileInput.disabled = true
+    uploadProgressBar.parentElement.classList.remove("d-none")
 
     for (let i = 0; i < totalChunks; i++) {
         const end = Math.min(start + CHUNK_SIZE, file.size);
@@ -35,7 +37,7 @@ const sendFileChunks = async (file) => {
             formData.append('done', false);
         }
 
-        const response = await fetch("/ui/upload", {
+        const response = await fetch("/ui/upload/local", {
             method: 'POST',
             body: formData,
         });
@@ -43,8 +45,8 @@ const sendFileChunks = async (file) => {
         if (response.ok) {
             uploadedChunks++;
             const progress = (uploadedChunks / totalChunks) * 100;
-            progressBar.style.width = `${progress}%`;
-            progressBar.innerHTML = `${Math.round(progress)}%`;
+            uploadProgressBar.style.width = `${progress}%`;
+            uploadProgressBar.innerHTML = `${Math.round(progress)}%`;
         } else {
             if (response.status === 400) {
                 result = await response.json()
@@ -64,11 +66,46 @@ const sendFileChunks = async (file) => {
     }, 1000)
 };
 
+const urlForm = document.getElementById('url-form');
+const urlFileInput = document.getElementById('file-url');
+const urlFileSubmit = document.getElementById('url-submit');
+
+urlForm.addEventListener('submit', e => {
+    e.preventDefault();
+    sendFileUrl(urlFileInput.value)
+});
+
+async function sendFileUrl(url) {
+    const formData = new FormData();
+    formData.append('url', url);
+
+    const response = await fetch("/ui/upload/remote", {
+        method: 'POST',
+        body: formData,
+    });
+
+    if (!response.ok) {
+        if (response.status === 400) {
+            result = await response.json()
+            alerts = document.getElementById("url-alerts");
+            alerts.innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert">
+                ${result["detail"]}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`
+        }
+    }
+}
+
+
 function resetProgress() {
-    fileInput.disabled = false;
-    fileSubmit.disabled = false;
-    progressBar.style.width = `0%`;
-    progressBar.innerHTML = `0%`;
+    uploadFileInput.disabled = false;
+    uploadFileSubmit.disabled = false;
+    uploadFileSubmit.classList.remove("d-none");
+    urlFileInput.disabled = false;
+    urlFileSubmit.disabled = false;
+    uploadProgressBar.style.width = `0%`;
+    uploadProgressBar.innerHTML = `0%`;
+    uploadProgressBar.parentElement.classList.add("d-none");
 
     dataTable = $("#firmware-table").DataTable();
     dataTable.ajax.reload(null, false);

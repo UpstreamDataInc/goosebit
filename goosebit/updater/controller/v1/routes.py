@@ -91,7 +91,7 @@ async def deployment_base(
         "deployment": {
             "download": update,
             "update": update,
-            "chunks": artifact.generate_chunk(request, tenant=tenant, dev_id=dev_id),
+            "chunks": artifact.generate_chunk(request),
         },
     }
 

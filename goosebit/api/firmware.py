@@ -27,7 +27,8 @@ async def firmware_get_all() -> list[dict]:
             {
                 "uuid": update.id,
                 "name": update.path.name,
-                "size": update.path.stat().st_size,
+                "size": update.size,
+                "hash": update.hash,
                 "version": update.version,
                 "compatibility": list(await update.compatibility.all().values()),
             }
@@ -47,9 +48,10 @@ async def firmware_delete(request: Request, files: list[str] = Body()) -> dict:
         update = await FirmwareUpdate.get_or_none(id=f_id)
         if update is None:
             continue
-        path = update.path
-        if path.exists():
-            path.unlink()
-            await update.delete()
-            success = True
+        if update.local:
+            path = update.path
+            if path.exists():
+                path.unlink()
+        await update.delete()
+        success = True
     return {"success": success}

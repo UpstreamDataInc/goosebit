@@ -8,12 +8,6 @@ from fastapi.requests import Request
 from tortoise import Model, fields
 
 
-def sha1_hash_file(file_path: Path):
-    with file_path.open("rb") as f:
-        sha1_hash = hashlib.file_digest(f, "sha1")
-    return sha1_hash.hexdigest()
-
-
 class Tag(Model):
     id = fields.IntField(primary_key=True)
     name = fields.CharField(max_length=255)
@@ -62,6 +56,8 @@ class FirmwareCompatibility(Model):
 class FirmwareUpdate(Model):
     id = fields.IntField(primary_key=True)
     uri = fields.CharField(max_length=255)
+    size = fields.BigIntField()
+    hash = fields.CharField(max_length=255)
     version = fields.CharField(max_length=255)
     compatibility = fields.ManyToManyField(
         "models.FirmwareCompatibility",
@@ -82,7 +78,20 @@ class FirmwareUpdate(Model):
     def path(self):
         return Path(url2pathname(unquote(urlparse(self.uri).path)))
 
+    @property
+    def local(self):
+        return urlparse(self.uri).scheme == "file"
+
     def generate_chunk(self, request: Request) -> list:
+        if self.local:
+            href = str(
+                request.url_for(
+                    "download_file_by_id",
+                    file_id=self.id,
+                )
+            )
+        else:
+            href = self.uri
         return [
             {
                 "part": "os",
@@ -91,18 +100,9 @@ class FirmwareUpdate(Model):
                 "artifacts": [
                     {
                         "filename": self.path.name,
-                        "hashes": {"sha1": sha1_hash_file(self.path)},
-                        "size": self.path.stat().st_size,
-                        "_links": {
-                            "download": {
-                                "href": str(
-                                    request.url_for(
-                                        "download_file_by_id",
-                                        file_id=self.id,
-                                    )
-                                )
-                            }
-                        },
+                        "hashes": {"sha1": self.size},
+                        "size": self.size,
+                        "_links": {"download": {"href": href}},
                     }
                 ],
             }

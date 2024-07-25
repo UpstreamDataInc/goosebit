@@ -24,7 +24,7 @@ async def init():
     await command.upgrade(run_in_transaction=True)
     await Tortoise.generate_schemas(safe=True)
     for update in await FirmwareUpdate.all():
-        if not update.path.exists():
+        if update.local and not update.path.exists():
             # delete it
             await update.delete()
 

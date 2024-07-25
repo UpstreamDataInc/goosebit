@@ -1,10 +1,18 @@
 from __future__ import annotations
 
+import hashlib
+from pathlib import Path
 from typing import Optional
 
 import semver
 
 from goosebit.models import Device, FirmwareCompatibility, FirmwareUpdate
+
+
+def sha1_hash_file(file_path: Path):
+    with file_path.open("rb") as f:
+        sha1_hash = hashlib.file_digest(f, "sha1")
+    return sha1_hash.hexdigest()
 
 
 async def get_newest_fw(hw_model: str, hw_revision: str) -> Optional[str]:
