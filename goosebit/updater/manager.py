@@ -160,7 +160,7 @@ class DeviceUpdateManager(UpdateManager):
 
         return None
 
-    async def get_update_file(self) -> FirmwareUpdate:
+    async def get_update_file(self) -> FirmwareUpdate | None:
         device = await self.get_device()
         file = device.fw_file
 
@@ -168,13 +168,12 @@ class DeviceUpdateManager(UpdateManager):
             rollout = await self.get_rollout()
             if rollout and not rollout.paused:
                 file = rollout.fw_file
-
+            else:
+                return None
         if file == "latest":
             return await FirmwareUpdate.latest()
         if file == "pinned":
-            return await FirmwareUpdate.get(
-                uri=UPDATES_DIR.joinpath(device.fw_file).absolute().as_uri()
-            )
+            return None
 
         compat = FirmwareCompatibility.get(
             hw_model=device.hw_model, hw_revision=device.hw_revision

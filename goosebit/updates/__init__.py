@@ -2,6 +2,8 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
+from fastapi.requests import Request
+
 from goosebit.models import FirmwareCompatibility, FirmwareUpdate
 
 from . import swdesc
@@ -37,3 +39,32 @@ async def create_firmware_update(uri: str):
         )
     await update.save()
     return update
+
+
+def generate_chunk(request: Request, firmware: FirmwareUpdate | None) -> list:
+    if firmware is None:
+        return []
+    if firmware.local:
+        href = str(
+            request.url_for(
+                "download_file_by_id",
+                file_id=firmware.id,
+            )
+        )
+    else:
+        href = firmware.uri
+    return [
+        {
+            "part": "os",
+            "version": "1",
+            "name": firmware.path.name,
+            "artifacts": [
+                {
+                    "filename": firmware.path.name,
+                    "hashes": {"sha1": firmware.hash},
+                    "size": firmware.size,
+                    "_links": {"download": {"href": href}},
+                }
+            ],
+        }
+    ]

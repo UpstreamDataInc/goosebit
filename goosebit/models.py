@@ -81,29 +81,3 @@ class FirmwareUpdate(Model):
     @property
     def local(self):
         return urlparse(self.uri).scheme == "file"
-
-    def generate_chunk(self, request: Request) -> list:
-        if self.local:
-            href = str(
-                request.url_for(
-                    "download_file_by_id",
-                    file_id=self.id,
-                )
-            )
-        else:
-            href = self.uri
-        return [
-            {
-                "part": "os",
-                "version": "1",
-                "name": self.path.name,
-                "artifacts": [
-                    {
-                        "filename": self.path.name,
-                        "hashes": {"sha1": self.hash},
-                        "size": self.size,
-                        "_links": {"download": {"href": href}},
-                    }
-                ],
-            }
-        ]

@@ -5,6 +5,7 @@ from fastapi.requests import Request
 
 from goosebit.settings import POLL_TIME_REGISTRATION
 from goosebit.updater.manager import UpdateManager, get_update_manager
+from goosebit.updates import generate_chunk
 
 # v1 is hardware revision
 router = APIRouter(prefix="/v1")
@@ -82,16 +83,16 @@ async def deployment_base(
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),
 ):
-    artifact = await updater.get_update_file()
-    update = await updater.get_update_mode()
+    firmware = await updater.get_update_file()
+    mode = await updater.get_update_mode()
     await updater.save()
 
     return {
         "id": f"{action_id}",
         "deployment": {
-            "download": update,
-            "update": update,
-            "chunks": artifact.generate_chunk(request),
+            "download": mode,
+            "update": mode,
+            "chunks": generate_chunk(request, firmware),
         },
     }
 
