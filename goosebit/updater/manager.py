@@ -5,11 +5,17 @@ import re
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Callable, Optional
+from enum import StrEnum
+from typing import Callable, Literal, Optional
 
 from goosebit.models import Device, FirmwareCompatibility, FirmwareUpdate, Rollout
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING, UPDATES_DIR
 from goosebit.telemetry import devices_count
+
+
+class UpdateMode(StrEnum):
+    SKIP = "skip"
+    FORCED = "forced"
 
 
 class UpdateManager(ABC):
@@ -85,7 +91,7 @@ class UpdateManager(ABC):
     async def get_firmware(self) -> FirmwareUpdate: ...
 
     @abstractmethod
-    async def get_update_mode(self) -> str: ...
+    async def get_update_mode(self) -> UpdateMode: ...
 
     @abstractmethod
     async def update_log(self, log_data: str) -> None: ...
@@ -100,7 +106,7 @@ class UnknownUpdateManager(UpdateManager):
         return await FirmwareUpdate.latest()
 
     async def get_update_mode(self) -> str:
-        return "forced"
+        return UpdateMode.FORCED
 
     async def update_log(self, log_data: str) -> None:
         return
@@ -183,18 +189,21 @@ class DeviceUpdateManager(UpdateManager):
             compatibility=compat,
         )
 
-    async def get_update_mode(self) -> str:
+    async def get_update_mode(self) -> UpdateMode:
         device = await self.get_device()
 
         file = await self.get_firmware()
+        if file is None:
+            self.poll_time = POLL_TIME
+            return UpdateMode.SKIP
         if file.path.name.split(".")[0] == device.fw_version and not self.force_update:
-            mode = "skip"
+            mode = UpdateMode.SKIP
             self.poll_time = POLL_TIME
         elif device.last_state == "error" and not self.force_update:
-            mode = "skip"
+            mode = UpdateMode.SKIP
             self.poll_time = POLL_TIME
         else:
-            mode = "forced"
+            mode = UpdateMode.FORCED
             self.poll_time = POLL_TIME_UPDATING
 
             if self.update_complete:
