@@ -100,7 +100,7 @@ class FirmwareUpdate(Model):
                 "artifacts": [
                     {
                         "filename": self.path.name,
-                        "hashes": {"sha1": self.size},
+                        "hashes": {"sha1": self.hash},
                         "size": self.size,
                         "_links": {"download": {"href": href}},
                     }
