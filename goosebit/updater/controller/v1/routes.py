@@ -83,7 +83,7 @@ async def deployment_base(
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),
 ):
-    firmware = await updater.get_update_file()
+    firmware = await updater.get_firmware()
     mode = await updater.get_update_mode()
     await updater.save()
 

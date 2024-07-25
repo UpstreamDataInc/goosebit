@@ -82,7 +82,7 @@ class UpdateManager(ABC):
             await cb(log_data)
 
     @abstractmethod
-    async def get_update_file(self) -> FirmwareUpdate: ...
+    async def get_firmware(self) -> FirmwareUpdate: ...
 
     @abstractmethod
     async def get_update_mode(self) -> str: ...
@@ -96,7 +96,7 @@ class UnknownUpdateManager(UpdateManager):
         super().__init__(dev_id)
         self.poll_time = POLL_TIME_UPDATING
 
-    async def get_update_file(self) -> FirmwareUpdate:
+    async def get_firmware(self) -> FirmwareUpdate:
         return await FirmwareUpdate.latest()
 
     async def get_update_mode(self) -> str:
@@ -160,7 +160,7 @@ class DeviceUpdateManager(UpdateManager):
 
         return None
 
-    async def get_update_file(self) -> FirmwareUpdate | None:
+    async def get_firmware(self) -> FirmwareUpdate | None:
         device = await self.get_device()
         file = device.fw_file
 
@@ -186,7 +186,7 @@ class DeviceUpdateManager(UpdateManager):
     async def get_update_mode(self) -> str:
         device = await self.get_device()
 
-        file = await self.get_update_file()
+        file = await self.get_firmware()
         if file.path.name.split(".")[0] == device.fw_version and not self.force_update:
             mode = "skip"
             self.poll_time = POLL_TIME
