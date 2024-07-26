@@ -1,3 +1,4 @@
+import hashlib
 from pathlib import Path
 
 import aiofiles
@@ -5,7 +6,6 @@ import httpx
 import libconf
 import semver
 
-from goosebit.misc import sha1_hash_file
 from goosebit.settings import UPDATES_DIR
 
 
@@ -31,7 +31,7 @@ async def parse_file(file: Path):
     try:
         swdesc_attrs["version"] = semver.Version.parse(swdesc["software"]["version"])
         swdesc_attrs["size"] = file.stat().st_size
-        swdesc_attrs["hash"] = sha1_hash_file(file)
+        swdesc_attrs["hash"] = _sha1_hash_file(file)
         swdesc_attrs["compatibility"] = [
             {"hw_model": comp.split(".")[0], "hw_revision": comp.split(".")[1]}
             for comp in swdesc["software"]["hardware-compatibility"]
@@ -50,3 +50,9 @@ async def parse_remote(url: str):
     parsed_file = await parse_file(temp_file)
     temp_file.unlink()
     return parsed_file
+
+
+def _sha1_hash_file(file_path: Path):
+    with file_path.open("rb") as f:
+        sha1_hash = hashlib.file_digest(f, "sha1")
+    return sha1_hash.hexdigest()
