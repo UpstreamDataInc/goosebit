@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from datetime import datetime
 from enum import StrEnum
-from typing import Callable, Literal, Optional
+from typing import Callable, Literal, Optional, Tuple
 
 import semver
 
@@ -92,10 +92,7 @@ class UpdateManager(ABC):
             await cb(log_data)
 
     @abstractmethod
-    async def get_firmware(self) -> Firmware: ...
-
-    @abstractmethod
-    async def get_update_mode(self) -> UpdateMode: ...
+    async def get_update(self) -> Tuple[UpdateMode, Firmware]: ...
 
     @abstractmethod
     async def update_log(self, log_data: str) -> None: ...
@@ -106,11 +103,12 @@ class UnknownUpdateManager(UpdateManager):
         super().__init__(dev_id)
         self.poll_time = POLL_TIME_UPDATING
 
-    async def get_firmware(self) -> Firmware:
+    async def _get_firmware(self) -> Firmware:
         return await Firmware.latest(await self.get_device())
 
-    async def get_update_mode(self) -> str:
-        return UpdateMode.FORCED
+    async def get_update(self) -> Tuple[UpdateMode, Firmware]:
+        firmware = await self._get_firmware()
+        return UpdateMode.FORCED, firmware
 
     async def update_log(self, log_data: str) -> None:
         return
@@ -168,7 +166,7 @@ class DeviceUpdateManager(UpdateManager):
 
         return None
 
-    async def get_firmware(self) -> Firmware | None:
+    async def _get_firmware(self) -> Firmware | None:
         device = await self.get_device()
 
         if device.update_mode == UpdateModeEnum.ROLLOUT:
@@ -188,14 +186,14 @@ class DeviceUpdateManager(UpdateManager):
         assert device.update_mode == UpdateModeEnum.PINNED
         return None
 
-    async def get_update_mode(self) -> UpdateMode:
+    async def get_update(self) -> Tuple[UpdateMode, Firmware]:
         device = await self.get_device()
-        firmware = await self.get_firmware()
+        firmware = await self._get_firmware()
 
         if firmware is None:
+            mode = UpdateMode.SKIP
             self.poll_time = POLL_TIME
-            return UpdateMode.SKIP
-        if firmware.version == device.fw_version and not self.force_update:
+        elif firmware.version == device.fw_version and not self.force_update:
             mode = UpdateMode.SKIP
             self.poll_time = POLL_TIME
         elif device.last_state == "error" and not self.force_update:
@@ -209,7 +207,7 @@ class DeviceUpdateManager(UpdateManager):
                 self.update_complete = False
                 await self.clear_log()
 
-        return mode
+        return mode, firmware
 
     async def update_log(self, log_data: str) -> None:
         if log_data is None:

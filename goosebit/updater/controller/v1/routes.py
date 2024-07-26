@@ -43,7 +43,7 @@ async def polling(
     else:
         # provide update if available. Note: this is also required while in state "running", otherwise swupdate
         # won't confirm a successful testing (might be a bug/problem in swupdate)
-        mode = await updater.get_update_mode()
+        mode, firmware = await updater.get_update()
         if mode != UpdateMode.SKIP:
             links["deploymentBase"] = {
                 "href": str(
@@ -51,7 +51,7 @@ async def polling(
                         "deployment_base",
                         tenant=tenant,
                         dev_id=dev_id,
-                        action_id=1,
+                        action_id=firmware.id,
                     )
                 )
             }
@@ -83,9 +83,7 @@ async def deployment_base(
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),
 ):
-    firmware = await updater.get_firmware()
-    mode = await updater.get_update_mode()
-    await updater.save()
+    mode, firmware = await updater.get_update()
 
     return {
         "id": f"{action_id}",

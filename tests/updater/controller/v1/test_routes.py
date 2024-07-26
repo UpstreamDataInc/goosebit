@@ -62,13 +62,8 @@ async def test_rollout_and_download_info(async_client, test_data):
     deployment_base = data["_links"]["deploymentBase"]["href"]
     assert (
         deployment_base
-        == f"http://test/DEFAULT/controller/v1/{device.uuid}/deploymentBase/1"
+        == f"http://test/DEFAULT/controller/v1/{device.uuid}/deploymentBase/{firmware.id}"
     )
-    # TODO: activate this test once the action_id matches the firmware id
-    # assert (
-    #     deploymentBase
-    #     == f"http://test/DEFAULT/controller/v1/{device.uuid}/deploymentBase/{firmware.id}"
-    # )
 
     # retrieve firmware
     response = await async_client.get(deployment_base)
@@ -77,8 +72,7 @@ async def test_rollout_and_download_info(async_client, test_data):
     data = response.json()
     assert data["deployment"]["download"] == "forced"
     assert data["deployment"]["update"] == "forced"
-    assert data["id"] == str(1)
-    # assert data["id"] == str(firmware.id)
+    assert data["id"] == str(firmware.id)
     assert (
         data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]
         == f"http://test/api/download/{firmware.id}"
@@ -93,7 +87,7 @@ async def test_rollout_and_download_info(async_client, test_data):
 @pytest.mark.asyncio
 async def test_latest(async_client, test_data):
     device = test_data["device_latest"]
-    # firmware = test_data["firmware_latest"]
+    firmware = test_data["firmware_latest"]
 
     # poll
     response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
@@ -103,13 +97,8 @@ async def test_latest(async_client, test_data):
     deployment_base = data["_links"]["deploymentBase"]["href"]
     assert (
         deployment_base
-        == f"http://test/DEFAULT/controller/v1/{device.uuid}/deploymentBase/1"
+        == f"http://test/DEFAULT/controller/v1/{device.uuid}/deploymentBase/{firmware.id}"
     )
-    # TODO: activate this test once the action_id matches the firmware id
-    # assert (
-    #     deploymentBase
-    #     == f"http://test/DEFAULT/controller/v1/{device.uuid}/deploymentBase/{firmware.id}"
-    # )
 
 
 @pytest.mark.asyncio
