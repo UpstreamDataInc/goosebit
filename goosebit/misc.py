@@ -6,7 +6,7 @@ from typing import Optional
 
 import semver
 
-from goosebit.models import Device, Firmware, Hardware
+from goosebit.models import Device, Firmware, Hardware, UpdateModeEnum
 
 
 def sha1_hash_file(file_path: Path):
@@ -16,7 +16,7 @@ def sha1_hash_file(file_path: Path):
 
 
 async def get_newest_fw(hw_model: str, hw_revision: str) -> Optional[str]:
-    compatibility = await Hardware.get_or_none(
+    compatibility = await Hardware.get_or_create(
         hw_model=hw_model, hw_revision=hw_revision
     )
     firmware = await Firmware.filter(compatibility=compatibility).all()
@@ -39,7 +39,7 @@ async def get_device_by_uuid(dev_id: str) -> Device:
         return Device(
             uuid="unknown",
             name="Unknown",
-            fw_file="latest",
+            update_mode=UpdateModeEnum.LATEST,
             fw_version=None,
             last_state=None,
             last_log=None,

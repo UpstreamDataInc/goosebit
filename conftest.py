@@ -9,6 +9,7 @@ from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
 
 from goosebit import app
+from goosebit.models import UpdateModeEnum
 
 # Configure logging
 logging.basicConfig(level=logging.WARN)
@@ -64,16 +65,16 @@ async def test_data(db, monkeypatch):
 
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
-        device_none = await Device.create(
-            uuid="device1", last_state="registered", fw_file="none"
+        device_rollout = await Device.create(
+            uuid="device1", last_state="registered", update_mode=UpdateModeEnum.ROLLOUT
         )
 
         device_latest = await Device.create(
-            uuid="device2", last_state="registered", fw_file="latest"
+            uuid="device2", last_state="registered", update_mode=UpdateModeEnum.LATEST
         )
 
         device_pinned = await Device.create(
-            uuid="device3", last_state="registered", fw_file="pinned"
+            uuid="device3", last_state="registered", update_mode=UpdateModeEnum.PINNED
         )
 
         compatibility = await Hardware.create(hw_model="default", hw_revision="default")
@@ -110,7 +111,7 @@ async def test_data(db, monkeypatch):
         rollout_default = await Rollout.create(firmware_id=firmware_latest.id)
 
         yield dict(
-            device_none=device_none,
+            device_rollout=device_rollout,
             device_latest=device_latest,
             device_pinned=device_pinned,
             firmware_latest=firmware_latest,

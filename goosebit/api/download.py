@@ -3,7 +3,6 @@ from fastapi.requests import Request
 from fastapi.responses import FileResponse, RedirectResponse
 
 from goosebit.models import Firmware
-from goosebit.settings import UPDATES_DIR
 
 router = APIRouter(prefix="/download")
 

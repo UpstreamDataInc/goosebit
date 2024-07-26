@@ -10,7 +10,7 @@ from typing import Callable, Literal, Optional
 
 import semver
 
-from goosebit.models import Device, Firmware, Hardware, Rollout
+from goosebit.models import Device, Firmware, Hardware, Rollout, UpdateModeEnum
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING, UPDATES_DIR
 from goosebit.telemetry import devices_count
 
@@ -154,11 +154,15 @@ class DeviceUpdateManager(UpdateManager):
     async def get_rollout(self) -> Optional[Rollout]:
         device = await self.get_device()
 
-        if device.fw_file == "none":
+        if device.update_mode == UpdateModeEnum.ROLLOUT:
+            hardware = (
+                await Hardware.get_or_create(
+                    hw_model=device.hw_model, hw_revision=device.hw_revision
+                )
+            )[0]
             return (
                 await Rollout.filter(
-                    hw_model=device.hw_model,
-                    hw_revision=device.hw_revision,
+                    firmware__compatibility=hardware,
                     feed=device.feed,
                     flavor=device.flavor,
                 )
@@ -170,33 +174,32 @@ class DeviceUpdateManager(UpdateManager):
 
     async def get_firmware(self) -> Firmware | None:
         device = await self.get_device()
-        file = device.fw_file
 
-        if file == "none":
+        if device.update_mode == UpdateModeEnum.ROLLOUT:
             rollout = await self.get_rollout()
-            if rollout and not rollout.paused:
-                file = rollout.fw_file
-            else:
+            if not rollout or rollout.paused:
                 return None
-        if file == "latest":
-            return await Firmware.latest(device)
-        if file == "pinned":
-            return None
+            await rollout.fetch_related("firmware")
+            return rollout.firmware
 
-        compat = Hardware.get(hw_model=device.hw_model, hw_revision=device.hw_revision)
-        return await Firmware.get(
-            uri=UPDATES_DIR.joinpath(device.fw_file).absolute().as_uri(),
-            compatibility=compat,
-        )
+        if device.update_mode == UpdateModeEnum.ASSIGNED:
+            await device.fetch_related("assigned_firmware")
+            return device.assigned_firmware
+
+        if device.update_mode == UpdateModeEnum.LATEST:
+            return await Firmware.latest(device)
+
+        assert device.update_mode == UpdateModeEnum.PINNED
+        return None
 
     async def get_update_mode(self) -> UpdateMode:
         device = await self.get_device()
+        firmware = await self.get_firmware()
 
-        file = await self.get_firmware()
-        if file is None:
+        if firmware is None:
             self.poll_time = POLL_TIME
             return UpdateMode.SKIP
-        if file.version == device.fw_version and not self.force_update:
+        if firmware.version == device.fw_version and not self.force_update:
             mode = UpdateMode.SKIP
             self.poll_time = POLL_TIME
         elif device.last_state == "error" and not self.force_update:

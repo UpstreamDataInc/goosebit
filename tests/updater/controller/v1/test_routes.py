@@ -50,7 +50,7 @@ async def test_register_device(async_client, test_data):
 
 @pytest.mark.asyncio
 async def test_rollout_and_download_info(async_client, test_data):
-    device = test_data["device_none"]
+    device = test_data["device_rollout"]
     firmware = test_data["firmware_latest"]
 
     # poll
