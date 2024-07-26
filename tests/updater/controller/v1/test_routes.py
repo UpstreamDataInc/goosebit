@@ -50,7 +50,7 @@ async def test_register_device(async_client, test_data):
 
 
 @pytest.mark.asyncio
-async def test_rollout_and_download_info(async_client, test_data):
+async def test_rollout(async_client, test_data):
     device = test_data["device_rollout"]
     firmware = test_data["firmware_latest"]
 
@@ -82,6 +82,47 @@ async def test_rollout_and_download_info(async_client, test_data):
         == firmware.hash
     )
     assert data["deployment"]["chunks"][0]["artifacts"][0]["size"] == firmware.size
+
+    # confirm installation start (in reality: several of simular posts)
+    response = await async_client.post(
+        f"/DEFAULT/controller/v1/{device.uuid}/deploymentBase/{firmware.id}/feedback",
+        json={
+            "id": firmware.id,
+            "status": {
+                "result": {"finished": "none"},
+                "execution": "proceeding",
+                "details": ["Installing Update Chunk Artifacts."],
+            },
+        },
+    )
+    assert response.status_code == 200
+    await device.refresh_from_db()
+    assert device.last_state == "running"
+
+    # HEAD /api/download/1 HTTP/1.1 (reason not clear)
+    response = await async_client.head(f"/api/download/{firmware.id}")
+    assert response.status_code == 405
+
+    # GET /api/download/1 HTTP/1.1
+    response = await async_client.get(f"/api/download/{firmware.id}")
+    assert response.status_code == 401  # TODO
+
+    # report failure
+    response = await async_client.post(
+        f"/DEFAULT/controller/v1/{device.uuid}/deploymentBase/{firmware.id}/feedback",
+        json={
+            "id": firmware.id,
+            "status": {
+                "result": {"finished": "failure"},
+                "execution": "closed",
+                "details": ["No suitable .swu image found"],
+            },
+        },
+    )
+    assert response.status_code == 200
+
+    await device.refresh_from_db()
+    assert device.last_state == "error"
 
 
 @pytest.mark.asyncio
