@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     return data;
                 }
             },
-            { data: 'fw_file' },
+            { data: 'fw_version' },
             {
                 data: 'progress',
                 render: function(data, type, row) {

@@ -31,8 +31,8 @@ async def devices_get_all() -> list[dict]:
             "uuid": device.uuid,
             "name": device.name,
             "fw": device.fw_version,
-            "fw_file": (
-                device.assigned_firmware.uri
+            "fw_version": (
+                device.assigned_firmware.version
                 if device.assigned_firmware is not None
                 else None
             ),
