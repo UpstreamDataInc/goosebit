@@ -25,6 +25,26 @@ class UpdateModeEnum(IntEnum):
             return "Assigned"
 
 
+class UpdateStateEnum(IntEnum):
+    UNKNOWN = 1
+    REGISTERED = 2
+    RUNNING = 4
+    ERROR = 3
+    FINISHED = 4
+
+    def __str__(self):
+        if self == UpdateStateEnum.UNKNOWN:
+            return "Unknown"
+        elif self == UpdateStateEnum.REGISTERED:
+            return "Registered"
+        elif self == UpdateStateEnum.RUNNING:
+            return "Running"
+        elif self == UpdateStateEnum.ERROR:
+            return "Error"
+        elif self == UpdateStateEnum.FINISHED:
+            return "Finished"
+
+
 class Tag(Model):
     id = fields.IntField(primary_key=True)
     name = fields.CharField(max_length=255)
@@ -41,7 +61,7 @@ class Device(Model):
     feed = fields.CharField(max_length=255, default="default")
     flavor = fields.CharField(max_length=255, default="default")
     update_mode = fields.IntEnumField(UpdateModeEnum, default=UpdateModeEnum.ROLLOUT)
-    last_state = fields.CharField(max_length=255, null=True, default="unknown")
+    last_state = fields.IntEnumField(UpdateStateEnum, default=UpdateStateEnum.UNKNOWN)
     progress = fields.IntField(null=True)
     last_log = fields.TextField(null=True)
     last_seen = fields.BigIntField(null=True)

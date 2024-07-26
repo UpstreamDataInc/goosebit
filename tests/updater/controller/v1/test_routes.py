@@ -1,6 +1,6 @@
 import pytest
 
-from goosebit.models import Firmware, Hardware
+from goosebit.models import Firmware, Hardware, UpdateStateEnum
 from goosebit.updater.manager import get_update_manager
 
 UUID = "221326d9-7873-418e-960c-c074026a3b7c"
@@ -116,12 +116,12 @@ async def test_rollout_full(async_client, test_data):
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
     await device.refresh_from_db()
-    assert device.last_state == "running"
+    assert device.last_state == UpdateStateEnum.RUNNING
 
     # report finished installation
     await _feedback(async_client, device.uuid, firmware, "success", "closed")
     await device.refresh_from_db()
-    assert device.last_state == "finished"
+    assert device.last_state == UpdateStateEnum.FINISHED
 
     await rollout.refresh_from_db()
     assert rollout.success_count == 1
@@ -140,7 +140,7 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
     await device.refresh_from_db()
-    assert device.last_state == "running"
+    assert device.last_state == UpdateStateEnum.RUNNING
 
     # HEAD /api/download/1 HTTP/1.1 (reason not clear)
     response = await async_client.head(firmware_url)
@@ -153,7 +153,7 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
     # report failure
     await _feedback(async_client, device.uuid, firmware, "failure", "closed")
     await device.refresh_from_db()
-    assert device.last_state == "error"
+    assert device.last_state == UpdateStateEnum.ERROR
 
 
 @pytest.mark.asyncio

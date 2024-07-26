@@ -4,7 +4,7 @@ import logging
 from fastapi import APIRouter, Depends
 from fastapi.requests import Request
 
-from goosebit.models import Firmware
+from goosebit.models import Firmware, UpdateStateEnum
 from goosebit.settings import POLL_TIME_REGISTRATION
 from goosebit.updater.manager import HandlingType, UpdateManager, get_update_manager
 from goosebit.updates import generate_chunk
@@ -26,7 +26,7 @@ async def polling(
     sleep = updater.poll_time
     last_state = updater.device.last_state
 
-    if last_state == "unknown":
+    if last_state == UpdateStateEnum.UNKNOWN:
         # device registration
         sleep = POLL_TIME_REGISTRATION
         links["configData"] = {
@@ -40,7 +40,7 @@ async def polling(
         }
         logger.info(f"Skip: registration required, device={updater.device.uuid}")
 
-    elif last_state == "error" and not updater.force_update:
+    elif last_state == UpdateStateEnum.ERROR and not updater.force_update:
         logger.info(f"Skip: device in error state, device={updater.device.uuid}")
         pass
 
@@ -118,7 +118,7 @@ async def deployment_feedback(
         execution = data["status"]["execution"]
 
         if execution == "proceeding":
-            await updater.update_device_state("running")
+            await updater.update_device_state(UpdateStateEnum.RUNNING)
 
         elif execution == "closed":
             state = data["status"]["result"]["finished"]
@@ -131,7 +131,7 @@ async def deployment_feedback(
             # From hawkBit docu: DDI defines also a status NONE which will not be interpreted by the update server
             # and handled like SUCCESS.
             if state == "success" or state == "none":
-                await updater.update_device_state("finished")
+                await updater.update_device_state(UpdateStateEnum.FINISHED)
 
                 # not guaranteed to be the correct rollout - see next comment.
                 rollout = await updater.get_rollout()
@@ -150,7 +150,7 @@ async def deployment_feedback(
                 await updater.update_fw_version(reported_firmware.version)
 
             elif state == "failure":
-                await updater.update_device_state("error")
+                await updater.update_device_state(UpdateStateEnum.ERROR)
 
                 # not guaranteed to be the correct rollout - see comment above.
                 rollout = await updater.get_rollout()

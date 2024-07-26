@@ -41,7 +41,7 @@ async def devices_get_all() -> list[dict]:
             "feed": device.feed,
             "flavor": device.flavor,
             "progress": device.progress,
-            "state": device.last_state,
+            "state": str(device.last_state),
             "update_mode": str(device.update_mode),
             "force_update": manager.force_update,
             "last_ip": device.last_ip,

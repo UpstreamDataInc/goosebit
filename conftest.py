@@ -9,7 +9,7 @@ from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
 
 from goosebit import app
-from goosebit.models import UpdateModeEnum
+from goosebit.models import UpdateModeEnum, UpdateStateEnum
 from goosebit.updater.manager import reset_update_manager
 
 # Configure logging
@@ -63,21 +63,21 @@ async def test_data(db):
 
         device_rollout = await Device.create(
             uuid="device1",
-            last_state="registered",
+            last_state=UpdateStateEnum.REGISTERED,
             update_mode=UpdateModeEnum.ROLLOUT,
             hardware=compatibility,
         )
 
         device_latest = await Device.create(
             uuid="device2",
-            last_state="registered",
+            last_state=UpdateStateEnum.REGISTERED,
             update_mode=UpdateModeEnum.LATEST,
             hardware=compatibility,
         )
 
         device_pinned = await Device.create(
             uuid="device3",
-            last_state="registered",
+            last_state=UpdateStateEnum.REGISTERED,
             update_mode=UpdateModeEnum.PINNED,
             hardware=compatibility,
         )

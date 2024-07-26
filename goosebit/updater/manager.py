@@ -9,7 +9,14 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Callable, Optional, Tuple
 
-from goosebit.models import Device, Firmware, Hardware, Rollout, UpdateModeEnum
+from goosebit.models import (
+    Device,
+    Firmware,
+    Hardware,
+    Rollout,
+    UpdateModeEnum,
+    UpdateStateEnum,
+)
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
 from goosebit.telemetry import devices_count
 
@@ -44,7 +51,7 @@ class UpdateManager(ABC):
     async def update_hardware(self, hardware: Hardware) -> None:
         return
 
-    async def update_device_state(self, state: str) -> None:
+    async def update_device_state(self, state: UpdateStateEnum) -> None:
         return
 
     async def update_last_seen(self, last_seen: int) -> None:
@@ -64,8 +71,8 @@ class UpdateManager(ABC):
         await self.update_hardware(hardware)
 
         device = await self.get_device()
-        if device.last_state == "unknown":
-            await self.update_device_state("registered")
+        if device.last_state == UpdateStateEnum.UNKNOWN:
+            await self.update_device_state(UpdateStateEnum.REGISTERED)
         await self.save()
 
         self.config_data.update(kwargs)
@@ -139,7 +146,7 @@ class DeviceUpdateManager(UpdateManager):
         device = await self.get_device()
         device.hardware = hardware
 
-    async def update_device_state(self, state: str) -> None:
+    async def update_device_state(self, state: UpdateStateEnum) -> None:
         device = await self.get_device()
         device.last_state = state
 
@@ -200,7 +207,7 @@ class DeviceUpdateManager(UpdateManager):
             self.poll_time = POLL_TIME
             logger.info(f"Skip: device up-to-date, device={device.uuid}")
 
-        elif device.last_state == "error" and not self.force_update:
+        elif device.last_state == UpdateStateEnum.ERROR and not self.force_update:
             handling_type = HandlingType.SKIP
             self.poll_time = POLL_TIME
             logger.warning(f"Skip: device in error state, device={device.uuid}")
