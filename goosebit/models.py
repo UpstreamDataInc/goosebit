@@ -1,5 +1,6 @@
 import hashlib
 from pathlib import Path
+from typing import Self
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
@@ -66,8 +67,13 @@ class Firmware(Model):
     )
 
     @classmethod
-    async def latest(cls):
-        updates = await cls.all()
+    async def latest(cls, device: Device) -> Self | None:
+        compatibility = await Hardware.get_or_none(
+            hw_model=device.hw_model, hw_revision=device.hw_revision
+        )
+        if compatibility is None:
+            return None
+        updates = await cls.filter(compatibility=compatibility)
         return sorted(
             updates,
             key=lambda x: semver.Version.parse(x.version),

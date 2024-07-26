@@ -45,11 +45,7 @@ async def test_register_device(async_client, test_data):
     assert response.status_code == 200
     data = response.json()
     assert "config" in data
-    assert data["_links"] == {
-        "deploymentBase": {
-            "href": f"http://test/DEFAULT/controller/v1/{UUID}/deploymentBase/1"
-        }
-    }
+    assert data["_links"] == {}
 
 
 @pytest.mark.asyncio

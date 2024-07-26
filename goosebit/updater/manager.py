@@ -105,7 +105,7 @@ class UnknownUpdateManager(UpdateManager):
         self.poll_time = POLL_TIME_UPDATING
 
     async def get_firmware(self) -> Firmware:
-        return await Firmware.latest()
+        return await Firmware.latest(await self.get_device())
 
     async def get_update_mode(self) -> str:
         return UpdateMode.FORCED
@@ -179,7 +179,7 @@ class DeviceUpdateManager(UpdateManager):
             else:
                 return None
         if file == "latest":
-            return await Firmware.latest()
+            return await Firmware.latest(device)
         if file == "pinned":
             return None
 
