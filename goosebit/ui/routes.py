@@ -1,11 +1,10 @@
 import aiofiles
-from fastapi import APIRouter, Depends, Form, HTTPException, Security, UploadFile
+from fastapi import APIRouter, Depends, Form, Security, UploadFile
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 
 from goosebit.auth import authenticate_session, validate_user_permissions
-from goosebit.misc import validate_filename
 from goosebit.models import Firmware
 from goosebit.permissions import Permissions
 from goosebit.settings import UPDATES_DIR
@@ -49,9 +48,6 @@ async def upload_update_local(
     done: bool = Form(...),
     filename: str = Form(...),
 ):
-    if not validate_filename(filename):
-        raise HTTPException(400, detail="Could not parse file data, invalid filename.")
-
     file = UPDATES_DIR.joinpath(filename)
     update = await Firmware.get_or_none(uri=file.absolute().as_uri())
     if update is not None:
@@ -76,9 +72,6 @@ async def upload_update_local(
     ],
 )
 async def upload_update_remote(request: Request, url: str = Form(...)):
-    if not validate_filename(url):
-        raise HTTPException(400, detail="Could not parse file data, invalid filename.")
-
     update = await Firmware.get_or_none(uri=url)
     if update is not None:
         await update.delete()
