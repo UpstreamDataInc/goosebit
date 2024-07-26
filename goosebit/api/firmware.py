@@ -25,7 +25,7 @@ async def firmware_get_all() -> list[dict]:
     ):
         firmware.append(
             {
-                "uuid": update.id,
+                "id": update.id,
                 "name": update.path.name,
                 "size": update.size,
                 "hash": update.hash,

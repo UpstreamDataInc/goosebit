@@ -235,7 +235,7 @@ function updateFirmwareSelection() {
 
         data.forEach(item => {
             optionElem = document.createElement("option");
-            optionElem.value = item["name"];
+            optionElem.value = item["id"];
             optionElem.textContent = item["name"];
             selectElem.appendChild(optionElem);
         });
