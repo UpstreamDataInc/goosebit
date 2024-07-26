@@ -50,7 +50,7 @@ async def test_register_device(async_client, test_data):
 
 
 @pytest.mark.asyncio
-async def test_rollout(async_client, test_data):
+async def test_rollout_signalling_failure(async_client, test_data):
     device = test_data["device_rollout"]
     firmware = test_data["firmware_latest"]
 
@@ -105,7 +105,7 @@ async def test_rollout(async_client, test_data):
 
     # GET /api/download/1 HTTP/1.1
     response = await async_client.get(f"/api/download/{firmware.id}")
-    assert response.status_code == 401  # TODO
+    assert response.status_code == 200
 
     # report failure
     response = await async_client.post(
