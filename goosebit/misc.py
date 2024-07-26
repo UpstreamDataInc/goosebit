@@ -44,4 +44,10 @@ async def get_device_by_uuid(dev_id: str) -> Device:
             last_state=None,
             last_log=None,
         )
-    return (await Device.get_or_create(uuid=dev_id))[0]
+
+    hardware = (
+        await Hardware.get_or_create(hw_model="default", hw_revision="default")
+    )[0]
+    return (
+        await Device.get_or_create(uuid=self.dev_id, defaults={"hardware": hardware})
+    )[0]

@@ -59,19 +59,28 @@ async def test_data(db):
 
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
+        compatibility = await Hardware.create(hw_model="default", hw_revision="default")
+
         device_rollout = await Device.create(
-            uuid="device1", last_state="registered", update_mode=UpdateModeEnum.ROLLOUT
+            uuid="device1",
+            last_state="registered",
+            update_mode=UpdateModeEnum.ROLLOUT,
+            hardware=compatibility,
         )
 
         device_latest = await Device.create(
-            uuid="device2", last_state="registered", update_mode=UpdateModeEnum.LATEST
+            uuid="device2",
+            last_state="registered",
+            update_mode=UpdateModeEnum.LATEST,
+            hardware=compatibility,
         )
 
         device_pinned = await Device.create(
-            uuid="device3", last_state="registered", update_mode=UpdateModeEnum.PINNED
+            uuid="device3",
+            last_state="registered",
+            update_mode=UpdateModeEnum.PINNED,
+            hardware=compatibility,
         )
-
-        compatibility = await Hardware.create(hw_model="default", hw_revision="default")
 
         temp_file_path = os.path.join(temp_dir, "firmware")
         with open(temp_file_path, "w") as temp_file:

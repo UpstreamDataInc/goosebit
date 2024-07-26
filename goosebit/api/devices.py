@@ -21,7 +21,7 @@ router = APIRouter(prefix="/devices")
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
 )
 async def devices_get_all() -> list[dict]:
-    devices = await Device.all().prefetch_related("assigned_firmware")
+    devices = await Device.all().prefetch_related("assigned_firmware", "hardware")
 
     async def parse(device: Device) -> dict:
         manager = await get_update_manager(device.uuid)
@@ -37,8 +37,8 @@ async def devices_get_all() -> list[dict]:
                 if device.assigned_firmware is not None
                 else None
             ),
-            "hw_model": device.hw_model,
-            "hw_revision": device.hw_revision,
+            "hw_model": device.hardware.hw_model,
+            "hw_revision": device.hardware.hw_revision,
             "progress": device.progress,
             "state": device.last_state,
             "update_mode": str(device.update_mode),

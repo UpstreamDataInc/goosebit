@@ -1,5 +1,6 @@
 import pytest
 
+from goosebit.models import Hardware
 from goosebit.updater.manager import get_update_manager
 
 UUID = "221326d9-7873-418e-960c-c074026a3b7c"
@@ -115,7 +116,10 @@ async def test_latest(async_client, test_data):
 async def test_latest_with_no_firmware_available(async_client, test_data):
     device = test_data["device_latest"]
 
-    device.hw_model = "does-not-exist"
+    fake_hardware = await Hardware.create(
+        hw_model="does-not-exist", hw_revision="default"
+    )
+    device.hardware_id = fake_hardware.id
     await device.save()
 
     # poll

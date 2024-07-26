@@ -39,8 +39,7 @@ class Device(Model):
         "models.Firmware", related_name="assigned_devices", null=True
     )
     fw_version = fields.CharField(max_length=255, null=True)
-    hw_model = fields.CharField(max_length=255, null=True, default="default")
-    hw_revision = fields.CharField(max_length=255, null=True, default="default")
+    hardware = fields.ForeignKeyField("models.Hardware", related_name="devices")
     feed = fields.CharField(max_length=255, default="default")
     flavor = fields.CharField(max_length=255, default="default")
     update_mode = fields.IntEnumField(UpdateModeEnum, default=UpdateModeEnum.ROLLOUT)
@@ -87,12 +86,7 @@ class Firmware(Model):
 
     @classmethod
     async def latest(cls, device: Device) -> Self | None:
-        compatibility = (
-            await Hardware.get_or_create(
-                hw_model=device.hw_model, hw_revision=device.hw_revision
-            )
-        )[0]
-        updates = await cls.filter(compatibility=compatibility)
+        updates = await cls.filter(compatibility__devices__uuid=device.uuid)
         if len(updates) == 0:
             return None
         return sorted(

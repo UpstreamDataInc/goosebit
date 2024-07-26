@@ -39,10 +39,7 @@ class UpdateManager(ABC):
     async def update_fw_version(self, version: str) -> None:
         return
 
-    async def update_hw_model(self, hw_model: str) -> None:
-        return
-
-    async def update_hw_revision(self, hw_revision: str) -> None:
+    async def update_hardware(self, hardware: Hardware) -> None:
         return
 
     async def update_device_state(self, state: str) -> None:
@@ -58,8 +55,13 @@ class UpdateManager(ABC):
         return None
 
     async def update_config_data(self, **kwargs):
-        await self.update_hw_model(kwargs.get("hw_model") or "default")
-        await self.update_hw_revision(kwargs.get("hw_revision") or "default")
+        hw_model = kwargs.get("hw_model") or "default"
+        hw_revision = kwargs.get("hw_revision") or "default"
+        hardware = (
+            await Hardware.get_or_create(hw_model=hw_model, hw_revision=hw_revision)
+        )[0]
+
+        await self.update_hardware(hardware)
 
         device = await self.get_device()
         if device.last_state == "unknown":
@@ -116,9 +118,16 @@ class UnknownUpdateManager(UpdateManager):
 
 class DeviceUpdateManager(UpdateManager):
     async def get_device(self) -> Device:
-        if self.device:
-            return self.device
-        self.device = (await Device.get_or_create(uuid=self.dev_id))[0]
+        if not self.device:
+            hardware = (
+                await Hardware.get_or_create(hw_model="default", hw_revision="default")
+            )[0]
+            self.device = (
+                await Device.get_or_create(
+                    uuid=self.dev_id, defaults={"hardware": hardware}
+                )
+            )[0]
+
         return self.device
 
     async def save(self) -> None:
@@ -128,13 +137,9 @@ class DeviceUpdateManager(UpdateManager):
         device = await self.get_device()
         device.fw_version = version
 
-    async def update_hw_model(self, hw_model: str) -> None:
+    async def update_hardware(self, hardware: Hardware) -> None:
         device = await self.get_device()
-        device.hw_model = hw_model
-
-    async def update_hw_revision(self, hw_revision: str) -> None:
-        device = await self.get_device()
-        device.hw_revision = hw_revision
+        device.hardware_id = hardware.id
 
     async def update_device_state(self, state: str) -> None:
         device = await self.get_device()
@@ -155,17 +160,8 @@ class DeviceUpdateManager(UpdateManager):
         device = await self.get_device()
 
         if device.update_mode == UpdateModeEnum.ROLLOUT:
-            hardware = (
-                await Hardware.get_or_create(
-                    hw_model=device.hw_model, hw_revision=device.hw_revision
-                )
-            )[0]
             return (
-                await Rollout.filter(
-                    firmware__compatibility=hardware,
-                    feed=device.feed,
-                    flavor=device.flavor,
-                )
+                await Rollout.filter(firmware__compatibility__devices__uuid=device.uuid)
                 .order_by("-created_at")
                 .first()
             )
