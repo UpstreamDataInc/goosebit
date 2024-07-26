@@ -36,8 +36,8 @@ async def devices_get_all() -> list[dict]:
                 if device.assigned_firmware is not None
                 else None
             ),
-            "hw_model": device.hardware.hw_model,
-            "hw_revision": device.hardware.hw_revision,
+            "hw_model": device.hardware.model,
+            "hw_revision": device.hardware.revision,
             "progress": device.progress,
             "state": device.last_state,
             "update_mode": str(device.update_mode),

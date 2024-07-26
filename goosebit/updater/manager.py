@@ -54,11 +54,9 @@ class UpdateManager(ABC):
         return None
 
     async def update_config_data(self, **kwargs):
-        hw_model = kwargs.get("hw_model") or "default"
-        hw_revision = kwargs.get("hw_revision") or "default"
-        hardware = (
-            await Hardware.get_or_create(hw_model=hw_model, hw_revision=hw_revision)
-        )[0]
+        model = kwargs.get("hw_model") or "default"
+        revision = kwargs.get("hw_revision") or "default"
+        hardware = (await Hardware.get_or_create(model=model, revision=revision))[0]
 
         await self.update_hardware(hardware)
 
@@ -117,7 +115,7 @@ class DeviceUpdateManager(UpdateManager):
     async def get_device(self) -> Device:
         if not self.device:
             hardware = (
-                await Hardware.get_or_create(hw_model="default", hw_revision="default")
+                await Hardware.get_or_create(model="default", revision="default")
             )[0]
             self.device = (
                 await Device.get_or_create(
@@ -136,7 +134,7 @@ class DeviceUpdateManager(UpdateManager):
 
     async def update_hardware(self, hardware: Hardware) -> None:
         device = await self.get_device()
-        device.hardware_id = hardware.id
+        device.hardware = hardware
 
     async def update_device_state(self, state: str) -> None:
         device = await self.get_device()

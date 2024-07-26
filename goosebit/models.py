@@ -66,8 +66,8 @@ class Rollout(Model):
 
 class Hardware(Model):
     id = fields.IntField(primary_key=True)
-    hw_model = fields.CharField(max_length=255)
-    hw_revision = fields.CharField(max_length=255)
+    model = fields.CharField(max_length=255)
+    revision = fields.CharField(max_length=255)
 
 
 class Firmware(Model):

@@ -146,9 +146,7 @@ async def test_latest(async_client, test_data):
 async def test_latest_with_no_firmware_available(async_client, test_data):
     device = test_data["device_latest"]
 
-    fake_hardware = await Hardware.create(
-        hw_model="does-not-exist", hw_revision="default"
-    )
+    fake_hardware = await Hardware.create(model="does-not-exist", revision="default")
     device.hardware_id = fake_hardware.id
     await device.save()
 

@@ -59,7 +59,7 @@ async def test_data(db):
 
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
-        compatibility = await Hardware.create(hw_model="default", hw_revision="default")
+        compatibility = await Hardware.create(model="default", revision="default")
 
         device_rollout = await Device.create(
             uuid="device1",
