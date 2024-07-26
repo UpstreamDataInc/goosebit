@@ -3,16 +3,15 @@ import os
 import tempfile
 from pathlib import Path
 
-import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
 
 from goosebit import app
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARN)
 
 TORTOISE_CONF = {
     "connections": {"default": "sqlite://:memory:"},
@@ -38,7 +37,9 @@ async def test_app():
 
 @pytest_asyncio.fixture(scope="module")
 async def async_client(test_app):
-    async with AsyncClient(app=test_app, base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=test_app), base_url="http://test"
+    ) as client:
         yield client
 
 
@@ -56,8 +57,8 @@ async def test_data(db, monkeypatch):
     # Initialize the data
     from goosebit.models import (  # Import your models here
         Device,
-        FirmwareCompatibility,
-        FirmwareUpdate,
+        Firmware,
+        Hardware,
         Rollout,
     )
 
@@ -75,39 +76,34 @@ async def test_data(db, monkeypatch):
             uuid="device3", last_state="registered", fw_file="pinned"
         )
 
-        compatibility = await FirmwareCompatibility.create(
-            hw_model="default", hw_revision="default"
-        )
+        compatibility = await Hardware.create(hw_model="default", hw_revision="default")
 
         temp_file_path = os.path.join(temp_dir, "firmware")
         with open(temp_file_path, "w") as temp_file:
             temp_file.write("Fake SWUpdate image")
         uri = Path(temp_file_path).as_uri()
 
-        firmware_beta = await FirmwareUpdate.create(
+        firmware_beta = await Firmware.create(
             version="1.0.0-beta2+build20",
             hash="dummy2",
             size=800,
             uri=uri,
-            compatibility_id=compatibility.id,
         )
         await firmware_beta.compatibility.add(compatibility)
 
-        firmware_latest = await FirmwareUpdate.create(
+        firmware_latest = await Firmware.create(
             version="1.0.0",
             hash="dummy",
             size=1200,
             uri=uri,
-            compatibility_id=compatibility.id,
         )
         await firmware_latest.compatibility.add(compatibility)
 
-        firmware_rc = await FirmwareUpdate.create(
+        firmware_rc = await Firmware.create(
             version="1.0.0-rc2+build77",
             hash="dummy2",
             size=800,
             uri=uri,
-            compatibility_id=compatibility.id,
         )
         await firmware_rc.compatibility.add(compatibility)
 

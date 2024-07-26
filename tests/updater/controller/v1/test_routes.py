@@ -1,5 +1,7 @@
 import pytest
 
+from goosebit.updater.manager import get_update_manager
+
 UUID = "221326d9-7873-418e-960c-c074026a3b7c"
 
 
@@ -12,12 +14,12 @@ async def test_register_device(async_client, test_data):
     data = response.json()
     assert "config" in data
     assert "_links" in data
-    configUrl = data["_links"]["configData"]["href"]
-    assert configUrl == f"http://test/DEFAULT/controller/v1/{UUID}/configData"
+    config_url = data["_links"]["configData"]["href"]
+    assert config_url == f"http://test/DEFAULT/controller/v1/{UUID}/configData"
 
     # register device
     response = await async_client.put(
-        configUrl,
+        config_url,
         json={
             "id": "",
             "status": {
@@ -43,7 +45,11 @@ async def test_register_device(async_client, test_data):
     assert response.status_code == 200
     data = response.json()
     assert "config" in data
-    assert data["_links"] == {}
+    assert data["_links"] == {
+        "deploymentBase": {
+            "href": f"http://test/DEFAULT/controller/v1/{UUID}/deploymentBase/1"
+        }
+    }
 
 
 @pytest.mark.asyncio
@@ -56,9 +62,9 @@ async def test_rollout_and_download_info(async_client, test_data):
 
     assert response.status_code == 200
     data = response.json()
-    deploymentBase = data["_links"]["deploymentBase"]["href"]
+    deployment_base = data["_links"]["deploymentBase"]["href"]
     assert (
-        deploymentBase
+        deployment_base
         == f"http://test/DEFAULT/controller/v1/{device.uuid}/deploymentBase/1"
     )
     # TODO: activate this test once the action_id matches the firmware id
@@ -68,7 +74,7 @@ async def test_rollout_and_download_info(async_client, test_data):
     # )
 
     # retrieve firmware
-    response = await async_client.get(deploymentBase)
+    response = await async_client.get(deployment_base)
 
     # assert response.status_code == 200
     data = response.json()
@@ -78,7 +84,7 @@ async def test_rollout_and_download_info(async_client, test_data):
     # assert data["id"] == str(firmware.id)
     assert (
         data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]
-        == f"http://test/api/download/by_id/{firmware.id}"
+        == f"http://test/api/download/{firmware.id}"
     )
     assert (
         data["deployment"]["chunks"][0]["artifacts"][0]["hashes"]["sha1"]
@@ -97,9 +103,9 @@ async def test_latest(async_client, test_data):
 
     assert response.status_code == 200
     data = response.json()
-    deploymentBase = data["_links"]["deploymentBase"]["href"]
+    deployment_base = data["_links"]["deploymentBase"]["href"]
     assert (
-        deploymentBase
+        deployment_base
         == f"http://test/DEFAULT/controller/v1/{device.uuid}/deploymentBase/1"
     )
     # TODO: activate this test once the action_id matches the firmware id
@@ -125,8 +131,8 @@ async def test_pinned(async_client, test_data):
 async def test_up_to_date(async_client, test_data):
     device = test_data["device_latest"]
     firmware = test_data["firmware_latest"]
-    device.fw_version = firmware.version
-    await device.save()
+    manager = await get_update_manager(dev_id=device.uuid)
+    await manager.update_fw_version(firmware.version)
 
     # poll
     response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")

@@ -41,7 +41,7 @@ class Rollout(Model):
     hw_revision = fields.CharField(max_length=255, default="default")
     feed = fields.CharField(max_length=255, default="default")
     flavor = fields.CharField(max_length=255, default="default")
-    fw_file = fields.CharField(max_length=255)
+    fw_file = fields.CharField(max_length=255, default="latest")
     paused = fields.BooleanField(default=False)
     success_count = fields.IntField(default=0)
     failure_count = fields.IntField(default=0)

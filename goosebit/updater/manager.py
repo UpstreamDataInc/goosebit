@@ -8,6 +8,8 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Callable, Literal, Optional
 
+import semver
+
 from goosebit.models import Device, Firmware, Hardware, Rollout
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING, UPDATES_DIR
 from goosebit.telemetry import devices_count
