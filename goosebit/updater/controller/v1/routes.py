@@ -109,7 +109,10 @@ async def deployment_feedback(
 ):
     try:
         data = await request.json()
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        logging.warning(
+            f"Parsing deployment feedback failed, error={e}, dewvice={dev_id}"
+        )
         return
     try:
         execution = data["status"]["execution"]
@@ -137,8 +140,9 @@ async def deployment_feedback(
                         rollout.success_count += 1
                         await rollout.save()
                     else:
-                        # TODO: log issue
-                        pass
+                        logging.warning(
+                            f"Updating rollout success stats failed, firmware={reported_firmware.id}, device={dev_id}"
+                        )
 
                 # setting the currently installed version based on the current assigned firmware / existing rollouts
                 # is problematic. Better to assign custom action_id for each update (rollout id? firmware id? new id?).
@@ -155,18 +159,20 @@ async def deployment_feedback(
                         rollout.failure_count += 1
                         await rollout.save()
                     else:
-                        # TODO: log issue
-                        pass
+                        logging.warning(
+                            f"Updating rollout failure stats failed, firmware={reported_firmware.id}, device={dev_id}"
+                        )
 
-    except KeyError:
-        # TODO: log issue
-        pass
+    except KeyError as e:
+        logging.warning(
+            f"Processing deployment feedback failed, error={e}, device={dev_id}"
+        )
 
     try:
         log = data["status"]["details"]
         await updater.update_log("\n".join(log))
     except KeyError:
-        pass
+        logging.warning(f"No details to update update log, device={dev_id}")
 
     await updater.save()
     return {"id": str(action_id)}

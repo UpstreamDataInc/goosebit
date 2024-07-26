@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from pathlib import Path
 
 import aiofiles
@@ -7,6 +8,8 @@ import libconf
 import semver
 
 from goosebit.settings import UPDATES_DIR
+
+logger = logging.getLogger(__name__)
 
 
 async def parse_file(file: Path):
@@ -36,7 +39,8 @@ async def parse_file(file: Path):
             {"hw_model": comp.split(".")[0], "hw_revision": comp.split(".")[1]}
             for comp in swdesc["software"]["hardware-compatibility"]
         ]
-    except KeyError:
+    except KeyError as e:
+        logging.warning(f"Parsing firmware failed, error={e}, file={file.name}")
         return
     return swdesc_attrs
 

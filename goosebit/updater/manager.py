@@ -266,8 +266,8 @@ async def delete_device(dev_id: str) -> None:
         updater = get_update_manager_sync(dev_id)
         await (await updater.get_device()).delete()
         del device_managers[dev_id]
-    except KeyError:
-        pass
+    except KeyError as e:
+        logging.warning(f"Deleting device failed, error={e}, device={dev_id}")
 
 
 def reset_update_manager():
