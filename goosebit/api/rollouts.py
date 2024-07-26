@@ -16,8 +16,6 @@ router = APIRouter(prefix="/rollouts")
     ],
 )
 async def rollouts_get_all() -> list[dict]:
-    rollouts = await Rollout.all()
-
     def parse(rollout: Rollout) -> dict:
         return {
             "id": rollout.id,
@@ -31,4 +29,5 @@ async def rollouts_get_all() -> list[dict]:
             "failure_count": rollout.failure_count,
         }
 
-    return [parse(r) for r in rollouts]
+    rollouts = await Rollout.all().prefetch_related("firmware")
+    return list([parse(r) for r in rollouts])
