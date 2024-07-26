@@ -3,6 +3,7 @@ import json
 from fastapi import APIRouter, Depends
 from fastapi.requests import Request
 
+from goosebit.models import Firmware
 from goosebit.settings import POLL_TIME_REGISTRATION
 from goosebit.updater.manager import HandlingType, UpdateManager, get_update_manager
 from goosebit.updates import generate_chunk
@@ -119,6 +120,8 @@ async def deployment_feedback(
             updater.force_update = False
             updater.update_complete = True
 
+            reported_firmware = await Firmware.get_or_none(id=data["id"])
+
             # From hawkBit docu: DDI defines also a status NONE which will not be interpreted by the update server
             # and handled like SUCCESS.
             if state == "success" or state == "none":
@@ -127,17 +130,17 @@ async def deployment_feedback(
                 # not guaranteed to be the correct rollout - see next comment.
                 rollout = await updater.get_rollout()
                 if rollout:
-                    file = rollout.fw_file
-                    rollout.success_count += 1
-                    await rollout.save()
-                else:
-                    device = await updater.get_device()
-                    file = device.fw_file
+                    if rollout.firmware == reported_firmware:
+                        rollout.success_count += 1
+                        await rollout.save()
+                    else:
+                        # TODO: log issue
+                        pass
 
                 # setting the currently installed version based on the current assigned firmware / existing rollouts
                 # is problematic. Better to assign custom action_id for each update (rollout id? firmware id? new id?).
                 # Alternatively - but requires customization on the gateway side - use version reported by the gateway.
-                await updater.update_fw_version(file)
+                await updater.update_fw_version(reported_firmware.version)
 
             elif state == "failure":
                 await updater.update_device_state("error")
@@ -145,10 +148,15 @@ async def deployment_feedback(
                 # not guaranteed to be the correct rollout - see comment above.
                 rollout = await updater.get_rollout()
                 if rollout:
-                    rollout.failure_count += 1
-                    await rollout.save()
+                    if rollout.firmware == reported_firmware:
+                        rollout.failure_count += 1
+                        await rollout.save()
+                    else:
+                        # TODO: log issue
+                        pass
 
     except KeyError:
+        # TODO: log issue
         pass
 
     try:

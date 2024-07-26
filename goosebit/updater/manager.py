@@ -159,6 +159,7 @@ class DeviceUpdateManager(UpdateManager):
                 await Rollout.filter(firmware__compatibility__devices__uuid=device.uuid)
                 .order_by("-created_at")
                 .first()
+                .prefetch_related("firmware")
             )
 
         return None

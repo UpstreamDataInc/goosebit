@@ -104,7 +104,32 @@ async def test_register_device(async_client, test_data):
 
 
 @pytest.mark.asyncio
-async def test_rollout_signalling_failure(async_client, test_data):
+async def test_rollout_full(async_client, test_data):
+    device = test_data["device_rollout"]
+    firmware = test_data["firmware_latest"]
+    rollout = test_data["rollout_default"]
+
+    deployment_base = await _poll(async_client, device.uuid, firmware)
+
+    await _retrieve_firmware_url(async_client, deployment_base, firmware)
+
+    # confirm installation start (in reality: several of similar posts)
+    await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
+    await device.refresh_from_db()
+    assert device.last_state == "running"
+
+    # report finished installation
+    await _feedback(async_client, device.uuid, firmware, "success", "closed")
+    await device.refresh_from_db()
+    assert device.last_state == "finished"
+
+    await rollout.refresh_from_db()
+    assert rollout.success_count == 1
+    assert rollout.failure_count == 0
+
+
+@pytest.mark.asyncio
+async def test_rollout_signalling_download_failure(async_client, test_data):
     device = test_data["device_rollout"]
     firmware = test_data["firmware_latest"]
 
