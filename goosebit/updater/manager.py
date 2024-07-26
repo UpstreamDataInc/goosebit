@@ -267,3 +267,8 @@ async def delete_device(dev_id: str) -> None:
         del device_managers[dev_id]
     except KeyError:
         pass
+
+
+def reset_update_manager():
+    global device_managers
+    device_managers = {"unknown": UnknownUpdateManager("unknown")}
