@@ -30,9 +30,6 @@ async def test_app():
     async with RegisterTortoise(
         app=app,
         config=TORTOISE_CONF,
-        generate_schemas=True,
-        add_exception_handlers=True,
-        _create_db=True,
     ):
         yield app
 
@@ -57,14 +54,8 @@ async def db():
 
 
 @pytest_asyncio.fixture(scope="function")
-async def test_data(db, monkeypatch):
-    # Initialize the data
-    from goosebit.models import (  # Import your models here
-        Device,
-        Firmware,
-        Hardware,
-        Rollout,
-    )
+async def test_data(db):
+    from goosebit.models import Device, Firmware, Hardware, Rollout
 
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
