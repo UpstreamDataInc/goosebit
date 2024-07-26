@@ -68,7 +68,7 @@ async def test_rollout_and_download_info(async_client, test_data):
     # retrieve firmware
     response = await async_client.get(deployment_base)
 
-    # assert response.status_code == 200
+    assert response.status_code == 200
     data = response.json()
     assert data["deployment"]["download"] == "forced"
     assert data["deployment"]["update"] == "forced"
