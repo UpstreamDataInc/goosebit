@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from fastapi.requests import Request
 
 from goosebit.settings import POLL_TIME_REGISTRATION
-from goosebit.updater.manager import UpdateManager, UpdateMode, get_update_manager
+from goosebit.updater.manager import HandlingType, UpdateManager, get_update_manager
 from goosebit.updates import generate_chunk
 
 # v1 is hardware revision
@@ -43,8 +43,8 @@ async def polling(
     else:
         # provide update if available. Note: this is also required while in state "running", otherwise swupdate
         # won't confirm a successful testing (might be a bug/problem in swupdate)
-        mode, firmware = await updater.get_update()
-        if mode != UpdateMode.SKIP:
+        handling_type, firmware = await updater.get_update()
+        if handling_type != HandlingType.SKIP:
             links["deploymentBase"] = {
                 "href": str(
                     request.url_for(
@@ -83,13 +83,13 @@ async def deployment_base(
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),
 ):
-    mode, firmware = await updater.get_update()
+    handling_type, firmware = await updater.get_update()
 
     return {
         "id": f"{action_id}",
         "deployment": {
-            "download": str(mode),
-            "update": str(mode),
+            "download": str(handling_type),
+            "update": str(handling_type),
             "chunks": generate_chunk(request, firmware),
         },
     }

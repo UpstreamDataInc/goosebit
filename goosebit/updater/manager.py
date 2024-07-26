@@ -13,8 +13,9 @@ from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
 from goosebit.telemetry import devices_count
 
 
-class UpdateMode(StrEnum):
+class HandlingType(StrEnum):
     SKIP = "skip"
+    ATTEMPT = "attempt"
     FORCED = "forced"
 
 
@@ -90,7 +91,7 @@ class UpdateManager(ABC):
             await cb(log_data)
 
     @abstractmethod
-    async def get_update(self) -> Tuple[UpdateMode, Firmware]: ...
+    async def get_update(self) -> Tuple[HandlingType, Firmware]: ...
 
     @abstractmethod
     async def update_log(self, log_data: str) -> None: ...
@@ -104,9 +105,9 @@ class UnknownUpdateManager(UpdateManager):
     async def _get_firmware(self) -> Firmware:
         return await Firmware.latest(await self.get_device())
 
-    async def get_update(self) -> Tuple[UpdateMode, Firmware]:
+    async def get_update(self) -> Tuple[HandlingType, Firmware]:
         firmware = await self._get_firmware()
-        return UpdateMode.FORCED, firmware
+        return HandlingType.FORCED, firmware
 
     async def update_log(self, log_data: str) -> None:
         return
@@ -184,28 +185,28 @@ class DeviceUpdateManager(UpdateManager):
         assert device.update_mode == UpdateModeEnum.PINNED
         return None
 
-    async def get_update(self) -> Tuple[UpdateMode, Firmware]:
+    async def get_update(self) -> Tuple[HandlingType, Firmware]:
         device = await self.get_device()
         firmware = await self._get_firmware()
 
         if firmware is None:
-            mode = UpdateMode.SKIP
+            handling_type = HandlingType.SKIP
             self.poll_time = POLL_TIME
         elif firmware.version == device.fw_version and not self.force_update:
-            mode = UpdateMode.SKIP
+            handling_type = HandlingType.SKIP
             self.poll_time = POLL_TIME
         elif device.last_state == "error" and not self.force_update:
-            mode = UpdateMode.SKIP
+            handling_type = HandlingType.SKIP
             self.poll_time = POLL_TIME
         else:
-            mode = UpdateMode.FORCED
+            handling_type = HandlingType.FORCED
             self.poll_time = POLL_TIME_UPDATING
 
             if self.update_complete:
                 self.update_complete = False
                 await self.clear_log()
 
-        return mode, firmware
+        return handling_type, firmware
 
     async def update_log(self, log_data: str) -> None:
         if log_data is None:
