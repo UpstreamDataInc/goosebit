@@ -5,7 +5,7 @@ from fastapi.requests import Request
 
 from goosebit.settings import TENANT
 
-from . import controller, download
+from . import controller
 from .manager import get_update_manager_sync
 
 
@@ -29,4 +29,3 @@ router = APIRouter(
     tags=["ddi"],
 )
 router.include_router(controller.router)
-router.include_router(download.router)

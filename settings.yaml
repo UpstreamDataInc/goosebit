@@ -3,16 +3,9 @@ poll_time_default: 00:01:00
 poll_time_registration: 00:00:10
 poll_time_updating: 00:00:05
 tenant: DEFAULT
-
-#  Allowed formats:
-#  - `datetime`: Update file should end with `YYYYMMDD-HHmmSS`
-#  - `semantic`: Update file should end with a semantic version (https://semver.org/)
-version_format: datetime
-
 metrics:
   prometheus:
     port: 9090
-
 users:
 - email: admin@goosebit.local
   password: admin

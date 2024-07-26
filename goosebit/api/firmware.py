@@ -1,11 +1,10 @@
+import semver
 from fastapi import APIRouter, Body, Security
 from fastapi.requests import Request
 
 from goosebit.auth import validate_user_permissions
+from goosebit.models import Firmware
 from goosebit.permissions import Permissions
-from goosebit.settings import UPDATES_DIR
-from goosebit.updater.misc import fw_sort_key
-from goosebit.updates.artifacts import FirmwareArtifact
 
 router = APIRouter(prefix="/firmware")
 
@@ -17,23 +16,23 @@ router = APIRouter(prefix="/firmware")
     ],
 )
 async def firmware_get_all() -> list[dict]:
-    UPDATES_DIR.mkdir(parents=True, exist_ok=True)
-
+    updates = await Firmware.all()
     firmware = []
-    for file in sorted(
-        [f for f in UPDATES_DIR.iterdir() if f.suffix == ".swu"],
-        key=lambda x: fw_sort_key(x),
+    for update in sorted(
+        updates,
+        key=lambda x: semver.Version.parse(x.version),
         reverse=True,
     ):
-        artifact = FirmwareArtifact(file.name)
         firmware.append(
             {
-                "name": file.name,
-                "size": artifact.path.stat().st_size,
-                "version": artifact.version,
+                "uuid": update.id,
+                "name": update.path.name,
+                "size": update.size,
+                "hash": update.hash,
+                "version": update.version,
+                "compatibility": list(await update.compatibility.all().values()),
             }
         )
-
     return firmware
 
 
@@ -43,9 +42,16 @@ async def firmware_get_all() -> list[dict]:
         Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.DELETE])
     ],
 )
-async def firmware_delete(request: Request, file: str = Body()) -> dict:
-    file_path = UPDATES_DIR.joinpath(file)
-    if file_path.exists():
-        file_path.unlink()
-        return {"success": True}
-    return {"success": False}
+async def firmware_delete(request: Request, files: list[str] = Body()) -> dict:
+    success = False
+    for f_id in files:
+        update = await Firmware.get_or_none(id=f_id)
+        if update is None:
+            continue
+        if update.local:
+            path = update.path
+            if path.exists():
+                path.unlink()
+        await update.delete()
+        success = True
+    return {"success": success}

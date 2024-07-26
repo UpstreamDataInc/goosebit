@@ -1,6 +1,7 @@
 from aerich import Command
 from tortoise import Tortoise, run_async
 
+from goosebit.models import Firmware
 from goosebit.settings import DB_MIGRATIONS_LOC, DB_URI
 
 TORTOISE_CONF = {
@@ -22,6 +23,10 @@ async def init():
     await command.migrate()
     await command.upgrade(run_in_transaction=True)
     await Tortoise.generate_schemas(safe=True)
+    for update in await Firmware.all():
+        if update.local and not update.path.exists():
+            # delete it
+            await update.delete()
 
 
 async def close():

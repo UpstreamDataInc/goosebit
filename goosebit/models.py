@@ -1,3 +1,11 @@
+import hashlib
+from pathlib import Path
+from typing import Self
+from urllib.parse import unquote, urlparse
+from urllib.request import url2pathname
+
+import semver
+from fastapi.requests import Request
 from tortoise import Model, fields
 
 
@@ -34,7 +42,48 @@ class Rollout(Model):
     hw_revision = fields.CharField(max_length=255, default="default")
     feed = fields.CharField(max_length=255, default="default")
     flavor = fields.CharField(max_length=255, default="default")
-    fw_file = fields.CharField(max_length=255)
+    fw_file = fields.CharField(max_length=255, default="latest")
     paused = fields.BooleanField(default=False)
     success_count = fields.IntField(default=0)
     failure_count = fields.IntField(default=0)
+
+
+class Hardware(Model):
+    id = fields.IntField(primary_key=True)
+    hw_model = fields.CharField(max_length=255)
+    hw_revision = fields.CharField(max_length=255)
+
+
+class Firmware(Model):
+    id = fields.IntField(primary_key=True)
+    uri = fields.CharField(max_length=255)
+    size = fields.BigIntField()
+    hash = fields.CharField(max_length=255)
+    version = fields.CharField(max_length=255)
+    compatibility = fields.ManyToManyField(
+        "models.Hardware",
+        related_name="updates",
+        through="update_compatibility",
+    )
+
+    @classmethod
+    async def latest(cls, device: Device) -> Self | None:
+        compatibility = await Hardware.get_or_none(
+            hw_model=device.hw_model, hw_revision=device.hw_revision
+        )
+        if compatibility is None:
+            return None
+        updates = await cls.filter(compatibility=compatibility)
+        return sorted(
+            updates,
+            key=lambda x: semver.Version.parse(x.version),
+            reverse=True,
+        )[0]
+
+    @property
+    def path(self):
+        return Path(url2pathname(unquote(urlparse(self.uri).path)))
+
+    @property
+    def local(self):
+        return urlparse(self.uri).scheme == "file"
