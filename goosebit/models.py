@@ -1,4 +1,3 @@
-import hashlib
 from enum import IntEnum
 from pathlib import Path
 from typing import Self
@@ -6,7 +5,6 @@ from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
 import semver
-from fastapi.requests import Request
 from tortoise import Model, fields
 
 

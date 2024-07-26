@@ -23,3 +23,8 @@ repos:
         types: [ python ]
         pass_filenames: false
         always_run: true
+-   repo: https://github.com/pycqa/flake8
+    rev: 7.1.0  # You can specify the version of Flake8 you want to use
+    hooks:
+      - id: flake8
+        additional_dependencies: []

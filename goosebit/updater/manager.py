@@ -6,12 +6,10 @@ from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from datetime import datetime
 from enum import StrEnum
-from typing import Callable, Literal, Optional, Tuple
-
-import semver
+from typing import Callable, Optional, Tuple
 
 from goosebit.models import Device, Firmware, Hardware, Rollout, UpdateModeEnum
-from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING, UPDATES_DIR
+from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
 from goosebit.telemetry import devices_count
 
 

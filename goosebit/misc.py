@@ -6,7 +6,7 @@ from typing import Optional
 
 import semver
 
-from goosebit.models import Device, Firmware, Hardware, UpdateModeEnum
+from goosebit.models import Firmware, Hardware
 
 
 def sha1_hash_file(file_path: Path):

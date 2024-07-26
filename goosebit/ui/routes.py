@@ -42,7 +42,7 @@ async def firmware_ui(request: Request):
         Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])
     ],
 )
-async def upload_update(
+async def upload_update_local(
     request: Request,
     chunk: UploadFile = Form(...),
     init: bool = Form(...),
@@ -75,7 +75,7 @@ async def upload_update(
         Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])
     ],
 )
-async def upload_update(request: Request, url: str = Form(...)):
+async def upload_update_remote(request: Request, url: str = Form(...)):
     if not validate_filename(url):
         raise HTTPException(400, detail="Could not parse file data, invalid filename.")
 
