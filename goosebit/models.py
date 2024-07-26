@@ -87,12 +87,14 @@ class Firmware(Model):
 
     @classmethod
     async def latest(cls, device: Device) -> Self | None:
-        compatibility = await Hardware.get_or_none(
-            hw_model=device.hw_model, hw_revision=device.hw_revision
-        )
-        if compatibility is None:
-            return None
+        compatibility = (
+            await Hardware.get_or_create(
+                hw_model=device.hw_model, hw_revision=device.hw_revision
+            )
+        )[0]
         updates = await cls.filter(compatibility=compatibility)
+        if len(updates) == 0:
+            return None
         return sorted(
             updates,
             key=lambda x: semver.Version.parse(x.version),

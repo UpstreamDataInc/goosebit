@@ -112,6 +112,21 @@ async def test_latest(async_client, test_data):
 
 
 @pytest.mark.asyncio
+async def test_latest_with_no_firmware_available(async_client, test_data):
+    device = test_data["device_latest"]
+
+    device.hw_model = "does-not-exist"
+    await device.save()
+
+    # poll
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["_links"] == {}
+
+
+@pytest.mark.asyncio
 async def test_pinned(async_client, test_data):
     device = test_data["device_pinned"]
 
