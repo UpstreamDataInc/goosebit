@@ -1,23 +1,23 @@
 import pytest
 
-from goosebit.models import Hardware
+from goosebit.models import Firmware, Hardware
 from goosebit.updater.manager import get_update_manager
 
 UUID = "221326d9-7873-418e-960c-c074026a3b7c"
 
 
-@pytest.mark.asyncio
-async def test_register_device(async_client, test_data):
-    # first poll
+async def _poll_first_time(async_client):
     response = await async_client.get(f"/DEFAULT/controller/v1/{UUID}")
-
     assert response.status_code == 200
     data = response.json()
     assert "config" in data
     assert "_links" in data
     config_url = data["_links"]["configData"]["href"]
     assert config_url == f"http://test/DEFAULT/controller/v1/{UUID}/configData"
+    return config_url
 
+
+async def _register(async_client, config_url):
     # register device
     response = await async_client.put(
         config_url,
@@ -34,40 +34,33 @@ async def test_register_device(async_client, test_data):
             },
         },
     )
-
     assert response.status_code == 200
     data = response.json()
     assert data["success"]
     assert data["message"] == "Updated swupdate data."
 
-    # second poll
-    response = await async_client.get(f"/DEFAULT/controller/v1/{UUID}")
+
+async def _poll(
+    async_client, device_uuid, firmware: Firmware | None, expect_update=True
+):
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device_uuid}")
 
     assert response.status_code == 200
     data = response.json()
-    assert "config" in data
-    assert data["_links"] == {}
+    if expect_update:
+        deployment_base = data["_links"]["deploymentBase"]["href"]
+        assert (
+            deployment_base
+            == f"http://test/DEFAULT/controller/v1/{device_uuid}/deploymentBase/{firmware.id}"
+        )
+        return deployment_base
+    else:
+        assert data["_links"] == {}
+        return None
 
 
-@pytest.mark.asyncio
-async def test_rollout_signalling_failure(async_client, test_data):
-    device = test_data["device_rollout"]
-    firmware = test_data["firmware_latest"]
-
-    # poll
-    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
-
-    assert response.status_code == 200
-    data = response.json()
-    deployment_base = data["_links"]["deploymentBase"]["href"]
-    assert (
-        deployment_base
-        == f"http://test/DEFAULT/controller/v1/{device.uuid}/deploymentBase/{firmware.id}"
-    )
-
-    # retrieve firmware
+async def _retrieve_firmware_url(async_client, deployment_base, firmware):
     response = await async_client.get(deployment_base)
-
     assert response.status_code == 200
     data = response.json()
     assert data["deployment"]["download"] == "forced"
@@ -83,44 +76,57 @@ async def test_rollout_signalling_failure(async_client, test_data):
     )
     assert data["deployment"]["chunks"][0]["artifacts"][0]["size"] == firmware.size
 
-    # confirm installation start (in reality: several of simular posts)
+    return data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]
+
+
+async def _feedback(async_client, device_uuid, firmware, finished, execution):
     response = await async_client.post(
-        f"/DEFAULT/controller/v1/{device.uuid}/deploymentBase/{firmware.id}/feedback",
+        f"/DEFAULT/controller/v1/{device_uuid}/deploymentBase/{firmware.id}/feedback",
         json={
             "id": firmware.id,
             "status": {
-                "result": {"finished": "none"},
-                "execution": "proceeding",
-                "details": ["Installing Update Chunk Artifacts."],
+                "result": {"finished": finished},
+                "execution": execution,
+                "details": [""],
             },
         },
     )
     assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_register_device(async_client, test_data):
+    config_url = await _poll_first_time(async_client)
+
+    await _register(async_client, config_url)
+
+    await _poll(async_client, UUID, None, False)
+
+
+@pytest.mark.asyncio
+async def test_rollout_signalling_failure(async_client, test_data):
+    device = test_data["device_rollout"]
+    firmware = test_data["firmware_latest"]
+
+    deployment_base = await _poll(async_client, device.uuid, firmware)
+
+    firmware_url = await _retrieve_firmware_url(async_client, deployment_base, firmware)
+
+    # confirm installation start (in reality: several of similar posts)
+    await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
     await device.refresh_from_db()
     assert device.last_state == "running"
 
     # HEAD /api/download/1 HTTP/1.1 (reason not clear)
-    response = await async_client.head(f"/api/download/{firmware.id}")
+    response = await async_client.head(firmware_url)
     assert response.status_code == 405
 
     # GET /api/download/1 HTTP/1.1
-    response = await async_client.get(f"/api/download/{firmware.id}")
+    response = await async_client.get(firmware_url)
     assert response.status_code == 200
 
     # report failure
-    response = await async_client.post(
-        f"/DEFAULT/controller/v1/{device.uuid}/deploymentBase/{firmware.id}/feedback",
-        json={
-            "id": firmware.id,
-            "status": {
-                "result": {"finished": "failure"},
-                "execution": "closed",
-                "details": ["No suitable .swu image found"],
-            },
-        },
-    )
-    assert response.status_code == 200
-
+    await _feedback(async_client, device.uuid, firmware, "failure", "closed")
     await device.refresh_from_db()
     assert device.last_state == "error"
 
@@ -130,16 +136,7 @@ async def test_latest(async_client, test_data):
     device = test_data["device_latest"]
     firmware = test_data["firmware_latest"]
 
-    # poll
-    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
-
-    assert response.status_code == 200
-    data = response.json()
-    deployment_base = data["_links"]["deploymentBase"]["href"]
-    assert (
-        deployment_base
-        == f"http://test/DEFAULT/controller/v1/{device.uuid}/deploymentBase/{firmware.id}"
-    )
+    await _poll(async_client, device.uuid, firmware)
 
 
 @pytest.mark.asyncio
@@ -150,24 +147,14 @@ async def test_latest_with_no_firmware_available(async_client, test_data):
     device.hardware_id = fake_hardware.id
     await device.save()
 
-    # poll
-    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["_links"] == {}
+    await _poll(async_client, device.uuid, None, False)
 
 
 @pytest.mark.asyncio
 async def test_pinned(async_client, test_data):
     device = test_data["device_pinned"]
 
-    # poll
-    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["_links"] == {}
+    await _poll(async_client, device.uuid, None, False)
 
 
 @pytest.mark.asyncio
@@ -177,9 +164,4 @@ async def test_up_to_date(async_client, test_data):
     manager = await get_update_manager(dev_id=device.uuid)
     await manager.update_fw_version(firmware.version)
 
-    # poll
-    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["_links"] == {}
+    await _poll(async_client, device.uuid, None, False)
