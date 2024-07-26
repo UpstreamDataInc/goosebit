@@ -8,7 +8,6 @@ from fastapi.requests import Request
 from pydantic import BaseModel
 
 from goosebit.auth import validate_user_permissions
-from goosebit.misc import get_device_by_uuid
 from goosebit.models import Device, UpdateModeEnum
 from goosebit.permissions import Permissions
 from goosebit.updater.manager import delete_device, get_update_manager
@@ -111,7 +110,8 @@ async def devices_force_update(request: Request, config: ForceUpdateModel) -> di
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
 )
 async def device_logs(request: Request, dev_id: str) -> str:
-    device = await get_device_by_uuid(dev_id)
+    updater = await get_update_manager(dev_id)
+    device = await updater.get_device()
     if device.last_log is not None:
         return device.last_log
     return "No logs found."

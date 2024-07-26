@@ -32,22 +32,3 @@ async def get_newest_fw(hw_model: str, hw_revision: str) -> Optional[str]:
 
 def validate_filename(filename: str) -> bool:
     return filename.endswith(".swu")
-
-
-async def get_device_by_uuid(dev_id: str) -> Device:
-    if dev_id == "unknown":
-        return Device(
-            uuid="unknown",
-            name="Unknown",
-            update_mode=UpdateModeEnum.LATEST,
-            fw_version=None,
-            last_state=None,
-            last_log=None,
-        )
-
-    hardware = (
-        await Hardware.get_or_create(hw_model="default", hw_revision="default")
-    )[0]
-    return (
-        await Device.get_or_create(uuid=self.dev_id, defaults={"hardware": hardware})
-    )[0]
