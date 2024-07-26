@@ -249,7 +249,7 @@ async def get_update_manager(dev_id: str) -> UpdateManager:
     global device_managers
     if device_managers.get(dev_id) is None:
         device_managers[dev_id] = DeviceUpdateManager(dev_id)
-    devices_count.set(len(await Device.all()))
+    devices_count.set(await Device.all().count())
     return device_managers[dev_id]
 
 
