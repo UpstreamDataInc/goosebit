@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from datetime import datetime
 from enum import StrEnum
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional
 
 from goosebit.models import (
     Device,
@@ -97,7 +97,7 @@ class UpdateManager(ABC):
             await cb(log_data)
 
     @abstractmethod
-    async def get_update(self) -> Tuple[HandlingType, Firmware]: ...
+    async def get_update(self) -> tuple[HandlingType, Firmware]: ...
 
     @abstractmethod
     async def update_log(self, log_data: str) -> None: ...
@@ -111,7 +111,7 @@ class UnknownUpdateManager(UpdateManager):
     async def _get_firmware(self) -> Firmware:
         return await Firmware.latest(await self.get_device())
 
-    async def get_update(self) -> Tuple[HandlingType, Firmware]:
+    async def get_update(self) -> tuple[HandlingType, Firmware]:
         firmware = await self._get_firmware()
         return HandlingType.FORCED, firmware
 
@@ -191,7 +191,7 @@ class DeviceUpdateManager(UpdateManager):
         assert device.update_mode == UpdateModeEnum.PINNED
         return None
 
-    async def get_update(self) -> Tuple[HandlingType, Firmware]:
+    async def get_update(self) -> tuple[HandlingType, Firmware]:
         device = await self.get_device()
         firmware = await self._get_firmware()
 
