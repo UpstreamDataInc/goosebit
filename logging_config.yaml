@@ -16,6 +16,10 @@ loggers:
     handlers: [console]
     level: WARNING
     propagate: yes
+  multipart:
+    handlers: [console]
+    level: INFO
+    propagate: yes
 root:
   level: DEBUG
   handlers: [console]
