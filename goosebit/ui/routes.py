@@ -49,9 +49,9 @@ async def upload_update_local(
     filename: str = Form(...),
 ):
     file = UPDATES_DIR.joinpath(filename)
-    update = await Firmware.get_or_none(uri=file.absolute().as_uri())
-    if update is not None:
-        await update.delete()
+    firmware = await Firmware.get_or_none(uri=file.absolute().as_uri())
+    if firmware is not None:
+        await firmware.delete()
 
     tmpfile = file.with_suffix(".tmp")
     contents = await chunk.read()
@@ -72,9 +72,9 @@ async def upload_update_local(
     ],
 )
 async def upload_update_remote(request: Request, url: str = Form(...)):
-    update = await Firmware.get_or_none(uri=url)
-    if update is not None:
-        await update.delete()
+    firmware = await Firmware.get_or_none(uri=url)
+    if firmware is not None:
+        await firmware.delete()
 
     await create_firmware_update(url)
 

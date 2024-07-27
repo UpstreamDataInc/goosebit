@@ -10,23 +10,25 @@ router = APIRouter(prefix="/download")
 
 @router.head("/{file_id}")
 async def download_file_head(_: Request, file_id: int):
-    file = await Firmware.get_or_none(id=file_id)
-    if file is None:
+    firmware = await Firmware.get_or_none(id=file_id)
+    if firmware is None:
         raise HTTPException(404)
 
     response = Response()
-    response.headers["Content-Length"] = str(file.size)
+    response.headers["Content-Length"] = str(firmware.size)
     return response
 
 
 @router.get("/{file_id}")
 async def download_file(_: Request, file_id: int):
-    file = await Firmware.get_or_none(id=file_id)
-    if file is None:
+    firmware = await Firmware.get_or_none(id=file_id)
+    if firmware is None:
         raise HTTPException(404)
-    if file.local:
+    if firmware.local:
         return FileResponse(
-            file.path, media_type="application/octet-stream", filename=file.path.name
+            firmware.path,
+            media_type="application/octet-stream",
+            filename=firmware.path.name,
         )
     else:
-        return RedirectResponse(url=file.uri)
+        return RedirectResponse(url=firmware.uri)

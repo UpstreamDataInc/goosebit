@@ -98,8 +98,8 @@ class Firmware(Model):
     version = fields.CharField(max_length=255)
     compatibility = fields.ManyToManyField(
         "models.Hardware",
-        related_name="updates",
-        through="update_compatibility",
+        related_name="firmwares",
+        through="firmware_compatibility",
     )
 
     @classmethod
