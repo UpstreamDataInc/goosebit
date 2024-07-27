@@ -144,7 +144,8 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
 
     # HEAD /api/download/1 HTTP/1.1 (reason not clear)
     response = await async_client.head(firmware_url)
-    assert response.status_code == 405
+    assert response.status_code == 200
+    assert response.headers["Content-Length"] == "1200"
 
     # GET /api/download/1 HTTP/1.1
     response = await async_client.get(firmware_url)
