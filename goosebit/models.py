@@ -28,9 +28,9 @@ class UpdateModeEnum(IntEnum):
 class UpdateStateEnum(IntEnum):
     UNKNOWN = 1
     REGISTERED = 2
-    RUNNING = 4
-    ERROR = 3
-    FINISHED = 4
+    RUNNING = 3
+    ERROR = 4
+    FINISHED = 5
 
     def __str__(self):
         if self == UpdateStateEnum.UNKNOWN:
