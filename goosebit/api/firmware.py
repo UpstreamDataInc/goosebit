@@ -16,24 +16,24 @@ router = APIRouter(prefix="/firmware")
     ],
 )
 async def firmware_get_all() -> list[dict]:
-    updates = await Firmware.all()
-    firmware = []
-    for update in sorted(
-        updates,
+    firmwares = await Firmware.all()
+    result = []
+    for f in sorted(
+        firmwares,
         key=lambda x: semver.Version.parse(x.version),
         reverse=True,
     ):
-        firmware.append(
+        result.append(
             {
-                "uuid": update.id,
-                "name": update.path.name,
-                "size": update.size,
-                "hash": update.hash,
-                "version": update.version,
-                "compatibility": list(await update.compatibility.all().values()),
+                "id": f.id,
+                "name": f.path.name,
+                "size": f.size,
+                "hash": f.hash,
+                "version": f.version,
+                "compatibility": list(await f.compatibility.all().values()),
             }
         )
-    return firmware
+    return result
 
 
 @router.post(
@@ -45,13 +45,13 @@ async def firmware_get_all() -> list[dict]:
 async def firmware_delete(request: Request, files: list[str] = Body()) -> dict:
     success = False
     for f_id in files:
-        update = await Firmware.get_or_none(id=f_id)
-        if update is None:
+        firmware = await Firmware.get_or_none(id=f_id)
+        if firmware is None:
             continue
-        if update.local:
-            path = update.path
+        if firmware.local:
+            path = firmware.path
             if path.exists():
                 path.unlink()
-        await update.delete()
+        await firmware.delete()
         success = True
     return {"success": success}

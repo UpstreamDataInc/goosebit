@@ -26,5 +26,5 @@ users_count = meter.create_gauge(
 
 
 async def init():
-    devices_count.set(len(await Device.all()))
+    devices_count.set(await Device.all().count())
     users_count.set(len(settings.USERS))

@@ -1,13 +1,16 @@
 import json
+import logging
 
 from fastapi import APIRouter, Depends
 from fastapi.requests import Request
 
+from goosebit.models import Firmware, UpdateStateEnum
 from goosebit.settings import POLL_TIME_REGISTRATION
-from goosebit.updater.manager import UpdateManager, UpdateMode, get_update_manager
+from goosebit.updater.manager import HandlingType, UpdateManager, get_update_manager
 from goosebit.updates import generate_chunk
 
-# v1 is hardware revision
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/v1")
 
 
@@ -23,7 +26,7 @@ async def polling(
     sleep = updater.poll_time
     last_state = updater.device.last_state
 
-    if last_state == "unknown":
+    if last_state == UpdateStateEnum.UNKNOWN:
         # device registration
         sleep = POLL_TIME_REGISTRATION
         links["configData"] = {
@@ -35,23 +38,24 @@ async def polling(
                 )
             )
         }
+        logger.info(f"Skip: registration required, device={updater.device.uuid}")
 
-    elif last_state == "error" and not updater.force_update:
-        # nothing to do
+    elif last_state == UpdateStateEnum.ERROR and not updater.force_update:
+        logger.info(f"Skip: device in error state, device={updater.device.uuid}")
         pass
 
     else:
         # provide update if available. Note: this is also required while in state "running", otherwise swupdate
         # won't confirm a successful testing (might be a bug/problem in swupdate)
-        mode = await updater.get_update_mode()
-        if mode != UpdateMode.SKIP:
+        handling_type, firmware = await updater.get_update()
+        if handling_type != HandlingType.SKIP:
             links["deploymentBase"] = {
                 "href": str(
                     request.url_for(
                         "deployment_base",
                         tenant=tenant,
                         dev_id=dev_id,
-                        action_id=1,
+                        action_id=firmware.id,
                     )
                 )
             }
@@ -83,15 +87,13 @@ async def deployment_base(
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),
 ):
-    firmware = await updater.get_firmware()
-    mode = await updater.get_update_mode()
-    await updater.save()
+    handling_type, firmware = await updater.get_update()
 
     return {
         "id": f"{action_id}",
         "deployment": {
-            "download": str(mode),
-            "update": str(mode),
+            "download": str(handling_type),
+            "update": str(handling_type),
             "chunks": generate_chunk(request, firmware),
         },
     }
@@ -107,13 +109,16 @@ async def deployment_feedback(
 ):
     try:
         data = await request.json()
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        logging.warning(
+            f"Parsing deployment feedback failed, error={e}, dewvice={dev_id}"
+        )
         return
     try:
         execution = data["status"]["execution"]
 
         if execution == "proceeding":
-            await updater.update_device_state("running")
+            await updater.update_device_state(UpdateStateEnum.RUNNING)
 
         elif execution == "closed":
             state = data["status"]["result"]["finished"]
@@ -121,43 +126,53 @@ async def deployment_feedback(
             updater.force_update = False
             updater.update_complete = True
 
+            reported_firmware = await Firmware.get_or_none(id=data["id"])
+
             # From hawkBit docu: DDI defines also a status NONE which will not be interpreted by the update server
             # and handled like SUCCESS.
             if state == "success" or state == "none":
-                await updater.update_device_state("finished")
+                await updater.update_device_state(UpdateStateEnum.FINISHED)
 
                 # not guaranteed to be the correct rollout - see next comment.
                 rollout = await updater.get_rollout()
                 if rollout:
-                    file = rollout.fw_file
-                    rollout.success_count += 1
-                    await rollout.save()
-                else:
-                    device = await updater.get_device()
-                    file = device.fw_file
+                    if rollout.firmware == reported_firmware:
+                        rollout.success_count += 1
+                        await rollout.save()
+                    else:
+                        logging.warning(
+                            f"Updating rollout success stats failed, firmware={reported_firmware.id}, device={dev_id}"
+                        )
 
                 # setting the currently installed version based on the current assigned firmware / existing rollouts
                 # is problematic. Better to assign custom action_id for each update (rollout id? firmware id? new id?).
                 # Alternatively - but requires customization on the gateway side - use version reported by the gateway.
-                await updater.update_fw_version(file)
+                await updater.update_fw_version(reported_firmware.version)
 
             elif state == "failure":
-                await updater.update_device_state("error")
+                await updater.update_device_state(UpdateStateEnum.ERROR)
 
                 # not guaranteed to be the correct rollout - see comment above.
                 rollout = await updater.get_rollout()
                 if rollout:
-                    rollout.failure_count += 1
-                    await rollout.save()
+                    if rollout.firmware == reported_firmware:
+                        rollout.failure_count += 1
+                        await rollout.save()
+                    else:
+                        logging.warning(
+                            f"Updating rollout failure stats failed, firmware={reported_firmware.id}, device={dev_id}"
+                        )
 
-    except KeyError:
-        pass
+    except KeyError as e:
+        logging.warning(
+            f"Processing deployment feedback failed, error={e}, device={dev_id}"
+        )
 
     try:
         log = data["status"]["details"]
         await updater.update_log("\n".join(log))
     except KeyError:
-        pass
+        logging.warning(f"No details to update update log, device={dev_id}")
 
     await updater.save()
     return {"id": str(action_id)}

@@ -24,7 +24,7 @@ async def create_firmware_update(uri: str):
     else:
         return
 
-    update = (
+    firmware = (
         await Firmware.get_or_create(
             uri=uri,
             version=str(update_info["version"]),
@@ -34,9 +34,13 @@ async def create_firmware_update(uri: str):
     )[0]
 
     for comp in update_info["compatibility"]:
-        await update.compatibility.add((await Hardware.get_or_create(**comp))[0])
-    await update.save()
-    return update
+        model = comp.get("hw_model", "default")
+        revision = comp.get("hw_revision", "default")
+        await firmware.compatibility.add(
+            (await Hardware.get_or_create(model=model, revision=revision))[0]
+        )
+    await firmware.save()
+    return firmware
 
 
 def generate_chunk(request: Request, firmware: Firmware | None) -> list:

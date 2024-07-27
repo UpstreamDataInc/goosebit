@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function() {
         ],
         columns: [
             { data: 'name' },
-            { data: 'uuid' },
+            { data: 'id' },
             { data: 'version' },
             {
                 data: 'size',
@@ -149,14 +149,14 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         ],
         select: true,
-        rowId: "uuid",
+        rowId: "id",
         layout: {
             bottom1Start: {
                 buttons: [
                     {
                         text: '<i class="bi bi-cloud-download" ></i>',
                         action: function (e, dt, node, config) {
-                            selectedFirmware = dt.rows( {selected:true} ).data().toArray().map(d => d["uuid"]);
+                            selectedFirmware = dt.rows( {selected:true} ).data().toArray().map(d => d["id"]);
                             downloadFirmware(selectedFirmware[0]);
                         },
                         className: "buttons-download",
@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     {
                         text: '<i class="bi bi-trash" ></i>',
                         action: function (e, dt, node, config) {
-                            selectedFirmware = dt.rows( {selected:true} ).data().toArray().map(d => d["uuid"]);
+                            selectedFirmware = dt.rows( {selected:true} ).data().toArray().map(d => d["id"]);
                             deleteFirmware(selectedFirmware);
                         },
                         className: "buttons-delete",

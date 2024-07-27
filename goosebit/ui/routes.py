@@ -1,11 +1,10 @@
 import aiofiles
-from fastapi import APIRouter, Depends, Form, HTTPException, Security, UploadFile
+from fastapi import APIRouter, Depends, Form, Security, UploadFile
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 
 from goosebit.auth import authenticate_session, validate_user_permissions
-from goosebit.misc import validate_filename
 from goosebit.models import Firmware
 from goosebit.permissions import Permissions
 from goosebit.settings import UPDATES_DIR
@@ -42,20 +41,17 @@ async def firmware_ui(request: Request):
         Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])
     ],
 )
-async def upload_update(
+async def upload_update_local(
     request: Request,
     chunk: UploadFile = Form(...),
     init: bool = Form(...),
     done: bool = Form(...),
     filename: str = Form(...),
 ):
-    if not validate_filename(filename):
-        raise HTTPException(400, detail="Could not parse file data, invalid filename.")
-
     file = UPDATES_DIR.joinpath(filename)
-    update = await Firmware.get_or_none(uri=file.absolute().as_uri())
-    if update is not None:
-        await update.delete()
+    firmware = await Firmware.get_or_none(uri=file.absolute().as_uri())
+    if firmware is not None:
+        await firmware.delete()
 
     tmpfile = file.with_suffix(".tmp")
     contents = await chunk.read()
@@ -75,13 +71,10 @@ async def upload_update(
         Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])
     ],
 )
-async def upload_update(request: Request, url: str = Form(...)):
-    if not validate_filename(url):
-        raise HTTPException(400, detail="Could not parse file data, invalid filename.")
-
-    update = await Firmware.get_or_none(uri=url)
-    if update is not None:
-        await update.delete()
+async def upload_update_remote(request: Request, url: str = Form(...)):
+    firmware = await Firmware.get_or_none(uri=url)
+    if firmware is not None:
+        await firmware.delete()
 
     await create_firmware_update(url)
 

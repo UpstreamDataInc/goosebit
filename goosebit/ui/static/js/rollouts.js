@@ -19,8 +19,6 @@ document.addEventListener("DOMContentLoaded", function() {
             { data: 'id' },
             { data: 'created_at' },
             { data: 'name' },
-            { data: 'hw_model' },
-            { data: 'hw_revision' },
             { data: 'feed' },
             { data: 'flavor' },
             { data: 'fw_file' },

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from fastapi import APIRouter, Security
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 from pydantic import BaseModel

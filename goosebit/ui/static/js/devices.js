@@ -42,7 +42,10 @@ document.addEventListener("DOMContentLoaded", function() {
             { data: 'uuid' },
             { data: 'hw_model' },
             { data: 'hw_revision' },
+            { data: 'feed' },
+            { data: 'flavor' },
             { data: 'fw' },
+            { data: 'update_mode' },
             {
                 data: 'force_update',
                 render: function(data, type, row) {
@@ -57,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     return data;
                 }
             },
-            { data: 'fw_file' },
+            { data: 'fw_version' },
             {
                 data: 'progress',
                 render: function(data, type, row) {
@@ -223,8 +226,8 @@ function updateFirmwareSelection() {
         selectElem = document.getElementById("device-selected-fw");
 
         optionElem = document.createElement("option");
-        optionElem.value = "none";
-        optionElem.textContent = "none";
+        optionElem.value = "rollout";
+        optionElem.textContent = "rollout";
         selectElem.appendChild(optionElem);
 
         optionElem = document.createElement("option");
@@ -234,7 +237,7 @@ function updateFirmwareSelection() {
 
         data.forEach(item => {
             optionElem = document.createElement("option");
-            optionElem.value = item["name"];
+            optionElem.value = item["id"];
             optionElem.textContent = item["name"];
             selectElem.appendChild(optionElem);
         });
@@ -345,7 +348,7 @@ function pinDevices(devices) {
          },
         body: JSON.stringify({
             'devices': devices,
-            'firmware': "pinned"
+            'pinned': true
         })
     }).then(response => {
         if (!response.ok) {

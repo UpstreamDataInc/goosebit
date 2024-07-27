@@ -9,6 +9,8 @@ from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
 
 from goosebit import app
+from goosebit.models import UpdateModeEnum, UpdateStateEnum
+from goosebit.updater.manager import reset_update_manager
 
 # Configure logging
 logging.basicConfig(level=logging.WARN)
@@ -28,9 +30,6 @@ async def test_app():
     async with RegisterTortoise(
         app=app,
         config=TORTOISE_CONF,
-        generate_schemas=True,
-        add_exception_handlers=True,
-        _create_db=True,
     ):
         yield app
 
@@ -45,6 +44,8 @@ async def async_client(test_app):
 
 @pytest_asyncio.fixture(scope="function")
 async def db():
+    reset_update_manager()
+
     await Tortoise.init(config=TORTOISE_CONF)
     await Tortoise.generate_schemas()
     yield
@@ -53,30 +54,33 @@ async def db():
 
 
 @pytest_asyncio.fixture(scope="function")
-async def test_data(db, monkeypatch):
-    # Initialize the data
-    from goosebit.models import (  # Import your models here
-        Device,
-        Firmware,
-        Hardware,
-        Rollout,
-    )
+async def test_data(db):
+    from goosebit.models import Device, Firmware, Hardware, Rollout
 
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
-        device_none = await Device.create(
-            uuid="device1", last_state="registered", fw_file="none"
+        compatibility = await Hardware.create(model="default", revision="default")
+
+        device_rollout = await Device.create(
+            uuid="device1",
+            last_state=UpdateStateEnum.REGISTERED,
+            update_mode=UpdateModeEnum.ROLLOUT,
+            hardware=compatibility,
         )
 
         device_latest = await Device.create(
-            uuid="device2", last_state="registered", fw_file="latest"
+            uuid="device2",
+            last_state=UpdateStateEnum.REGISTERED,
+            update_mode=UpdateModeEnum.LATEST,
+            hardware=compatibility,
         )
 
         device_pinned = await Device.create(
-            uuid="device3", last_state="registered", fw_file="pinned"
+            uuid="device3",
+            last_state=UpdateStateEnum.REGISTERED,
+            update_mode=UpdateModeEnum.PINNED,
+            hardware=compatibility,
         )
-
-        compatibility = await Hardware.create(hw_model="default", hw_revision="default")
 
         temp_file_path = os.path.join(temp_dir, "firmware")
         with open(temp_file_path, "w") as temp_file:
@@ -110,7 +114,7 @@ async def test_data(db, monkeypatch):
         rollout_default = await Rollout.create(firmware_id=firmware_latest.id)
 
         yield dict(
-            device_none=device_none,
+            device_rollout=device_rollout,
             device_latest=device_latest,
             device_pinned=device_pinned,
             firmware_latest=firmware_latest,
