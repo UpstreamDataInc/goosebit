@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from fastapi import Depends, HTTPException
 from fastapi.requests import Request
 from fastapi.security import SecurityScopes

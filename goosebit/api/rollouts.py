@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from fastapi import APIRouter, Security
 
 from goosebit.auth import validate_user_permissions
