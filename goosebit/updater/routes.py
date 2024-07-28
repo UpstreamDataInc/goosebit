@@ -18,9 +18,7 @@ async def verify_tenant(tenant: str):
 async def log_last_connection(request: Request, dev_id: str):
     host = request.client.host
     updater = get_update_manager_sync(dev_id)
-    await updater.update_last_ip(host)
-    await updater.update_last_seen(round(time.time()))
-    await updater.save()
+    await updater.update_last_connection(round(time.time()), host)
 
 
 router = APIRouter(
