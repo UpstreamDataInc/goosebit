@@ -39,6 +39,10 @@ async def async_client(test_app):
     async with AsyncClient(
         transport=ASGITransport(app=test_app), base_url="http://test"
     ) as client:
+        login_data = {"username": "admin@goosebit.local", "password": "admin"}
+        response = await client.post("/login", data=login_data, follow_redirects=True)
+        assert response.status_code == 200
+
         yield client
 
 

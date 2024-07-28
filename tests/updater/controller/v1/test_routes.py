@@ -6,12 +6,6 @@ from goosebit.updater.manager import get_update_manager
 UUID = "221326d9-7873-418e-960c-c074026a3b7c"
 
 
-async def _api_login(async_client):
-    login_data = {"username": "admin@goosebit.local", "password": "admin"}
-    response = await async_client.post("/login", data=login_data, follow_redirects=True)
-    assert response.status_code == 200
-
-
 async def _api_device_update(async_client, device, update_attribute, update_value):
     response = await async_client.post(
         f"/api/devices/update",
@@ -128,7 +122,6 @@ async def test_register_device(async_client, test_data):
 
     await _poll(async_client, UUID, None, False)
 
-    await _api_login(async_client)
     devices = await _api_devices_get(async_client)
     assert devices[0]["state"] == "Registered"
 
@@ -145,7 +138,6 @@ async def test_rollout_full(async_client, test_data):
 
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
-    await _api_login(async_client)
     devices = await _api_devices_get(async_client)
     assert devices[0]["state"] == "Running"
 
@@ -172,7 +164,6 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
 
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
-    await _api_login(async_client)
     devices = await _api_devices_get(async_client)
     assert devices[0]["state"] == "Running"
 
@@ -196,7 +187,6 @@ async def test_latest(async_client, test_data):
     device = test_data["device_rollout"]
     firmware = test_data["firmware_latest"]
 
-    await _api_login(async_client)
     await _api_device_update(async_client, device, "firmware", "latest")
 
     deployment_base = await _poll(async_client, device.uuid, firmware)
@@ -205,7 +195,6 @@ async def test_latest(async_client, test_data):
 
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
-    await _api_login(async_client)
     devices = await _api_devices_get(async_client)
     assert devices[0]["state"] == "Running"
 
@@ -220,7 +209,6 @@ async def test_latest(async_client, test_data):
 async def test_latest_with_no_firmware_available(async_client, test_data):
     device = test_data["device_rollout"]
 
-    await _api_login(async_client)
     await _api_device_update(async_client, device, "firmware", "latest")
 
     fake_hardware = await Hardware.create(model="does-not-exist", revision="default")
@@ -234,7 +222,6 @@ async def test_latest_with_no_firmware_available(async_client, test_data):
 async def test_pinned(async_client, test_data):
     device = test_data["device_rollout"]
 
-    await _api_login(async_client)
     await _api_device_update(async_client, device, "pinned", True)
 
     await _poll(async_client, device.uuid, None, False)
@@ -245,7 +232,6 @@ async def test_up_to_date(async_client, test_data):
     device = test_data["device_rollout"]
     firmware = test_data["firmware_latest"]
 
-    await _api_login(async_client)
     await _api_device_update(async_client, device, "firmware", "latest")
 
     manager = await get_update_manager(dev_id=device.uuid)
