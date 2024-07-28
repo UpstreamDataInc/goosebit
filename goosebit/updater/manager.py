@@ -281,17 +281,10 @@ async def get_update_manager(dev_id: str) -> UpdateManager:
     return device_managers[dev_id]
 
 
-def get_update_manager_sync(dev_id: str) -> UpdateManager:
-    global device_managers
-    if device_managers.get(dev_id) is None:
-        device_managers[dev_id] = DeviceUpdateManager(dev_id)
-    return device_managers[dev_id]
-
-
 async def delete_device(dev_id: str) -> None:
     global device_managers
     try:
-        updater = get_update_manager_sync(dev_id)
+        updater = await get_update_manager(dev_id)
         await (await updater.get_device()).delete()
         del device_managers[dev_id]
     except KeyError as e:
