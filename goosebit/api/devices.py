@@ -1,12 +1,12 @@
 import asyncio
 import time
 
-from fastapi import APIRouter, Security
+from fastapi import APIRouter, HTTPException, Security
 from fastapi.requests import Request
 from pydantic import BaseModel
 
 from goosebit.auth import validate_user_permissions
-from goosebit.models import Device, UpdateModeEnum
+from goosebit.models import Device, Firmware, UpdateModeEnum
 from goosebit.permissions import Permissions
 from goosebit.updater.manager import delete_device, get_update_manager
 
@@ -66,25 +66,25 @@ class UpdateDevicesModel(BaseModel):
     ],
 )
 async def devices_update(request: Request, config: UpdateDevicesModel) -> dict:
+    firmware = None
+    if config.firmware is not None:
+        firmware = await Firmware.get_or_none(id=config.firmware)
+        if firmware is None:
+            raise HTTPException(404)
+
     for uuid in config.devices:
         updater = await get_update_manager(uuid)
-        device = await updater.get_device()
         if config.firmware is not None:
             if config.firmware == "rollout":
-                device.update_mode = UpdateModeEnum.ROLLOUT
-                device.assigned_firmware_id = None
+                await updater.update_update(UpdateModeEnum.ROLLOUT, None)
             elif config.firmware == "latest":
-                device.update_mode = UpdateModeEnum.LATEST
-                device.assigned_firmware_id = None
+                await updater.update_update(UpdateModeEnum.LATEST, None)
             else:
-                device.update_mode = UpdateModeEnum.ASSIGNED
-                device.assigned_firmware_id = config.firmware
+                await updater.update_update(UpdateModeEnum.ASSIGNED, firmware)
         if config.pinned:
-            device.update_mode = UpdateModeEnum.PINNED
-            device.assigned_firmware_id = None
+            await updater.update_update(UpdateModeEnum.PINNED, None)
         if config.name is not None:
-            device.name = config.name
-        await updater.save()
+            await updater.update_name(config.name)
     return {"success": True}
 
 

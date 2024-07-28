@@ -30,7 +30,6 @@ class HandlingType(StrEnum):
 class UpdateManager(ABC):
     def __init__(self, dev_id: str):
         self.dev_id = dev_id
-        self.config_data = {}
         self.device = None
         self.force_update = False
         self.update_complete = False
@@ -38,9 +37,6 @@ class UpdateManager(ABC):
         self.log_subscribers: list[Callable] = []
 
     async def get_device(self) -> Device | None:
-        return
-
-    async def save(self) -> None:
         return
 
     async def update_fw_version(self, version: str) -> None:
@@ -52,28 +48,20 @@ class UpdateManager(ABC):
     async def update_device_state(self, state: UpdateStateEnum) -> None:
         return
 
-    async def update_last_seen(self, last_seen: int) -> None:
+    async def update_last_connection(self, last_seen: int, last_ip: str) -> None:
         return
 
-    async def update_last_ip(self, last_ip: str) -> None:
+    async def update_update(self, update_mode: UpdateModeEnum, firmware: Firmware):
+        return
+
+    async def update_name(self, name: str):
+        return
+
+    async def update_config_data(self, **kwargs):
         return
 
     async def get_rollout(self) -> Optional[Rollout]:
         return None
-
-    async def update_config_data(self, **kwargs):
-        model = kwargs.get("hw_model") or "default"
-        revision = kwargs.get("hw_revision") or "default"
-        hardware = (await Hardware.get_or_create(model=model, revision=revision))[0]
-
-        await self.update_hardware(hardware)
-
-        device = await self.get_device()
-        if device.last_state == UpdateStateEnum.UNKNOWN:
-            await self.update_device_state(UpdateStateEnum.REGISTERED)
-        await self.save()
-
-        self.config_data.update(kwargs)
 
     @asynccontextmanager
     async def subscribe_log(self, callback: Callable):
@@ -133,31 +121,59 @@ class DeviceUpdateManager(UpdateManager):
 
         return self.device
 
-    async def save(self) -> None:
-        await self.device.save()
-
     async def update_fw_version(self, version: str) -> None:
         device = await self.get_device()
         device.fw_version = version
+        await device.save(update_fields=["fw_version"])
 
     async def update_hardware(self, hardware: Hardware) -> None:
         device = await self.get_device()
         device.hardware = hardware
+        await device.save(update_fields=["hardware"])
 
     async def update_device_state(self, state: UpdateStateEnum) -> None:
         device = await self.get_device()
         device.last_state = state
+        await device.save(update_fields=["last_state"])
 
-    async def update_last_seen(self, last_seen: int) -> None:
+    async def update_last_connection(self, last_seen: int, last_ip: str) -> None:
         device = await self.get_device()
         device.last_seen = last_seen
-
-    async def update_last_ip(self, last_ip: str) -> None:
-        device = await self.get_device()
         if ":" in last_ip:
             device.last_ipv6 = last_ip
+            await device.save(update_fields=["last_seen", "last_ipv6"])
         else:
             device.last_ip = last_ip
+            await device.save(update_fields=["last_seen", "last_ip"])
+
+    async def update_update(self, update_mode: UpdateModeEnum, firmware: Firmware):
+        device = await self.get_device()
+        device.assigned_firmware = firmware
+        device.update_mode = update_mode
+        await device.save(update_fields=["assigned_firmware_id", "update_mode"])
+
+    async def update_name(self, name: str):
+        device = await self.get_device()
+        device.name = name
+        await device.save(update_fields=["name"])
+
+    async def update_config_data(self, **kwargs):
+        model = kwargs.get("hw_model") or "default"
+        revision = kwargs.get("hw_revision") or "default"
+        hardware = (await Hardware.get_or_create(model=model, revision=revision))[0]
+        device = await self.get_device()
+        modified = False
+
+        if device.hardware != hardware:
+            device.hardware = hardware
+            modified = True
+
+        if device.last_state == UpdateStateEnum.UNKNOWN:
+            device.last_state = UpdateStateEnum.REGISTERED
+            modified = True
+
+        if modified:
+            await device.save(update_fields=["hardware_id", "last_state"])
 
     async def get_rollout(self) -> Optional[Rollout]:
         device = await self.get_device()
@@ -225,25 +241,32 @@ class DeviceUpdateManager(UpdateManager):
         if log_data is None:
             return
         device = await self.get_device()
+
+        if device.last_log is None:
+            device.last_log = ""
+
         matches = re.findall(r"Downloaded (\d+)%", log_data)
         if matches:
             device.progress = matches[-1]
-        if device.last_log is None:
-            device.last_log = ""
+
         if log_data.startswith("Installing Update Chunk Artifacts."):
-            await self.clear_log()
-        if log_data == "All Chunks Installed.":
+            # clear log
+            device.last_log = ""
+            await self.publish_log(None)
+        elif log_data == "All Chunks Installed.":
             self.force_update = False
             self.update_complete = True
+
         if not log_data == "Skipped Update.":
             device.last_log += f"{log_data}\n"
             await self.publish_log(f"{log_data}\n")
-        await device.save()
+
+        await device.save(update_fields=["progress", "last_log"])
 
     async def clear_log(self) -> None:
         device = await self.get_device()
         device.last_log = ""
-        await device.save()
+        await device.save(update_fields=["last_log"])
         await self.publish_log(None)
 
 

@@ -174,5 +174,4 @@ async def deployment_feedback(
     except KeyError:
         logging.warning(f"No details to update update log, device={dev_id}")
 
-    await updater.save()
     return {"id": str(action_id)}
