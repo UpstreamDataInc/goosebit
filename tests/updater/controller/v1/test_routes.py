@@ -122,6 +122,7 @@ async def test_rollout_full(async_client, test_data):
     await _feedback(async_client, device.uuid, firmware, "success", "closed")
     await device.refresh_from_db()
     assert device.last_state == UpdateStateEnum.FINISHED
+    assert device.fw_version == firmware.version
 
     await rollout.refresh_from_db()
     assert rollout.success_count == 1
@@ -162,7 +163,20 @@ async def test_latest(async_client, test_data):
     device = test_data["device_latest"]
     firmware = test_data["firmware_latest"]
 
-    await _poll(async_client, device.uuid, firmware)
+    deployment_base = await _poll(async_client, device.uuid, firmware)
+
+    await _retrieve_firmware_url(async_client, deployment_base, firmware)
+
+    # confirm installation start (in reality: several of similar posts)
+    await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
+    await device.refresh_from_db()
+    assert device.last_state == UpdateStateEnum.RUNNING
+
+    # report finished installation
+    await _feedback(async_client, device.uuid, firmware, "success", "closed")
+    await device.refresh_from_db()
+    assert device.last_state == UpdateStateEnum.FINISHED
+    assert device.fw_version == firmware.version
 
 
 @pytest.mark.asyncio
