@@ -31,7 +31,7 @@ async def ui_root(request: Request):
 )
 async def firmware_ui(request: Request):
     return templates.TemplateResponse(
-        "firmware.html", context={"request": request, "title": "Firmware"}
+        request, "firmware.html", context={"title": "Firmware"}
     )
 
 
@@ -84,9 +84,7 @@ async def upload_update_remote(request: Request, url: str = Form(...)):
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
 )
 async def home_ui(request: Request):
-    return templates.TemplateResponse(
-        "index.html", context={"request": request, "title": "Home"}
-    )
+    return templates.TemplateResponse(request, "index.html", context={"title": "Home"})
 
 
 @router.get(
@@ -97,7 +95,7 @@ async def home_ui(request: Request):
 )
 async def devices_ui(request: Request):
     return templates.TemplateResponse(
-        "devices.html", context={"request": request, "title": "Devices"}
+        request, "devices.html", context={"title": "Devices"}
     )
 
 
@@ -109,7 +107,7 @@ async def devices_ui(request: Request):
 )
 async def rollouts_ui(request: Request):
     return templates.TemplateResponse(
-        "rollouts.html", context={"request": request, "title": "Rollouts"}
+        request, "rollouts.html", context={"title": "Rollouts"}
     )
 
 
@@ -121,5 +119,5 @@ async def rollouts_ui(request: Request):
 )
 async def logs_ui(request: Request, dev_id: str):
     return templates.TemplateResponse(
-        "logs.html", context={"request": request, "title": "Log", "device": dev_id}
+        request, "logs.html", context={"title": "Log", "device": dev_id}
     )
