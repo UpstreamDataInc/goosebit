@@ -68,20 +68,6 @@ async def test_data(db):
             hardware=compatibility,
         )
 
-        device_latest = await Device.create(
-            uuid="device2",
-            last_state=UpdateStateEnum.REGISTERED,
-            update_mode=UpdateModeEnum.LATEST,
-            hardware=compatibility,
-        )
-
-        device_pinned = await Device.create(
-            uuid="device3",
-            last_state=UpdateStateEnum.REGISTERED,
-            update_mode=UpdateModeEnum.PINNED,
-            hardware=compatibility,
-        )
-
         temp_file_path = os.path.join(temp_dir, "firmware")
         with open(temp_file_path, "w") as temp_file:
             temp_file.write("Fake SWUpdate image")
@@ -115,8 +101,6 @@ async def test_data(db):
 
         yield dict(
             device_rollout=device_rollout,
-            device_latest=device_latest,
-            device_pinned=device_pinned,
             firmware_latest=firmware_latest,
             rollout_default=rollout_default,
         )
