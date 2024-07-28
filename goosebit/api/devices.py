@@ -1,7 +1,7 @@
 import asyncio
 import time
 
-from fastapi import APIRouter, HTTPException, Security
+from fastapi import APIRouter, Security
 from fastapi.requests import Request
 from pydantic import BaseModel
 
@@ -66,12 +66,6 @@ class UpdateDevicesModel(BaseModel):
     ],
 )
 async def devices_update(request: Request, config: UpdateDevicesModel) -> dict:
-    firmware = None
-    if config.firmware is not None:
-        firmware = await Firmware.get_or_none(id=config.firmware)
-        if firmware is None:
-            raise HTTPException(404)
-
     for uuid in config.devices:
         updater = await get_update_manager(uuid)
         if config.firmware is not None:
@@ -80,6 +74,7 @@ async def devices_update(request: Request, config: UpdateDevicesModel) -> dict:
             elif config.firmware == "latest":
                 await updater.update_update(UpdateModeEnum.LATEST, None)
             else:
+                firmware = await Firmware.get_or_none(id=config.firmware)
                 await updater.update_update(UpdateModeEnum.ASSIGNED, firmware)
         if config.pinned:
             await updater.update_update(UpdateModeEnum.PINNED, None)
