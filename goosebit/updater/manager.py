@@ -306,10 +306,11 @@ device_managers = {"unknown": UnknownUpdateManager("unknown")}
 
 async def get_update_manager(dev_id: str) -> UpdateManager:
     global device_managers
-    if device_managers.get(dev_id) is None:
-        device_managers[dev_id] = DeviceUpdateManager(dev_id)
+    if device_managers.get(dev_id) is not None:
+        return device_managers[dev_id]
+    manager = DeviceUpdateManager(dev_id)
     devices_count.set(await Device.all().count())
-    return device_managers[dev_id]
+    return manager
 
 
 async def delete_device(dev_id: str) -> None:
