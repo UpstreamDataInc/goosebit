@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import re
@@ -32,7 +34,6 @@ class UpdateManager(ABC):
         self.force_update = False
         self.update_complete = False
         self.poll_time = POLL_TIME
-        self.log_subscribers: list[Callable] = []
 
     async def get_device(self) -> Device | None:
         return
@@ -66,19 +67,31 @@ class UpdateManager(ABC):
     @asynccontextmanager
     async def subscribe_log(self, callback: Callable):
         device = await self.get_device()
-        self.log_subscribers.append(callback)
+        subscribers = self.log_subscribers
+        subscribers.append(callback)
+        self.log_subscribers = subscribers
         await callback(device.last_log)
         try:
             yield
         except asyncio.CancelledError:
             pass
         finally:
-            self.log_subscribers.remove(callback)
+            subscribers = self.log_subscribers
+            subscribers.remove(callback)
+            self.log_subscribers = subscribers
 
     @property
     def poll_seconds(self):
         time_obj = datetime.strptime(self.poll_time, "%H:%M:%S")
         return time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second
+
+    @property
+    def log_subscribers(self):
+        return device_log_subscriptions.get(self.dev_id, [])
+
+    @log_subscribers.setter
+    def log_subscribers(self, value: list):
+        device_log_subscriptions[self.dev_id] = value
 
     async def publish_log(self, log_data: str | None):
         for cb in self.log_subscribers:
@@ -269,6 +282,7 @@ class DeviceUpdateManager(UpdateManager):
 
 
 device_managers = {"unknown": UnknownUpdateManager("unknown")}
+device_log_subscriptions: dict[str, list[Callable]] = {}
 
 
 async def get_update_manager(dev_id: str) -> UpdateManager:
