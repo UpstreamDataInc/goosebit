@@ -30,8 +30,6 @@ class HandlingType(StrEnum):
 class UpdateManager(ABC):
     def __init__(self, dev_id: str):
         self.dev_id = dev_id
-        self.device = None
-        self.update_complete = False
         self.poll_time = POLL_TIME
 
     async def get_device(self) -> Device | None:
@@ -95,6 +93,14 @@ class UpdateManager(ABC):
     def log_subscribers(self, value: list):
         device_log_subscriptions[self.dev_id] = value
 
+    @property
+    def update_complete(self):
+        return device_update_status.get(self.dev_id, False)
+
+    @update_complete.setter
+    def update_complete(self, value: bool):
+        device_update_status[self.dev_id] = value
+
     async def publish_log(self, log_data: str | None):
         for cb in self.log_subscribers:
             await cb(log_data)
@@ -124,17 +130,14 @@ class UnknownUpdateManager(UpdateManager):
 
 class DeviceUpdateManager(UpdateManager):
     async def get_device(self) -> Device:
-        if not self.device:
-            hardware = (
-                await Hardware.get_or_create(model="default", revision="default")
-            )[0]
-            self.device = (
-                await Device.get_or_create(
-                    uuid=self.dev_id, defaults={"hardware": hardware}
-                )
-            )[0]
-
-        return self.device
+        hardware = (await Hardware.get_or_create(model="default", revision="default"))[
+            0
+        ]
+        return (
+            await Device.get_or_create(
+                uuid=self.dev_id, defaults={"hardware": hardware}
+            )
+        )[0]
 
     async def update_force_update(self, force_update: bool) -> None:
         device = await self.get_device()
@@ -290,6 +293,7 @@ class DeviceUpdateManager(UpdateManager):
 
 device_managers = {"unknown": UnknownUpdateManager("unknown")}
 device_log_subscriptions: dict[str, list[Callable]] = {}
+device_update_status: dict[str, bool] = {}
 
 
 async def get_update_manager(dev_id: str) -> UpdateManager:
