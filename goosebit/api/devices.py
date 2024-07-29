@@ -52,7 +52,7 @@ async def devices_get_all(request: Request) -> dict[str, int | list[Any] | Any]:
             "progress": device.progress,
             "state": str(device.last_state),
             "update_mode": str(device.update_mode),
-            "force_update": manager.force_update,
+            "force_update": device.force_update,
             "last_ip": device.last_ip,
             "last_seen": last_seen,
             "online": (
@@ -108,7 +108,7 @@ class ForceUpdateModel(BaseModel):
 async def devices_force_update(_: Request, config: ForceUpdateModel) -> dict:
     for uuid in config.devices:
         updater = await get_update_manager(uuid)
-        updater.force_update = True
+        await updater.update_force_update(True)
     return {"success": True}
 
 

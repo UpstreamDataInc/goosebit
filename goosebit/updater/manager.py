@@ -31,11 +31,13 @@ class UpdateManager(ABC):
     def __init__(self, dev_id: str):
         self.dev_id = dev_id
         self.device = None
-        self.force_update = False
         self.update_complete = False
         self.poll_time = POLL_TIME
 
     async def get_device(self) -> Device | None:
+        return
+
+    async def update_force_update(self, force_update: bool) -> None:
         return
 
     async def update_fw_version(self, version: str) -> None:
@@ -134,6 +136,11 @@ class DeviceUpdateManager(UpdateManager):
 
         return self.device
 
+    async def update_force_update(self, force_update: bool) -> None:
+        device = await self.get_device()
+        device.force_update = force_update
+        await device.save(update_fields=["force_update"])
+
     async def update_fw_version(self, version: str) -> None:
         device = await self.get_device()
         device.fw_version = version
@@ -230,11 +237,11 @@ class DeviceUpdateManager(UpdateManager):
             handling_type = HandlingType.SKIP
             self.poll_time = POLL_TIME
 
-        elif firmware.version == device.fw_version and not self.force_update:
+        elif firmware.version == device.fw_version and not device.force_update:
             handling_type = HandlingType.SKIP
             self.poll_time = POLL_TIME
 
-        elif device.last_state == UpdateStateEnum.ERROR and not self.force_update:
+        elif device.last_state == UpdateStateEnum.ERROR and not device.force_update:
             handling_type = HandlingType.SKIP
             self.poll_time = POLL_TIME
 
@@ -265,14 +272,14 @@ class DeviceUpdateManager(UpdateManager):
             device.last_log = ""
             await self.publish_log(None)
         elif log_data == "All Chunks Installed.":
-            self.force_update = False
+            device.force_update = False
             self.update_complete = True
 
         if not log_data == "Skipped Update.":
             device.last_log += f"{log_data}\n"
             await self.publish_log(f"{log_data}\n")
 
-        await device.save(update_fields=["progress", "last_log"])
+        await device.save(update_fields=["progress", "last_log", "force_update"])
 
     async def clear_log(self) -> None:
         device = await self.get_device()

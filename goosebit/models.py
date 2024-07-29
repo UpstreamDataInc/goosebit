@@ -56,6 +56,7 @@ class Device(Model):
     assigned_firmware = fields.ForeignKeyField(
         "models.Firmware", related_name="assigned_devices", null=True
     )
+    force_update = fields.BooleanField(default=False)
     fw_version = fields.CharField(max_length=255, null=True)
     hardware = fields.ForeignKeyField("models.Hardware", related_name="devices")
     feed = fields.CharField(max_length=255, default="default")
