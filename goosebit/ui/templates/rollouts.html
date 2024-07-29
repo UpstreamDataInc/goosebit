@@ -1,67 +1,71 @@
-{% extends "nav.html" %}
-{% block content %}
+{% extends "nav.html" %} {% block content %}
 <div class="container-fluid">
-    <div class="row p-2 d-flex justify-content-center">
-        <div class="col">
-            <table id="rollout-table" class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>
-                            Id
-                        </th>
-                        <th>
-                            Created
-                        </th>
-                        <th>
-                            Name
-                        </th>
-                        <th>
-                            Feed
-                        </th>
-                        <th>
-                            Flavour
-                        </th>
-                        <th>
-                            Update File
-                        </th>
-                        <th>
-                            Paused
-                        </th>
-                        <th>
-                            Success Count
-                        </th>
-                        <th>
-                            Failure Count
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="rollouts-list">
-
-                </tbody>
-            </table>
-        </div>
+  <div class="row p-2 d-flex justify-content-center">
+    <div class="col">
+      <table id="rollout-table" class="table table-hover">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Created</th>
+            <th>Name</th>
+            <th>Feed</th>
+            <th>Flavour</th>
+            <th>Update File</th>
+            <th>Paused</th>
+            <th>Success Count</th>
+            <th>Failure Count</th>
+          </tr>
+        </thead>
+        <tbody id="rollouts-list"></tbody>
+      </table>
     </div>
+  </div>
 </div>
 <div class="modal" id="rollout-create-modal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create Rollout</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <input id="rollout-selected-name" class="form-control mb-3" placeholder="Name"/>
-                <input id="rollout-selected-feed" class="form-control mb-3" placeholder="Feed"/>
-                <input id="rollout-selected-flavor" class="form-control mb-3" placeholder="Flavor"/>
-                <select class="form-select" id="rollout-selected-fw">
-                </select>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal" onclick="createRollout()">Save changes</button>
-            </div>
-        </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create Rollout</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <input
+          id="rollout-selected-name"
+          class="form-control mb-3"
+          placeholder="Name"
+        />
+        <input
+          id="rollout-selected-feed"
+          class="form-control mb-3"
+          placeholder="Feed"
+        />
+        <input
+          id="rollout-selected-flavor"
+          class="form-control mb-3"
+          placeholder="Flavor"
+        />
+        <select class="form-select" id="rollout-selected-fw"></select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-light"
+          data-bs-dismiss="modal"
+          onclick="createRollout()"
+        >
+          Save changes
+        </button>
+      </div>
     </div>
+  </div>
 </div>
 <script src="{{ url_for('static', path='js/rollouts.js') }}"></script>
 {% endblock content %}

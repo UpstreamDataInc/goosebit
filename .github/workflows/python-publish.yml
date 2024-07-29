@@ -5,9 +5,9 @@ on:
     tags:
       - "v*.*.*"
     paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'docsrc/**'
+      - "**.md"
+      - "docs/**"
+      - "docsrc/**"
 
 jobs:
   build:
