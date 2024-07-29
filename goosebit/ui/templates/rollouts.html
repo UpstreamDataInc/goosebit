@@ -42,6 +42,26 @@
         </div>
     </div>
 </div>
-
+<div class="modal" id="rollout-create-modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Rollout</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input id="rollout-selected-name" class="form-control mb-3" placeholder="Name"/>
+                <input id="rollout-selected-feed" class="form-control mb-3" placeholder="Feed"/>
+                <input id="rollout-selected-flavor" class="form-control mb-3" placeholder="Flavor"/>
+                <select class="form-select" id="rollout-selected-fw">
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal" onclick="createRollout()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="{{ url_for('static', path='js/rollouts.js') }}"></script>
 {% endblock content %}

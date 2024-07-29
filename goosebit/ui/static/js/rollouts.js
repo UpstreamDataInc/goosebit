@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
             dataSrc: "",
         },
         initComplete:function(){
+            updateBtnState();
         },
         columnDefs: [],
         columns: [
@@ -45,10 +46,178 @@ document.addEventListener("DOMContentLoaded", function() {
             },
             bottom1Start: {
                 buttons: [
+                    {
+                        text: '<i class="bi bi-plus" ></i>',
+                        action: function (e, dt, node, config) {
+                            new bootstrap.Modal('#rollout-create-modal').show();
+                        },
+                        className: "buttons-create",
+                        titleAttr: 'Create Rollout'
+                    },
+                    {
+                        text: '<i class="bi bi-play-fill" ></i>',
+                        action: function (e, dt, node, config) {
+                            selectedRollouts = dt.rows( {selected:true} ).data().toArray().map(d => d["id"]);
+                            pauseRollouts(selectedRollouts, false);
+                        },
+                        className: "buttons-resume",
+                        titleAttr: 'Resume Rollouts'
+                    },
+                    {
+                        text: '<i class="bi bi-pause-fill" ></i>',
+                        action: function (e, dt, node, config) {
+                            selectedRollouts = dt.rows( {selected:true} ).data().toArray().map(d => d["id"]);
+                            pauseRollouts(selectedRollouts, true);
+                        },
+                        className: "buttons-pause",
+                        titleAttr: 'Pause Rollouts'
+                    },
+                    {
+                        text: '<i class="bi bi-trash" ></i>',
+                        action: function (e, dt, node, config) {
+                            selectedRollouts = dt.rows( {selected:true} ).data().toArray().map(d => d["id"]);
+                            deleteRollouts(selectedRollouts);
+                        },
+                        className: "buttons-delete",
+                        titleAttr: 'Delete Rollouts'
+                    },
                 ]
             }
         },
     });
 
-    dataTable.ajax.reload();
+    dataTable.on( 'select', function ( e, dt, type, indexes ) {
+        updateBtnState();
+    } ).on( 'deselect', function ( e, dt, type, indexes ) {
+        updateBtnState();
+    } );
+
+    updateRolloutList();
+
+    updateFirmwareSelection();
 });
+
+function updateBtnState() {
+    dataTable = $("#rollout-table").DataTable();
+
+    if (dataTable.rows( {selected:true} ).any()) {
+        document.querySelector('button.buttons-delete').classList.remove('disabled');
+    } else {
+        document.querySelector('button.buttons-delete').classList.add('disabled');
+    }
+
+    if (dataTable.rows((_, data) => data.paused, {selected:true}).any()) {
+        document.querySelector('button.buttons-resume').classList.remove('disabled');
+    } else {
+        document.querySelector('button.buttons-resume').classList.add('disabled');
+    }
+
+    if (dataTable.rows((_, data) => !data.paused, {selected:true}).any()) {
+        document.querySelector('button.buttons-pause').classList.remove('disabled');
+    } else {
+        document.querySelector('button.buttons-pause').classList.add('disabled');
+    }
+}
+
+function updateFirmwareSelection() {
+    const url = '/api/firmware/all';
+
+    fetch(url)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Request failed');
+        }
+        return response.json();
+    })
+    .then(data => {
+        selectElem = document.getElementById("rollout-selected-fw");
+
+        data.forEach(item => {
+            optionElem = document.createElement("option");
+            optionElem.value = item["id"];
+            optionElem.textContent = item["name"];
+            selectElem.appendChild(optionElem);
+        });
+    })
+    .catch(error => {
+        console.error('Failed to fetch device data:', error);
+    });
+}
+
+function createRollout() {
+    name = document.getElementById("rollout-selected-name").value;
+    feed = document.getElementById("rollout-selected-feed").value;
+    flavor = document.getElementById("rollout-selected-flavor").value;
+    selectedFirmware = document.getElementById("rollout-selected-fw").value;
+
+    fetch('/api/rollouts', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            'name': name,
+            'feed': feed,
+            'flavor': flavor,
+            'firmware_id': selectedFirmware
+        })
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to create rollout.');
+        }
+        return response.json();
+    }).catch(error => {
+        console.error('Error:', error);
+    });
+
+    setTimeout(updateRolloutList, 50);
+}
+
+function updateRolloutList() {
+    dataTable = $("#rollout-table").DataTable();
+    dataTable.ajax.reload();
+}
+
+function deleteRollouts(rollouts) {
+    fetch('/api/rollouts/delete', {
+        method: 'POST',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+        body: JSON.stringify({
+            'ids': rollouts,
+        })
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to delete rollouts.');
+        }
+        return response.json();
+    }).catch(error => {
+        console.error('Error:', error);
+    });
+
+    updateBtnState();
+    setTimeout(updateRolloutList, 50);
+}
+
+function pauseRollouts(rollouts, state) {
+    fetch('/api/rollouts/update', {
+        method: 'POST',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+        body: JSON.stringify({
+            'ids': rollouts,
+            'paused': state
+        })
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to update rollouts.');
+        }
+        return response.json();
+    }).catch(error => {
+        console.error('Error:', error);
+    });
+
+    setTimeout(updateRolloutList, 50);
+}
