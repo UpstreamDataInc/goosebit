@@ -183,6 +183,30 @@ document.addEventListener("DOMContentLoaded", function() {
         updateBtnState();
     } );
 
+    // Compatibility tooltip
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+
+    $('#firmware-table tbody').on('mouseenter', 'tr', function() {
+        var rowData = dataTable.row(this).data();
+        var compat = rowData['compatibility'];
+        var list = compat && compat.map(c => `<b>${c.model}-${c.revision}</b>`).join(', ')
+        var tooltipText = `Compatibility: ${list}`;
+
+        // Initialize Bootstrap tooltip
+        $(this).attr('title', tooltipText).tooltip({
+            placement: 'top',
+            trigger: 'hover',
+            container: 'body',
+            html: true,
+        }).tooltip('show');
+    });
+
+    $('#firmware-table tbody').on('mouseleave', 'tr', function() {
+        $(this).tooltip('dispose');
+    });
+
     setInterval(function () {
         dataTable.ajax.reload(null, false);
     }, TABLE_UPDATE_TIME);
