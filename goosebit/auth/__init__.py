@@ -1,3 +1,4 @@
+from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends, HTTPException
 from fastapi.requests import Request
 from fastapi.security import SecurityScopes
@@ -19,7 +20,14 @@ async def authenticate_user(request: Request):
             headers={"location": str(request.url_for("login"))},
             detail="Invalid credentials",
         )
-    if not PWD_CXT.verify(user.hashed_pwd, password):
+    try:
+        if not PWD_CXT.verify(user.hashed_pwd, password):
+            raise HTTPException(
+                status_code=302,
+                headers={"location": str(request.url_for("login"))},
+                detail="Invalid credentials",
+            )
+    except VerifyMismatchError:
         raise HTTPException(
             status_code=302,
             headers={"location": str(request.url_for("login"))},

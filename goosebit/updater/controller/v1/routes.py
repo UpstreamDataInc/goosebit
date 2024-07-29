@@ -111,7 +111,7 @@ async def deployment_feedback(
         data = await request.json()
     except json.JSONDecodeError as e:
         logging.warning(
-            f"Parsing deployment feedback failed, error={e}, dewvice={dev_id}"
+            f"Parsing deployment feedback failed, error={e}, device={dev_id}"
         )
         return
     try:
