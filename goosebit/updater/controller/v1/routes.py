@@ -9,7 +9,7 @@ from goosebit.settings import POLL_TIME_REGISTRATION
 from goosebit.updater.manager import HandlingType, UpdateManager, get_update_manager
 from goosebit.updates import generate_chunk
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("DDI API")
 
 router = APIRouter(prefix="/v1")
 
@@ -41,7 +41,7 @@ async def polling(
         logger.info(f"Skip: registration required, device={updater.device.uuid}")
 
     elif last_state == UpdateStateEnum.ERROR and not updater.force_update:
-        logger.info(f"Skip: device in error state, device={updater.device.uuid}")
+        logger.warning(f"Skip: device in error state, device={updater.device.uuid}")
         pass
 
     else:
@@ -59,6 +59,7 @@ async def polling(
                     )
                 )
             }
+            logger.info(f"Forced: update available, device={updater.device.uuid}")
 
     return {
         "config": {"polling": {"sleep": sleep}},
@@ -76,6 +77,7 @@ async def config_data(
     data = await request.json()
     # TODO: make standard schema to deal with this
     await updater.update_config_data(**data["data"])
+    logger.info(f"Updating config data, device={updater.device.uuid}")
     return {"success": True, "message": "Updated swupdate data."}
 
 
@@ -88,6 +90,8 @@ async def deployment_base(
     updater: UpdateManager = Depends(get_update_manager),
 ):
     handling_type, firmware = await updater.get_update()
+
+    logger.info(f"Request deployment base, device={updater.device.uuid}")
 
     return {
         "id": f"{action_id}",
@@ -119,6 +123,7 @@ async def deployment_feedback(
 
         if execution == "proceeding":
             await updater.update_device_state(UpdateStateEnum.RUNNING)
+            logger.debug(f"Installation in progress, device={updater.device.uuid}")
 
         elif execution == "closed":
             state = data["status"]["result"]["finished"]
@@ -148,6 +153,9 @@ async def deployment_feedback(
                 # is problematic. Better to assign custom action_id for each update (rollout id? firmware id? new id?).
                 # Alternatively - but requires customization on the gateway side - use version reported by the gateway.
                 await updater.update_fw_version(reported_firmware.version)
+                logger.debug(
+                    f"Installation successful, firmware={reported_firmware.version}, device={updater.device.uuid}"
+                )
 
             elif state == "failure":
                 await updater.update_device_state(UpdateStateEnum.ERROR)
@@ -162,6 +170,10 @@ async def deployment_feedback(
                         logging.warning(
                             f"Updating rollout failure stats failed, firmware={reported_firmware.id}, device={dev_id}"
                         )
+
+                logger.debug(
+                    f"Installation failed, firmware={reported_firmware.version}, device={updater.device.uuid}"
+                )
 
     except KeyError as e:
         logging.warning(
