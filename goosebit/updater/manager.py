@@ -30,7 +30,6 @@ class HandlingType(StrEnum):
 class UpdateManager(ABC):
     def __init__(self, dev_id: str):
         self.dev_id = dev_id
-        self.poll_time = POLL_TIME
 
     async def get_device(self) -> Device | None:
         return
@@ -100,6 +99,14 @@ class UpdateManager(ABC):
     @update_complete.setter
     def update_complete(self, value: bool):
         device_update_status[self.dev_id] = value
+
+    @property
+    def poll_time(self):
+        return device_poll_time.get(self.dev_id, POLL_TIME)
+
+    @poll_time.setter
+    def poll_time(self, value: str):
+        device_poll_time[self.dev_id] = value
 
     async def publish_log(self, log_data: str | None):
         for cb in self.log_subscribers:
@@ -291,9 +298,10 @@ class DeviceUpdateManager(UpdateManager):
         await self.publish_log(None)
 
 
-device_managers = {"unknown": UnknownUpdateManager("unknown")}
 device_log_subscriptions: dict[str, list[Callable]] = {}
 device_update_status: dict[str, bool] = {}
+device_poll_time: dict[str, str] = {}
+device_managers = {"unknown": UnknownUpdateManager("unknown")}
 
 
 async def get_update_manager(dev_id: str) -> UpdateManager:
