@@ -22,6 +22,7 @@ async def devices_get_all() -> list[dict]:
 
     async def parse(device: Device) -> dict:
         manager = await get_update_manager(device.uuid)
+        _, target_firmware = await manager.get_update()
         last_seen = device.last_seen
         if last_seen is not None:
             last_seen = round(time.time() - device.last_seen)
@@ -30,9 +31,7 @@ async def devices_get_all() -> list[dict]:
             "name": device.name,
             "fw": device.fw_version,
             "fw_version": (
-                device.assigned_firmware.version
-                if device.assigned_firmware is not None
-                else None
+                target_firmware.version if target_firmware is not None else None
             ),
             "hw_model": device.hardware.model,
             "hw_revision": device.hardware.revision,
