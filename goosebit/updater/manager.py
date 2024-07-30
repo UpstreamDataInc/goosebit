@@ -49,7 +49,9 @@ class UpdateManager(ABC):
     async def update_last_connection(self, last_seen: int, last_ip: str) -> None:
         return
 
-    async def update_update(self, update_mode: UpdateModeEnum, firmware: Firmware):
+    async def update_update(
+        self, update_mode: UpdateModeEnum, firmware: Firmware | None
+    ):
         return
 
     async def update_name(self, name: str):
@@ -144,7 +146,9 @@ class DeviceUpdateManager(UpdateManager):
             device.last_ip = last_ip
             await device.save(update_fields=["last_seen", "last_ip"])
 
-    async def update_update(self, update_mode: UpdateModeEnum, firmware: Firmware):
+    async def update_update(
+        self, update_mode: UpdateModeEnum, firmware: Firmware | None
+    ):
         device = await self.get_device()
         device.assigned_firmware = firmware
         device.update_mode = update_mode
