@@ -1,5 +1,7 @@
+let dataTable;
+
 document.addEventListener("DOMContentLoaded", function () {
-  var dataTable = new DataTable("#device-table", {
+  dataTable = new DataTable("#device-table", {
     responsive: true,
     paging: false,
     scrollCollapse: true,
@@ -16,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
     columnDefs: [
       {
         targets: "_all",
-        render: function (data, type, row) {
+        render: function (data) {
           return data || "❓";
         },
       },
@@ -25,10 +27,9 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "name" },
       {
         data: "online",
-        render: function (data, type, row) {
+        render: function (data, type) {
           if (type === "display" || type === "filter") {
-            online = data ? "Online" : "Offline";
-            color = data ? "success" : "danger";
+            const color = data ? "success" : "danger";
             return `
                         <div class="text-${color}">
                             ●
@@ -42,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "fw" },
       {
         data: "progress",
-        render: function (data, type, row) {
+        render: function (data, type) {
           if (type === "display" || type === "filter") {
             return (data || "❓") + "%";
           }
@@ -52,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "last_ip" },
       {
         data: "last_seen",
-        render: function (data, type, row) {
+        render: function (data, type) {
           if (type === "display" || type === "filter") {
             return secondsToRecentDate(data);
           }
@@ -77,8 +78,11 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-file-earmark-arrow-down"></i>',
-            action: function (e, dt, node, config) {
-              selectedDevices = dt.rows({ selected: true }).data().toArray();
+            action: function (e, dt) {
+              const selectedDevices = dt
+                .rows({ selected: true })
+                .data()
+                .toArray();
               downloadLogins(selectedDevices);
             },
             className: "buttons-export-login",
@@ -86,8 +90,11 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-file-text"></i>',
-            action: function (e, dt, node, config) {
-              selectedDevice = dt.rows({ selected: true }).data().toArray()[0];
+            action: function (e, dt) {
+              const selectedDevice = dt
+                .rows({ selected: true })
+                .data()
+                .toArray()[0];
               window.location.href = `/ui/logs/${selectedDevice["uuid"]}`;
             },
             className: "buttons-logs",
@@ -99,10 +106,10 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   dataTable
-    .on("select", function (e, dt, type, indexes) {
+    .on("select", function () {
       updateBtnState();
     })
-    .on("deselect", function (e, dt, type, indexes) {
+    .on("deselect", function () {
       updateBtnState();
     });
 
@@ -112,7 +119,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function updateBtnState() {
-  dataTable = $("#device-table").DataTable();
   if (dataTable.rows({ selected: true }).any()) {
     document
       .querySelector("button.buttons-select-none")
@@ -128,7 +134,7 @@ function updateBtnState() {
       .querySelector("button.buttons-export-login")
       .classList.add("disabled");
   }
-  if (dataTable.rows({ selected: true }).count() == 1) {
+  if (dataTable.rows({ selected: true }).count() === 1) {
     document.querySelector("button.buttons-logs").classList.remove("disabled");
   } else {
     document.querySelector("button.buttons-logs").classList.add("disabled");
@@ -149,7 +155,7 @@ function updateBtnState() {
 }
 
 function downloadLogins(devices) {
-  let deviceLogins = devices.map((dev) => {
+  const deviceLogins = devices.map((dev) => {
     return [
       dev["name"],
       `https://${dev["uuid"]}-access.loadsync.io`,
@@ -163,11 +169,11 @@ function downloadLogins(devices) {
     "Login/Wifi Password",
   ]);
 
-  let csvContent =
+  const csvContent =
     "data:text/csv;charset=utf-8," +
     deviceLogins.map((e) => e.join(",")).join("\n");
-  var encodedUri = encodeURI(csvContent);
-  var link = document.createElement("a");
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
   link.setAttribute("download", "LoadsyncLogins-Export.csv");
   document.body.appendChild(link);

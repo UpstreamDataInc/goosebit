@@ -1,5 +1,7 @@
+let dataTable;
+
 document.addEventListener("DOMContentLoaded", function () {
-  var dataTable = new DataTable("#device-table", {
+  dataTable = new DataTable("#device-table", {
     responsive: true,
     paging: false,
     scrollCollapse: true,
@@ -18,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
     columnDefs: [
       {
         targets: "_all",
-        render: function (data, type, row) {
+        render: function (data) {
           return data || "❓";
         },
       },
@@ -27,9 +29,9 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "name" },
       {
         data: "online",
-        render: function (data, type, row) {
+        render: function (data, type) {
           if (type === "display" || type === "filter") {
-            color = data ? "success" : "danger";
+            const color = data ? "success" : "danger";
             return `
                         <div class="text-${color}">
                             ●
@@ -48,9 +50,9 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "update_mode" },
       {
         data: "force_update",
-        render: function (data, type, row) {
+        render: function (data, type) {
           if (type === "display" || type === "filter") {
-            color = data ? "success" : "danger";
+            const color = data ? "success" : "danger";
             return `
                         <div class="text-${color}">
                             ●
@@ -63,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "fw_version" },
       {
         data: "progress",
-        render: function (data, type, row) {
+        render: function (data, type) {
           if (type === "display" || type === "filter") {
             return (data || "❓") + "%";
           }
@@ -73,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "last_ip" },
       {
         data: "last_seen",
-        render: function (data, type, row) {
+        render: function (data, type) {
           if (type === "display" || type === "filter") {
             return secondsToRecentDate(data);
           }
@@ -97,8 +99,8 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-file-text"></i>',
-            action: function (e, dt, node, config) {
-              selectedDevice = dataTable
+            action: function () {
+              const selectedDevice = dataTable
                 .rows({ selected: true })
                 .data()
                 .toArray()[0];
@@ -113,14 +115,13 @@ document.addEventListener("DOMContentLoaded", function () {
         buttons: [
           {
             text: '<i class="bi bi-pen" ></i>',
-            action: function (e, dt, node, config) {
+            action: function (e, dt) {
               const input = document.getElementById("device-selected-name");
-              const selectedDeviceName = dt
+              input.value = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
                 .map((d) => d["name"])[0];
-              input.value = selectedDeviceName;
 
               new bootstrap.Modal("#device-rename-modal").show();
             },
@@ -129,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-gear" ></i>',
-            action: function (e, dt, node, config) {
+            action: function () {
               new bootstrap.Modal("#device-config-modal").show();
             },
             className: "buttons-config",
@@ -137,8 +138,8 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-trash" ></i>',
-            action: function (e, dt, node, config) {
-              selectedDevices = dt
+            action: function (e, dt) {
+              const selectedDevices = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
@@ -150,8 +151,8 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-box-arrow-in-up-right"></i>',
-            action: function (e, dt, node, config) {
-              selectedDevices = dataTable
+            action: function () {
+              const selectedDevices = dataTable
                 .rows({ selected: true })
                 .data()
                 .toArray()
@@ -163,8 +164,8 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-pin-angle"></i>',
-            action: function (e, dt, node, config) {
-              selectedDevices = dataTable
+            action: function () {
+              const selectedDevices = dataTable
                 .rows({ selected: true })
                 .data()
                 .toArray()
@@ -180,16 +181,15 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   dataTable.on("click", "button.edit-name", function (e) {
-    let data = dataTable.row(e.target.closest("tr")).data();
-    uuid = data["uuid"];
-    updateDeviceName(uuid);
+    const data = dataTable.row(e.target.closest("tr")).data();
+    updateDeviceName(data["uuid"]);
   });
 
   dataTable
-    .on("select", function (e, dt, type, indexes) {
+    .on("select", function () {
       updateBtnState();
     })
-    .on("deselect", function (e, dt, type, indexes) {
+    .on("deselect", function () {
       updateBtnState();
     });
 
@@ -201,7 +201,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function updateBtnState() {
-  dataTable = $("#device-table").DataTable();
   if (dataTable.rows({ selected: true }).any()) {
     document
       .querySelector("button.buttons-select-none")
@@ -227,7 +226,7 @@ function updateBtnState() {
     document.querySelector("button.buttons-delete").classList.add("disabled");
     document.querySelector("button.buttons-pin").classList.add("disabled");
   }
-  if (dataTable.rows({ selected: true }).count() == 1) {
+  if (dataTable.rows({ selected: true }).count() === 1) {
     document.querySelector("button.buttons-logs").classList.remove("disabled");
     document
       .querySelector("button.buttons-rename")
@@ -252,12 +251,12 @@ function updateBtnState() {
 }
 
 function updateDeviceConfig() {
-  selectedDevices = dataTable
+  const selectedDevices = dataTable
     .rows({ selected: true })
     .data()
     .toArray()
     .map((d) => d["uuid"]);
-  selectedFirmware = document.getElementById("selected-fw").value;
+  const selectedFirmware = document.getElementById("selected-fw").value;
 
   fetch("/api/devices/update", {
     method: "POST",
@@ -283,7 +282,7 @@ function updateDeviceConfig() {
 }
 
 function updateDeviceName() {
-  selectedDevices = dataTable
+  const selectedDevices = dataTable
     .rows({ selected: true })
     .data()
     .toArray()

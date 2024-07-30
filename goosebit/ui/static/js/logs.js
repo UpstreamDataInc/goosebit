@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
-  var logs_ws = create_ws(`/realtime/logs/${device}`);
+  const logs_ws = create_ws(`/realtime/logs/${device}`);
 
   logs_ws.addEventListener("message", (event) => {
-    res = JSON.parse(event.data);
+    const res = JSON.parse(event.data);
 
     const logElem = document.getElementById("device-log");
     if (res["clear"]) {
@@ -17,11 +17,9 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function create_ws(s) {
-  var l = window.location;
-  return new WebSocket(
-    (l.protocol === "https:" ? "wss://" : "ws://") +
-      l.hostname +
-      (l.port != 80 && l.port != 443 ? ":" + l.port : "") +
-      s,
-  );
+  const l = window.location;
+  const protocol = l.protocol === "https:" ? "wss://" : "ws://";
+  const port = l.port !== "80" || l.port !== "443" ? l.port : "";
+  const url = `${protocol}${l.hostname}${port}${s}`;
+  return new WebSocket(url);
 }

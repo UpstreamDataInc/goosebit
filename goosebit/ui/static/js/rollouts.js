@@ -1,5 +1,7 @@
+let dataTable;
+
 document.addEventListener("DOMContentLoaded", function () {
-  var dataTable = new DataTable("#rollout-table", {
+  dataTable = new DataTable("#rollout-table", {
     responsive: true,
     paging: false,
     scrollCollapse: true,
@@ -27,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
         data: "paused",
         render: function (data, type) {
           if (type === "display" || type === "filter") {
-            color = data ? "success" : "light";
+            const color = data ? "success" : "light";
             return `
                         <div class="text-${color}">
                             ●
@@ -48,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
         buttons: [
           {
             text: '<i class="bi bi-plus" ></i>',
-            action: function (e, dt, node, config) {
+            action: function () {
               new bootstrap.Modal("#rollout-create-modal").show();
             },
             className: "buttons-create",
@@ -56,8 +58,8 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-play-fill" ></i>',
-            action: function (e, dt, node, config) {
-              selectedRollouts = dt
+            action: function (e, dt) {
+              const selectedRollouts = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
@@ -69,8 +71,8 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-pause-fill" ></i>',
-            action: function (e, dt, node, config) {
-              selectedRollouts = dt
+            action: function (e, dt) {
+              const selectedRollouts = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
@@ -82,8 +84,8 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-trash" ></i>',
-            action: function (e, dt, node, config) {
-              selectedRollouts = dt
+            action: function (e, dt) {
+              const selectedRollouts = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
@@ -99,10 +101,10 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   dataTable
-    .on("select", function (e, dt, type, indexes) {
+    .on("select", function () {
       updateBtnState();
     })
-    .on("deselect", function (e, dt, type, indexes) {
+    .on("deselect", function () {
       updateBtnState();
     });
 
@@ -112,8 +114,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function updateBtnState() {
-  dataTable = $("#rollout-table").DataTable();
-
   if (dataTable.rows({ selected: true }).any()) {
     document
       .querySelector("button.buttons-delete")
@@ -138,10 +138,10 @@ function updateBtnState() {
 }
 
 function createRollout() {
-  name = document.getElementById("rollout-selected-name").value;
-  feed = document.getElementById("rollout-selected-feed").value;
-  flavor = document.getElementById("rollout-selected-flavor").value;
-  selectedFirmware = document.getElementById("selected-fw").value;
+  const name = document.getElementById("rollout-selected-name").value;
+  const feed = document.getElementById("rollout-selected-feed").value;
+  const flavor = document.getElementById("rollout-selected-flavor").value;
+  const selectedFirmware = document.getElementById("selected-fw").value;
 
   fetch("/api/rollouts", {
     method: "POST",
@@ -169,7 +169,6 @@ function createRollout() {
 }
 
 function updateRolloutList() {
-  dataTable = $("#rollout-table").DataTable();
   dataTable.ajax.reload();
 }
 
