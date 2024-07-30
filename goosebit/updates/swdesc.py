@@ -1,6 +1,7 @@
 import hashlib
 import logging
 from pathlib import Path
+from typing import Any
 
 import aiofiles
 import httpx
@@ -10,6 +11,35 @@ import semver
 from goosebit.settings import UPDATES_DIR
 
 logger = logging.getLogger(__name__)
+
+
+def _append_compatibility(boardname, value, compatibility):
+    if "hardware-compatibility" in value:
+        for revision in value["hardware-compatibility"]:
+            compatibility.append({"hw_model": boardname, "hw_revision": revision})
+
+
+def parse_descriptor(swdesc: libconf.AttrDict[Any, Any | None]):
+    swdesc_attrs = {}
+    try:
+        swdesc_attrs["version"] = semver.Version.parse(swdesc["software"]["version"])
+        compatibility = []
+        _append_compatibility("default", swdesc["software"], compatibility)
+
+        for key in swdesc["software"]:
+            element = swdesc["software"][key]
+            _append_compatibility(key, element, compatibility)
+
+            if isinstance(element, dict):
+                for key2 in element:
+                    _append_compatibility(key, element[key2], compatibility)
+
+        swdesc_attrs["compatibility"] = compatibility
+    except KeyError as e:
+        logging.warning(f"Parsing swu descriptor failed, error={e}")
+        raise ValueError("Parsing swu descriptor failed", e)
+
+    return swdesc_attrs
 
 
 async def parse_file(file: Path):
@@ -30,19 +60,10 @@ async def parse_file(file: Path):
 
         swdesc = libconf.loads((await f.read(size)).decode("utf-8"))
 
-    swdesc_attrs = {}
-    try:
-        swdesc_attrs["version"] = semver.Version.parse(swdesc["software"]["version"])
+        swdesc_attrs = parse_descriptor(swdesc)
         swdesc_attrs["size"] = file.stat().st_size
         swdesc_attrs["hash"] = _sha1_hash_file(file)
-        swdesc_attrs["compatibility"] = [
-            {"hw_model": comp.split(".")[0], "hw_revision": comp.split(".")[1]}
-            for comp in swdesc["software"]["hardware-compatibility"]
-        ]
-    except KeyError as e:
-        logging.warning(f"Parsing firmware failed, error={e}, file={file.name}")
-        return
-    return swdesc_attrs
+        return swdesc_attrs
 
 
 async def parse_remote(url: str):

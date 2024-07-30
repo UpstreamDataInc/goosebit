@@ -9,23 +9,25 @@ from tortoise import Model, fields
 
 
 class UpdateModeEnum(IntEnum):
+    NONE = 0
     LATEST = 1
     PINNED = 2
     ROLLOUT = 3
     ASSIGNED = 4
 
     def __str__(self):
-        if self == UpdateModeEnum.LATEST:
-            return "Latest"
-        elif self == UpdateModeEnum.PINNED:
-            return "Pinned"
-        elif self == UpdateModeEnum.ROLLOUT:
-            return "Rollout"
-        elif self == UpdateModeEnum.ASSIGNED:
-            return "Assigned"
+        return self.name.capitalize()
+
+    @classmethod
+    def from_str(cls, name):
+        try:
+            return cls[name.upper()]
+        except KeyError:
+            return cls.NONE
 
 
 class UpdateStateEnum(IntEnum):
+    NONE = 0
     UNKNOWN = 1
     REGISTERED = 2
     RUNNING = 3
@@ -33,16 +35,14 @@ class UpdateStateEnum(IntEnum):
     FINISHED = 5
 
     def __str__(self):
-        if self == UpdateStateEnum.UNKNOWN:
-            return "Unknown"
-        elif self == UpdateStateEnum.REGISTERED:
-            return "Registered"
-        elif self == UpdateStateEnum.RUNNING:
-            return "Running"
-        elif self == UpdateStateEnum.ERROR:
-            return "Error"
-        elif self == UpdateStateEnum.FINISHED:
-            return "Finished"
+        return self.name.capitalize()
+
+    @classmethod
+    def from_str(cls, name):
+        try:
+            return cls[name.upper()]
+        except KeyError:
+            return cls.NONE
 
 
 class Tag(Model):

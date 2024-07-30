@@ -18,8 +18,6 @@ from goosebit.models import (
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
 from goosebit.telemetry import devices_count
 
-logger = logging.getLogger(__name__)
-
 
 class HandlingType(StrEnum):
     SKIP = "skip"
@@ -51,7 +49,9 @@ class UpdateManager(ABC):
     async def update_last_connection(self, last_seen: int, last_ip: str) -> None:
         return
 
-    async def update_update(self, update_mode: UpdateModeEnum, firmware: Firmware):
+    async def update_update(
+        self, update_mode: UpdateModeEnum, firmware: Firmware | None
+    ):
         return
 
     async def update_name(self, name: str):
@@ -146,7 +146,9 @@ class DeviceUpdateManager(UpdateManager):
             device.last_ip = last_ip
             await device.save(update_fields=["last_seen", "last_ip"])
 
-    async def update_update(self, update_mode: UpdateModeEnum, firmware: Firmware):
+    async def update_update(
+        self, update_mode: UpdateModeEnum, firmware: Firmware | None
+    ):
         device = await self.get_device()
         device.assigned_firmware = firmware
         device.update_mode = update_mode
@@ -214,22 +216,18 @@ class DeviceUpdateManager(UpdateManager):
         if firmware is None:
             handling_type = HandlingType.SKIP
             self.poll_time = POLL_TIME
-            logger.info(f"Skip: no update available, device={device.uuid}")
 
         elif firmware.version == device.fw_version and not self.force_update:
             handling_type = HandlingType.SKIP
             self.poll_time = POLL_TIME
-            logger.info(f"Skip: device up-to-date, device={device.uuid}")
 
         elif device.last_state == UpdateStateEnum.ERROR and not self.force_update:
             handling_type = HandlingType.SKIP
             self.poll_time = POLL_TIME
-            logger.warning(f"Skip: device in error state, device={device.uuid}")
 
         else:
             handling_type = HandlingType.FORCED
             self.poll_time = POLL_TIME_UPDATING
-            logger.info(f"Forced: update available, device={device.uuid}")
 
             if self.update_complete:
                 self.update_complete = False

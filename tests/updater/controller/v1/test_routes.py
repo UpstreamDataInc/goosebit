@@ -17,7 +17,7 @@ async def _api_device_update(async_client, device, update_attribute, update_valu
 async def _api_devices_get(async_client):
     response = await async_client.get("/api/devices/all")
     assert response.status_code == 200
-    return response.json()
+    return response.json()["data"]
 
 
 async def _api_rollouts_get(async_client):
@@ -149,8 +149,8 @@ async def test_rollout_full(async_client, test_data):
 
     await rollout.refresh_from_db()
     rollouts = await _api_rollouts_get(async_client)
-    assert rollouts[0]["success_count"] == 1
-    assert rollouts[0]["failure_count"] == 0
+    assert rollouts["data"][0]["success_count"] == 1
+    assert rollouts["data"][0]["failure_count"] == 0
 
 
 @pytest.mark.asyncio
