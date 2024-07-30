@@ -46,7 +46,7 @@ async def firmware_get_all(
         Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.DELETE])
     ],
 )
-async def firmware_delete(_: Request, files: list[str] = Body()) -> dict:
+async def firmware_delete(_: Request, files: list[int] = Body()) -> dict:
     success = False
     for f_id in files:
         firmware = await Firmware.get_or_none(id=f_id)
