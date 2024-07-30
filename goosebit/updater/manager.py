@@ -298,9 +298,6 @@ class DeviceUpdateManager(UpdateManager):
             # clear log
             device.last_log = ""
             await self.publish_log(None)
-        elif log_data == "All Chunks Installed.":
-            device.force_update = False
-            device.log_complete = True
 
         if not log_data == "Skipped Update.":
             device.last_log += f"{log_data}\n"
@@ -308,7 +305,7 @@ class DeviceUpdateManager(UpdateManager):
 
         await self.save_device(
             device,
-            update_fields=["progress", "last_log", "force_update", "log_complete"],
+            update_fields=["progress", "last_log"],
         )
 
     async def clear_log(self) -> None:
