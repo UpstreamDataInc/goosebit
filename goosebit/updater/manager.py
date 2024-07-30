@@ -104,7 +104,11 @@ class UpdateManager(ABC):
 
     @poll_time.setter
     def poll_time(self, value: str):
-        device_poll_time[self.dev_id] = value
+        if not value == POLL_TIME:
+            device_poll_time[self.dev_id] = value
+            return
+        if self.dev_id in device_poll_time:
+            del device_poll_time[self.dev_id]
 
     async def publish_log(self, log_data: str | None):
         for cb in self.log_subscribers:
