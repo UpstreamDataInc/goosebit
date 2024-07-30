@@ -9,6 +9,9 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Callable, Optional
 
+from aiocache import Cache, cached
+from aiocache.serializers import PickleSerializer
+
 from goosebit.models import (
     Device,
     Firmware,
@@ -136,6 +139,7 @@ class UnknownUpdateManager(UpdateManager):
 
 
 class DeviceUpdateManager(UpdateManager):
+    @cached(ttl=6000, key="devices", cache=Cache.MEMORY, serializer=PickleSerializer)
     async def get_device(self) -> Device:
         hardware = (await Hardware.get_or_create(model="default", revision="default"))[
             0

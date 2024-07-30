@@ -22,6 +22,7 @@ libconf = "^2.0.1"
 opentelemetry-distro = "^0.46b0"
 opentelemetry-instrumentation-fastapi = "^0.46b0"
 opentelemetry-exporter-prometheus = "^0.46b0"
+aiocache = "^0.12.2"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.13.2"
