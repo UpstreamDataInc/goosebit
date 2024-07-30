@@ -129,7 +129,7 @@ async def deployment_feedback(
             state = data["status"]["result"]["finished"]
 
             await updater.update_force_update(False)
-            updater.update_complete = True
+            await updater.update_log_complete(True)
 
             reported_firmware = await Firmware.get_or_none(id=data["id"])
 

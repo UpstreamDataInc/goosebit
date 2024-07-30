@@ -63,6 +63,9 @@ class UpdateManager(ABC):
     async def update_config_data(self, **kwargs):
         return
 
+    async def update_log_complete(self, log_complete: bool):
+        return
+
     async def get_rollout(self) -> Optional[Rollout]:
         return None
 
@@ -94,14 +97,6 @@ class UpdateManager(ABC):
     @log_subscribers.setter
     def log_subscribers(self, value: list):
         device_log_subscriptions[self.dev_id] = value
-
-    @property
-    def update_complete(self):
-        return device_update_status.get(self.dev_id, False)
-
-    @update_complete.setter
-    def update_complete(self, value: bool):
-        device_update_status[self.dev_id] = value
 
     @property
     def poll_time(self):
@@ -139,7 +134,13 @@ class UnknownUpdateManager(UpdateManager):
 
 
 class DeviceUpdateManager(UpdateManager):
-    @cached(ttl=6000, key="devices", cache=Cache.MEMORY, serializer=PickleSerializer)
+    @cached(
+        ttl=600,
+        key_builder=lambda fn, self: self.dev_id,
+        cache=Cache.MEMORY,
+        serializer=PickleSerializer(),
+        namespace="main",
+    )
     async def get_device(self) -> Device:
         hardware = (await Hardware.get_or_create(model="default", revision="default"))[
             0
@@ -150,35 +151,40 @@ class DeviceUpdateManager(UpdateManager):
             )
         )[0]
 
+    async def save_device(self, device: Device, update_fields: list[str]):
+        cache = Cache(namespace="main")
+        await cache.set(self.dev_id, device, ttl=600)
+        await device.save(update_fields=update_fields)
+
     async def update_force_update(self, force_update: bool) -> None:
         device = await self.get_device()
         device.force_update = force_update
-        await device.save(update_fields=["force_update"])
+        await self.save_device(device, update_fields=["force_update"])
 
     async def update_fw_version(self, version: str) -> None:
         device = await self.get_device()
         device.fw_version = version
-        await device.save(update_fields=["fw_version"])
+        await self.save_device(device, update_fields=["fw_version"])
 
     async def update_hardware(self, hardware: Hardware) -> None:
         device = await self.get_device()
         device.hardware = hardware
-        await device.save(update_fields=["hardware"])
+        await self.save_device(device, update_fields=["hardware"])
 
     async def update_device_state(self, state: UpdateStateEnum) -> None:
         device = await self.get_device()
         device.last_state = state
-        await device.save(update_fields=["last_state"])
+        await self.save_device(device, update_fields=["last_state"])
 
     async def update_last_connection(self, last_seen: int, last_ip: str) -> None:
         device = await self.get_device()
         device.last_seen = last_seen
         if ":" in last_ip:
             device.last_ipv6 = last_ip
-            await device.save(update_fields=["last_seen", "last_ipv6"])
+            await self.save_device(device, update_fields=["last_seen", "last_ipv6"])
         else:
             device.last_ip = last_ip
-            await device.save(update_fields=["last_seen", "last_ip"])
+            await self.save_device(device, update_fields=["last_seen", "last_ip"])
 
     async def update_update(
         self, update_mode: UpdateModeEnum, firmware: Firmware | None
@@ -186,12 +192,14 @@ class DeviceUpdateManager(UpdateManager):
         device = await self.get_device()
         device.assigned_firmware = firmware
         device.update_mode = update_mode
-        await device.save(update_fields=["assigned_firmware_id", "update_mode"])
+        await self.save_device(
+            device, update_fields=["assigned_firmware_id", "update_mode"]
+        )
 
     async def update_name(self, name: str):
         device = await self.get_device()
         device.name = name
-        await device.save(update_fields=["name"])
+        await self.save_device(device, update_fields=["name"])
 
     async def update_config_data(self, **kwargs):
         model = kwargs.get("hw_model") or "default"
@@ -209,7 +217,12 @@ class DeviceUpdateManager(UpdateManager):
             modified = True
 
         if modified:
-            await device.save(update_fields=["hardware_id", "last_state"])
+            await self.save_device(device, update_fields=["hardware_id", "last_state"])
+
+    async def update_log_complete(self, log_complete: bool):
+        device = await self.get_device()
+        device.log_complete = log_complete
+        await self.save_device(device, update_fields=["log_complete"])
 
     async def get_rollout(self) -> Optional[Rollout]:
         device = await self.get_device()
@@ -263,8 +276,8 @@ class DeviceUpdateManager(UpdateManager):
             handling_type = HandlingType.FORCED
             self.poll_time = POLL_TIME_UPDATING
 
-            if self.update_complete:
-                self.update_complete = False
+            if device.log_complete:
+                await self.update_log_complete(False)
                 await self.clear_log()
 
         return handling_type, firmware
@@ -287,23 +300,25 @@ class DeviceUpdateManager(UpdateManager):
             await self.publish_log(None)
         elif log_data == "All Chunks Installed.":
             device.force_update = False
-            self.update_complete = True
+            device.log_complete = True
 
         if not log_data == "Skipped Update.":
             device.last_log += f"{log_data}\n"
             await self.publish_log(f"{log_data}\n")
 
-        await device.save(update_fields=["progress", "last_log", "force_update"])
+        await self.save_device(
+            device,
+            update_fields=["progress", "last_log", "force_update", "log_complete"],
+        )
 
     async def clear_log(self) -> None:
         device = await self.get_device()
         device.last_log = ""
-        await device.save(update_fields=["last_log"])
+        await self.save_device(device, update_fields=["last_log"])
         await self.publish_log(None)
 
 
 device_log_subscriptions: dict[str, list[Callable]] = {}
-device_update_status: dict[str, bool] = {}
 device_poll_time: dict[str, str] = {}
 device_managers = {"unknown": UnknownUpdateManager("unknown")}
 
