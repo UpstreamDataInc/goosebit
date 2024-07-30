@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
     dataTable.ajax.reload(null, false);
   }, TABLE_UPDATE_TIME);
 
-  updateFirmwareSelection();
+  updateFirmwareSelection(true);
 });
 
 function updateBtnState() {
@@ -251,48 +251,13 @@ function updateBtnState() {
   }
 }
 
-function updateFirmwareSelection() {
-  const url = "/api/firmware/all";
-
-  fetch(url)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Request failed");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      selectElem = document.getElementById("device-selected-fw");
-
-      optionElem = document.createElement("option");
-      optionElem.value = "rollout";
-      optionElem.textContent = "rollout";
-      selectElem.appendChild(optionElem);
-
-      optionElem = document.createElement("option");
-      optionElem.value = "latest";
-      optionElem.textContent = "latest";
-      selectElem.appendChild(optionElem);
-
-      data.forEach((item) => {
-        optionElem = document.createElement("option");
-        optionElem.value = item["id"];
-        optionElem.textContent = item["name"];
-        selectElem.appendChild(optionElem);
-      });
-    })
-    .catch((error) => {
-      console.error("Failed to fetch device data:", error);
-    });
-}
-
 function updateDeviceConfig() {
   selectedDevices = dataTable
     .rows({ selected: true })
     .data()
     .toArray()
     .map((d) => d["uuid"]);
-  selectedFirmware = document.getElementById("device-selected-fw").value;
+  selectedFirmware = document.getElementById("selected-fw").value;
 
   fetch("/api/devices/update", {
     method: "POST",
@@ -420,25 +385,4 @@ function pinDevices(devices) {
 
 function updateDeviceList() {
   dataTable.ajax.reload();
-}
-
-function secondsToRecentDate(t) {
-  if (t == null) {
-    return null;
-  }
-  t = Number(t);
-  var d = Math.floor(t / 86400);
-  var h = Math.floor((t % 86400) / 3600);
-  var m = Math.floor(((t % 86400) % 3600) / 60);
-  var s = Math.floor(((t % 86400) % 3600) % 60);
-
-  if (d > 0) {
-    return d + (d == 1 ? " day" : " days");
-  } else if (h > 0) {
-    return h + (h == 1 ? " hour" : " hours");
-  } else if (m > 0) {
-    return m + (m == 1 ? " minute" : " minutes");
-  } else {
-    return s + (s == 1 ? " second" : " seconds");
-  }
 }

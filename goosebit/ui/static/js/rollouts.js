@@ -137,36 +137,11 @@ function updateBtnState() {
   }
 }
 
-function updateFirmwareSelection() {
-  const url = "/api/firmware/all";
-
-  fetch(url)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Request failed");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      selectElem = document.getElementById("rollout-selected-fw");
-
-      data.forEach((item) => {
-        optionElem = document.createElement("option");
-        optionElem.value = item["id"];
-        optionElem.textContent = item["name"];
-        selectElem.appendChild(optionElem);
-      });
-    })
-    .catch((error) => {
-      console.error("Failed to fetch device data:", error);
-    });
-}
-
 function createRollout() {
   name = document.getElementById("rollout-selected-name").value;
   feed = document.getElementById("rollout-selected-feed").value;
   flavor = document.getElementById("rollout-selected-flavor").value;
-  selectedFirmware = document.getElementById("rollout-selected-fw").value;
+  selectedFirmware = document.getElementById("selected-fw").value;
 
   fetch("/api/rollouts", {
     method: "POST",

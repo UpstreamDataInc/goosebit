@@ -174,24 +174,3 @@ function downloadLogins(devices) {
 
   link.click();
 }
-
-function secondsToRecentDate(t) {
-  if (t == null) {
-    return null;
-  }
-  t = Number(t);
-  var d = Math.floor(t / 86400);
-  var h = Math.floor((t % 86400) / 3600);
-  var m = Math.floor(((t % 86400) % 3600) / 60);
-  var s = Math.floor(((t % 86400) % 3600) % 60);
-
-  if (d > 0) {
-    return d + (d == 1 ? " day" : " days");
-  } else if (h > 0) {
-    return h + (h == 1 ? " hour" : " hours");
-  } else if (m > 0) {
-    return m + (m == 1 ? " minute" : " minutes");
-  } else {
-    return s + (s == 1 ? " second" : " seconds");
-  }
-}
