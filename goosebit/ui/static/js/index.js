@@ -3,21 +3,30 @@ let dataTable;
 document.addEventListener("DOMContentLoaded", function () {
   dataTable = new DataTable("#device-table", {
     responsive: true,
-    paging: false,
+    paging: true,
+    processing: false,
+    serverSide: true,
     scrollCollapse: true,
     scroller: true,
     scrollY: "65vh",
     stateSave: true,
     ajax: {
       url: "/api/devices/all",
-      dataSrc: "",
+      contentType: "application/json",
     },
     initComplete: function () {
       updateBtnState();
     },
     columnDefs: [
       {
+        targets: [0, 2],
+        searchable: true,
+        orderable: true,
+      },
+      {
         targets: "_all",
+        searchable: false,
+        orderable: false,
         render: function (data) {
           return data || "❓";
         },

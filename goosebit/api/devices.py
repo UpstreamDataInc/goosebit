@@ -1,12 +1,14 @@
-import asyncio
 import time
+from typing import Any
 
 from fastapi import APIRouter, Security
 from fastapi.requests import Request
 from pydantic import BaseModel
+from tortoise.expressions import Q
 
+from goosebit.api.helper import filter_data
 from goosebit.auth import validate_user_permissions
-from goosebit.models import Device, Firmware, UpdateModeEnum
+from goosebit.models import Device, Firmware, UpdateModeEnum, UpdateStateEnum
 from goosebit.permissions import Permissions
 from goosebit.updater.manager import delete_device, get_update_manager
 
@@ -17,8 +19,18 @@ router = APIRouter(prefix="/devices")
     "/all",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
 )
-async def devices_get_all() -> list[dict]:
-    devices = await Device.all().prefetch_related("assigned_firmware", "hardware")
+async def devices_get_all(request: Request) -> dict[str, int | list[Any] | Any]:
+    query = Device.all().prefetch_related("assigned_firmware", "hardware")
+
+    def search_filter(search_value):
+        return (
+            Q(uuid__icontains=search_value)
+            | Q(name__icontains=search_value)
+            | Q(feed__icontains=search_value)
+            | Q(flavor__icontains=search_value)
+            | Q(update_mode__icontains=UpdateModeEnum.from_str(search_value))
+            | Q(last_state__icontains=UpdateStateEnum.from_str(search_value))
+        )
 
     async def parse(device: Device) -> dict:
         manager = await get_update_manager(device.uuid)
@@ -48,7 +60,8 @@ async def devices_get_all() -> list[dict]:
             ),
         }
 
-    return list(await asyncio.gather(*[parse(d) for d in devices]))
+    total_records = await Device.all().count()
+    return await filter_data(request, query, search_filter, parse, total_records)
 
 
 class UpdateDevicesModel(BaseModel):
@@ -64,7 +77,7 @@ class UpdateDevicesModel(BaseModel):
         Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])
     ],
 )
-async def devices_update(request: Request, config: UpdateDevicesModel) -> dict:
+async def devices_update(_: Request, config: UpdateDevicesModel) -> dict:
     for uuid in config.devices:
         updater = await get_update_manager(uuid)
         if config.firmware is not None:
@@ -92,7 +105,7 @@ class ForceUpdateModel(BaseModel):
         Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])
     ],
 )
-async def devices_force_update(request: Request, config: ForceUpdateModel) -> dict:
+async def devices_force_update(_: Request, config: ForceUpdateModel) -> dict:
     for uuid in config.devices:
         updater = await get_update_manager(uuid)
         updater.force_update = True
@@ -103,7 +116,7 @@ async def devices_force_update(request: Request, config: ForceUpdateModel) -> di
     "/logs/{dev_id}",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
 )
-async def device_logs(request: Request, dev_id: str) -> str:
+async def device_logs(_: Request, dev_id: str) -> str:
     updater = await get_update_manager(dev_id)
     device = await updater.get_device()
     if device.last_log is not None:
@@ -121,7 +134,7 @@ class DeleteModel(BaseModel):
         Security(validate_user_permissions, scopes=[Permissions.DEVICE.DELETE])
     ],
 )
-async def devices_delete(request: Request, config: DeleteModel) -> dict:
+async def devices_delete(_: Request, config: DeleteModel) -> dict:
     for uuid in config.devices:
         await delete_device(uuid)
     return {"success": True}

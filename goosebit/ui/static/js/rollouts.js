@@ -3,7 +3,10 @@ let dataTable;
 document.addEventListener("DOMContentLoaded", async function () {
   dataTable = new DataTable("#rollout-table", {
     responsive: true,
-    paging: false,
+    paging: true,
+    processing: true,
+    serverSide: true,
+    aaSorting: [],
     scrollCollapse: true,
     scroller: true,
     scrollY: "65vh",
@@ -12,12 +15,23 @@ document.addEventListener("DOMContentLoaded", async function () {
     rowId: "id",
     ajax: {
       url: "/api/rollouts/all",
-      dataSrc: "",
+      contentType: "application/json",
     },
     initComplete: function () {
       updateBtnState();
     },
-    columnDefs: [],
+    columnDefs: [
+      {
+        targets: [1, 2, 3, 4],
+        searchable: true,
+        orderable: true,
+      },
+      {
+        targets: "_all",
+        searchable: false,
+        orderable: false,
+      },
+    ],
     columns: [
       { data: "id" },
       { data: "created_at" },

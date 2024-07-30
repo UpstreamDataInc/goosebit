@@ -26,7 +26,7 @@ async function updateFirmwareSelection(addSpecialMode = false) {
       console.error("Retrieving firmwares failed.");
       return;
     }
-    const data = await response.json();
+    const data = (await response.json())["data"];
     const selectElem = document.getElementById("selected-fw");
 
     if (addSpecialMode) {

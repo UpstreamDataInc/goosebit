@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Security
 from fastapi.requests import Request
 from pydantic import BaseModel
+from tortoise.expressions import Q
 
+from goosebit.api.helper import filter_data
 from goosebit.auth import validate_user_permissions
 from goosebit.models import Rollout
 from goosebit.permissions import Permissions
@@ -15,8 +17,17 @@ router = APIRouter(prefix="/rollouts")
         Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])
     ],
 )
-async def rollouts_get_all() -> list[dict]:
-    def parse(rollout: Rollout) -> dict:
+async def rollouts_get_all(request: Request) -> dict[str, int | list[dict]]:
+    query = Rollout.all().prefetch_related("firmware")
+
+    def search_filter(search_value):
+        return (
+            Q(name__icontains=search_value)
+            | Q(feed__icontains=search_value)
+            | Q(flavor__icontains=search_value)
+        )
+
+    async def parse(rollout: Rollout) -> dict:
         return {
             "id": rollout.id,
             "created_at": rollout.created_at,
@@ -29,8 +40,8 @@ async def rollouts_get_all() -> list[dict]:
             "failure_count": rollout.failure_count,
         }
 
-    rollouts = await Rollout.all().prefetch_related("firmware")
-    return list([parse(r) for r in rollouts])
+    total_records = await Rollout.all().count()
+    return await filter_data(request, query, search_filter, parse, total_records)
 
 
 class CreateRolloutsModel(BaseModel):
