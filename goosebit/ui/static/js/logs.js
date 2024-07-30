@@ -1,14 +1,14 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   const logs_ws = create_ws(`/realtime/logs/${device}`);
 
   logs_ws.addEventListener("message", (event) => {
     const res = JSON.parse(event.data);
 
     const logElem = document.getElementById("device-log");
-    if (res["clear"]) {
+    if (res.clear) {
       logElem.textContent = "";
     }
-    logElem.textContent += res["log"];
+    logElem.textContent += res.log;
 
     const progressElem = document.getElementById("install-progress");
     progressElem.style.width = `${res.progress}%`;

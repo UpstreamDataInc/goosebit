@@ -2,21 +2,22 @@ function secondsToRecentDate(t) {
   if (t == null) {
     return null;
   }
-  t = Number(t);
-  const d = Math.floor(t / 86400);
-  const h = Math.floor((t % 86400) / 3600);
-  const m = Math.floor(((t % 86400) % 3600) / 60);
-  const s = Math.floor(((t % 86400) % 3600) % 60);
+  const time = Number(t);
+  const d = Math.floor(time / 86400);
+  const h = Math.floor((time % 86400) / 3600);
+  const m = Math.floor(((time % 86400) % 3600) / 60);
+  const s = Math.floor(((time % 86400) % 3600) % 60);
 
   if (d > 0) {
     return d + (d === 1 ? " day" : " days");
-  } else if (h > 0) {
-    return h + (h === 1 ? " hour" : " hours");
-  } else if (m > 0) {
-    return m + (m === 1 ? " minute" : " minutes");
-  } else {
-    return s + (s === 1 ? " second" : " seconds");
   }
+  if (h > 0) {
+    return h + (h === 1 ? " hour" : " hours");
+  }
+  if (m > 0) {
+    return m + (m === 1 ? " minute" : " minutes");
+  }
+  return s + (s === 1 ? " second" : " seconds");
 }
 
 async function updateFirmwareSelection(addSpecialMode = false) {
@@ -26,7 +27,7 @@ async function updateFirmwareSelection(addSpecialMode = false) {
       console.error("Retrieving firmwares failed.");
       return;
     }
-    const data = (await response.json())["data"];
+    const data = (await response.json()).data;
     const selectElem = document.getElementById("selected-fw");
 
     if (addSpecialMode) {
@@ -41,12 +42,12 @@ async function updateFirmwareSelection(addSpecialMode = false) {
       selectElem.appendChild(optionElem);
     }
 
-    data.forEach((item) => {
+    for (const item of data) {
       const optionElem = document.createElement("option");
-      optionElem.value = item["id"];
-      optionElem.textContent = item["name"];
+      optionElem.value = item.id;
+      optionElem.textContent = item.name;
       selectElem.appendChild(optionElem);
-    });
+    }
   } catch (error) {
     console.error("Failed to fetch device data:", error);
   }

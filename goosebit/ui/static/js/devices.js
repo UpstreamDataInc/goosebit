@@ -1,6 +1,6 @@
 let dataTable;
 
-document.addEventListener("DOMContentLoaded", async function () {
+document.addEventListener("DOMContentLoaded", async () => {
   dataTable = new DataTable("#device-table", {
     responsive: true,
     paging: true,
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       url: "/api/devices/all",
       contentType: "application/json",
     },
-    initComplete: function () {
+    initComplete: () => {
       updateBtnState();
     },
     columnDefs: [
@@ -29,16 +29,14 @@ document.addEventListener("DOMContentLoaded", async function () {
         targets: "_all",
         searchable: false,
         orderable: false,
-        render: function (data) {
-          return data || "❓";
-        },
+        render: (data) => data || "❓",
       },
     ],
     columns: [
       { data: "name" },
       {
         data: "online",
-        render: function (data, type) {
+        render: (data, type) => {
           if (type === "display" || type === "filter") {
             const color = data ? "success" : "danger";
             return `
@@ -59,7 +57,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       { data: "update_mode" },
       {
         data: "force_update",
-        render: function (data, type) {
+        render: (data, type) => {
           if (type === "display" || type === "filter") {
             const color = data ? "success" : "danger";
             return `
@@ -74,9 +72,9 @@ document.addEventListener("DOMContentLoaded", async function () {
       { data: "fw_version" },
       {
         data: "progress",
-        render: function (data, type) {
+        render: (data, type) => {
           if (type === "display" || type === "filter") {
-            return (data || "❓") + "%";
+            return `${data || "❓"}%`;
           }
           return data;
         },
@@ -84,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       { data: "last_ip" },
       {
         data: "last_seen",
-        render: function (data, type) {
+        render: (data, type) => {
           if (type === "display" || type === "filter") {
             return secondsToRecentDate(data);
           }
@@ -108,12 +106,12 @@ document.addEventListener("DOMContentLoaded", async function () {
           },
           {
             text: '<i class="bi bi-file-text"></i>',
-            action: function () {
+            action: () => {
               const selectedDevice = dataTable
                 .rows({ selected: true })
                 .data()
                 .toArray()[0];
-              window.location.href = `/ui/logs/${selectedDevice["uuid"]}`;
+              window.location.href = `/ui/logs/${selectedDevice.uuid}`;
             },
             className: "buttons-logs",
             titleAttr: "View Log",
@@ -124,13 +122,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         buttons: [
           {
             text: '<i class="bi bi-pen" ></i>',
-            action: function (e, dt) {
+            action: (e, dt) => {
               const input = document.getElementById("device-selected-name");
               input.value = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
-                .map((d) => d["name"])[0];
+                .map((d) => d.name)[0];
 
               new bootstrap.Modal("#device-rename-modal").show();
             },
@@ -139,7 +137,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           },
           {
             text: '<i class="bi bi-gear" ></i>',
-            action: function () {
+            action: () => {
               new bootstrap.Modal("#device-config-modal").show();
             },
             className: "buttons-config",
@@ -147,12 +145,12 @@ document.addEventListener("DOMContentLoaded", async function () {
           },
           {
             text: '<i class="bi bi-trash" ></i>',
-            action: function (e, dt) {
+            action: (e, dt) => {
               const selectedDevices = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
-                .map((d) => d["uuid"]);
+                .map((d) => d.uuid);
               deleteDevices(selectedDevices);
             },
             className: "buttons-delete",
@@ -160,12 +158,12 @@ document.addEventListener("DOMContentLoaded", async function () {
           },
           {
             text: '<i class="bi bi-box-arrow-in-up-right"></i>',
-            action: function () {
+            action: () => {
               const selectedDevices = dataTable
                 .rows({ selected: true })
                 .data()
                 .toArray()
-                .map((d) => d["uuid"]);
+                .map((d) => d.uuid);
               forceUpdateDevices(selectedDevices);
             },
             className: "buttons-force-update",
@@ -173,12 +171,12 @@ document.addEventListener("DOMContentLoaded", async function () {
           },
           {
             text: '<i class="bi bi-pin-angle"></i>',
-            action: function () {
+            action: () => {
               const selectedDevices = dataTable
                 .rows({ selected: true })
                 .data()
                 .toArray()
-                .map((d) => d["uuid"]);
+                .map((d) => d.uuid);
               pinDevices(selectedDevices);
             },
             className: "buttons-pin",
@@ -189,20 +187,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     },
   });
 
-  dataTable.on("click", "button.edit-name", function (e) {
+  dataTable.on("click", "button.edit-name", (e) => {
     const data = dataTable.row(e.target.closest("tr")).data();
-    updateDeviceName(data["uuid"]);
+    updateDeviceName(data.uuid);
   });
 
   dataTable
-    .on("select", function () {
+    .on("select", () => {
       updateBtnState();
     })
-    .on("deselect", function () {
+    .on("deselect", () => {
       updateBtnState();
     });
 
-  setInterval(function () {
+  setInterval(() => {
     dataTable.ajax.reload(null, false);
   }, TABLE_UPDATE_TIME);
 
@@ -251,7 +249,7 @@ async function updateDeviceConfig() {
     .rows({ selected: true })
     .data()
     .toArray()
-    .map((d) => d["uuid"]);
+    .map((d) => d.uuid);
   const firmware = document.getElementById("selected-fw").value;
 
   try {
@@ -268,8 +266,8 @@ async function updateDeviceName() {
     .rows({ selected: true })
     .data()
     .toArray()
-    .map((d) => d["uuid"]);
-  name = document.getElementById("device-selected-name").value;
+    .map((d) => d.uuid);
+  const name = document.getElementById("device-selected-name").value;
 
   try {
     await post("/api/devices/update", { devices, name });

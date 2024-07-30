@@ -54,7 +54,7 @@ async function sendFileChunks(file) {
         const result = await response.json();
         const alerts = document.getElementById("upload-alerts");
         alerts.innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    ${result["detail"]}
+                    ${result.detail}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>`;
       }
@@ -63,7 +63,7 @@ async function sendFileChunks(file) {
     start = end;
   }
 
-  window.setTimeout(function () {
+  window.setTimeout(() => {
     resetProgress();
   }, 1000);
 }
@@ -91,7 +91,7 @@ async function sendFileUrl(url) {
       const result = await response.json();
       const alerts = document.getElementById("url-alerts");
       alerts.innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert">
-                ${result["detail"]}
+                ${result.detail}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>`;
     }
@@ -108,14 +108,14 @@ function resetProgress() {
   uploadFileSubmit.classList.remove("d-none");
   urlFileInput.disabled = false;
   urlFileSubmit.disabled = false;
-  uploadProgressBar.style.width = `0%`;
-  uploadProgressBar.innerHTML = `0%`;
+  uploadProgressBar.style.width = "0%";
+  uploadProgressBar.innerHTML = "0%";
   uploadProgressBar.parentElement.classList.add("d-none");
 
   updateFirmwareList();
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   dataTable = new DataTable("#firmware-table", {
     responsive: true,
     paging: true,
@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
       url: "/api/firmware/all",
       contentType: "application/json",
     },
-    initComplete: function () {
+    initComplete: () => {
       updateBtnState();
     },
     columnDefs: [
@@ -143,9 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
         targets: "_all",
         searchable: false,
         orderable: false,
-        render: function (data) {
-          return data || "❓";
-        },
+        render: (data) => data || "❓",
       },
     ],
     columns: [
@@ -154,9 +152,9 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "version" },
       {
         data: "size",
-        render: function (data, type) {
+        render: (data, type) => {
           if (type === "display" || type === "filter") {
-            return (data / 1024 / 1024).toFixed(2) + "MB";
+            return `${(data / 1024 / 1024).toFixed(2)}MB`;
           }
           return data;
         },
@@ -169,12 +167,12 @@ document.addEventListener("DOMContentLoaded", function () {
         buttons: [
           {
             text: '<i class="bi bi-cloud-download" ></i>',
-            action: function (e, dt) {
+            action: (e, dt) => {
               const selectedFirmware = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
-                .map((d) => d["id"]);
+                .map((d) => d.id);
               downloadFirmware(selectedFirmware[0]);
             },
             className: "buttons-download",
@@ -182,12 +180,12 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-trash" ></i>',
-            action: async function (e, dt) {
+            action: async (e, dt) => {
               const selectedFirmware = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
-                .map((d) => d["id"]);
+                .map((d) => d.id);
               await deleteFirmware(selectedFirmware);
             },
             className: "buttons-delete",
@@ -199,25 +197,25 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   dataTable
-    .on("select", function () {
+    .on("select", () => {
       updateBtnState();
     })
-    .on("deselect", function () {
+    .on("deselect", () => {
       updateBtnState();
     });
 
   // Compatibility tooltip
-  $(function () {
+  $(() => {
     $('[data-toggle="tooltip"]').tooltip();
   });
 
   $("#firmware-table tbody")
     .on("mouseenter", "tr", function () {
       const rowData = dataTable.row(this).data();
-      const compat = rowData["compatibility"];
-      const list =
-        compat &&
-        compat.map((c) => `<b>${c.model}-${c.revision}</b>`).join(", ");
+      const compat = rowData.compatibility;
+      const list = compat
+        ?.map((c) => `<b>${c.model}-${c.revision}</b>`)
+        .join(", ");
       const tooltipText = `Compatibility: ${list}`;
 
       // Initialize Bootstrap tooltip

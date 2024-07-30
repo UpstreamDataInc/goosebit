@@ -1,6 +1,6 @@
 let dataTable;
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   dataTable = new DataTable("#device-table", {
     responsive: true,
     paging: true,
@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
       url: "/api/devices/all",
       contentType: "application/json",
     },
-    initComplete: function () {
+    initComplete: () => {
       updateBtnState();
     },
     columnDefs: [
@@ -27,16 +27,14 @@ document.addEventListener("DOMContentLoaded", function () {
         targets: "_all",
         searchable: false,
         orderable: false,
-        render: function (data) {
-          return data || "❓";
-        },
+        render: (data) => data || "❓",
       },
     ],
     columns: [
       { data: "name" },
       {
         data: "online",
-        render: function (data, type) {
+        render: (data, type) => {
           if (type === "display" || type === "filter") {
             const color = data ? "success" : "danger";
             return `
@@ -52,9 +50,9 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "fw" },
       {
         data: "progress",
-        render: function (data, type) {
+        render: (data, type) => {
           if (type === "display" || type === "filter") {
-            return (data || "❓") + "%";
+            return `${data || "❓"}%`;
           }
           return data;
         },
@@ -62,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "last_ip" },
       {
         data: "last_seen",
-        render: function (data, type) {
+        render: (data, type) => {
           if (type === "display" || type === "filter") {
             return secondsToRecentDate(data);
           }
@@ -87,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-file-earmark-arrow-down"></i>',
-            action: function (e, dt) {
+            action: (e, dt) => {
               const selectedDevices = dt
                 .rows({ selected: true })
                 .data()
@@ -99,12 +97,12 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-file-text"></i>',
-            action: function (e, dt) {
+            action: (e, dt) => {
               const selectedDevice = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()[0];
-              window.location.href = `/ui/logs/${selectedDevice["uuid"]}`;
+              window.location.href = `/ui/logs/${selectedDevice.uuid}`;
             },
             className: "buttons-logs",
             titleAttr: "View Log",
@@ -115,14 +113,14 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   dataTable
-    .on("select", function () {
+    .on("select", () => {
       updateBtnState();
     })
-    .on("deselect", function () {
+    .on("deselect", () => {
       updateBtnState();
     });
 
-  setInterval(function () {
+  setInterval(() => {
     dataTable.ajax.reload(null, false);
   }, TABLE_UPDATE_TIME);
 });
@@ -152,11 +150,7 @@ function updateBtnState() {
 
 function downloadLogins(devices) {
   const deviceLogins = devices.map((dev) => {
-    return [
-      dev["name"],
-      `https://${dev["uuid"]}-access.loadsync.io`,
-      dev["uuid"],
-    ];
+    return [dev.name, `https://${dev.uuid}-access.loadsync.io`, dev.uuid];
   });
   deviceLogins.unshift([
     "Building",
@@ -165,9 +159,7 @@ function downloadLogins(devices) {
     "Login/Wifi Password",
   ]);
 
-  const csvContent =
-    "data:text/csv;charset=utf-8," +
-    deviceLogins.map((e) => e.join(",")).join("\n");
+  const csvContent = `data:text/csv;charset=utf-8,${deviceLogins.map((e) => e.join(",")).join("\n")}`;
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);

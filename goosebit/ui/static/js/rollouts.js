@@ -1,6 +1,6 @@
 let dataTable;
 
-document.addEventListener("DOMContentLoaded", async function () {
+document.addEventListener("DOMContentLoaded", async () => {
   dataTable = new DataTable("#rollout-table", {
     responsive: true,
     paging: true,
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       url: "/api/rollouts/all",
       contentType: "application/json",
     },
-    initComplete: function () {
+    initComplete: () => {
       updateBtnState();
     },
     columnDefs: [
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       { data: "fw_file" },
       {
         data: "paused",
-        render: function (data, type) {
+        render: (data, type) => {
           if (type === "display" || type === "filter") {
             const color = data ? "success" : "light";
             return `
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         buttons: [
           {
             text: '<i class="bi bi-plus" ></i>',
-            action: function () {
+            action: () => {
               new bootstrap.Modal("#rollout-create-modal").show();
             },
             className: "buttons-create",
@@ -72,12 +72,12 @@ document.addEventListener("DOMContentLoaded", async function () {
           },
           {
             text: '<i class="bi bi-play-fill" ></i>',
-            action: function (e, dt) {
+            action: (e, dt) => {
               const selectedRollouts = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
-                .map((d) => d["id"]);
+                .map((d) => d.id);
               pauseRollouts(selectedRollouts, false);
             },
             className: "buttons-resume",
@@ -85,12 +85,12 @@ document.addEventListener("DOMContentLoaded", async function () {
           },
           {
             text: '<i class="bi bi-pause-fill" ></i>',
-            action: function (e, dt) {
+            action: (e, dt) => {
               const selectedRollouts = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
-                .map((d) => d["id"]);
+                .map((d) => d.id);
               pauseRollouts(selectedRollouts, true);
             },
             className: "buttons-pause",
@@ -98,12 +98,12 @@ document.addEventListener("DOMContentLoaded", async function () {
           },
           {
             text: '<i class="bi bi-trash" ></i>',
-            action: function (e, dt) {
+            action: (e, dt) => {
               const selectedRollouts = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
-                .map((d) => d["id"]);
+                .map((d) => d.id);
               deleteRollouts(selectedRollouts);
             },
             className: "buttons-delete",
@@ -115,10 +115,10 @@ document.addEventListener("DOMContentLoaded", async function () {
   });
 
   dataTable
-    .on("select", function () {
+    .on("select", () => {
       updateBtnState();
     })
-    .on("deselect", function () {
+    .on("deselect", () => {
       updateBtnState();
     });
 
