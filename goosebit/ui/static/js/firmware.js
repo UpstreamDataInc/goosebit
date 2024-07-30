@@ -6,9 +6,9 @@ const uploadProgressBar = document.getElementById("upload-progress");
 
 let dataTable;
 
-uploadForm.addEventListener("submit", (e) => {
+uploadForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  sendFileChunks(uploadFileInput.files[0]);
+  await sendFileChunks(uploadFileInput.files[0]);
 });
 
 async function sendFileChunks(file) {
@@ -72,9 +72,9 @@ const urlForm = document.getElementById("url-form");
 const urlFileInput = document.getElementById("file-url");
 const urlFileSubmit = document.getElementById("url-submit");
 
-urlForm.addEventListener("submit", (e) => {
+urlForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  sendFileUrl(urlFileInput.value);
+  await sendFileUrl(urlFileInput.value);
 });
 
 async function sendFileUrl(url) {
@@ -98,6 +98,10 @@ async function sendFileUrl(url) {
   }
 }
 
+function updateFirmwareList() {
+  dataTable.ajax.reload(null, false);
+}
+
 function resetProgress() {
   uploadFileInput.disabled = false;
   uploadFileSubmit.disabled = false;
@@ -108,7 +112,7 @@ function resetProgress() {
   uploadProgressBar.innerHTML = `0%`;
   uploadProgressBar.parentElement.classList.add("d-none");
 
-  dataTable.ajax.reload(null, false);
+  updateFirmwareList();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -168,13 +172,13 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             text: '<i class="bi bi-trash" ></i>',
-            action: function (e, dt) {
+            action: async function (e, dt) {
               const selectedFirmware = dt
                 .rows({ selected: true })
                 .data()
                 .toArray()
                 .map((d) => d["id"]);
-              deleteFirmware(selectedFirmware);
+              await deleteFirmware(selectedFirmware);
             },
             className: "buttons-delete",
             titleAttr: "Delete Firmware",
@@ -222,7 +226,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   setInterval(function () {
-    dataTable.ajax.reload(null, false);
+    updateFirmwareList();
   }, TABLE_UPDATE_TIME);
 });
 
@@ -243,21 +247,13 @@ function updateBtnState() {
   }
 }
 
-function deleteFirmware(files) {
-  fetch("/api/firmware/delete", {
-    method: "POST",
-    body: files,
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to delete firmware.");
-      }
-      updateFirmwareList();
-      return response.json();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+async function deleteFirmware(files) {
+  try {
+    await post("/api/firmware/delete", files);
+    updateFirmwareList();
+  } catch (error) {
+    console.error("Deleting firmwares failed:", error);
+  }
 }
 
 function downloadFirmware(file) {

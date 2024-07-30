@@ -1,6 +1,6 @@
 let dataTable;
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
   dataTable = new DataTable("#rollout-table", {
     responsive: true,
     paging: false,
@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   updateRolloutList();
 
-  updateFirmwareSelection();
+  await updateFirmwareSelection();
 });
 
 function updateBtnState() {
@@ -137,33 +137,17 @@ function updateBtnState() {
   }
 }
 
-function createRollout() {
+async function createRollout() {
   const name = document.getElementById("rollout-selected-name").value;
   const feed = document.getElementById("rollout-selected-feed").value;
   const flavor = document.getElementById("rollout-selected-flavor").value;
-  const selectedFirmware = document.getElementById("selected-fw").value;
+  const firmware_id = document.getElementById("selected-fw").value;
 
-  fetch("/api/rollouts", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      name: name,
-      feed: feed,
-      flavor: flavor,
-      firmware_id: selectedFirmware,
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to create rollout.");
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+  try {
+    await post("/api/rollouts", { name, feed, flavor, firmware_id });
+  } catch (error) {
+    console.error("Rollout creation failed:", error);
+  }
 
   setTimeout(updateRolloutList, 50);
 }
@@ -172,50 +156,26 @@ function updateRolloutList() {
   dataTable.ajax.reload();
 }
 
-function deleteRollouts(rollouts) {
-  fetch("/api/rollouts/delete", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      ids: rollouts,
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to delete rollouts.");
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+async function deleteRollouts(ids) {
+  try {
+    await post("/api/rollouts/delete", { ids });
+  } catch (error) {
+    console.error("Rollouts deletion failed:", error);
+  }
 
   updateBtnState();
   setTimeout(updateRolloutList, 50);
 }
 
-function pauseRollouts(rollouts, state) {
-  fetch("/api/rollouts/update", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      ids: rollouts,
-      paused: state,
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to update rollouts.");
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+async function pauseRollouts(ids, paused) {
+  try {
+    await post("/api/rollouts/update", { ids, paused });
+  } catch (error) {
+    console.error(
+      `Rollouts ${paused ? "pausing" : "unpausing"} failed:`,
+      error,
+    );
+  }
 
   setTimeout(updateRolloutList, 50);
 }

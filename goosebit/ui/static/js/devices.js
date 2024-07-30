@@ -1,6 +1,6 @@
 let dataTable;
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
   dataTable = new DataTable("#device-table", {
     responsive: true,
     paging: false,
@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
     dataTable.ajax.reload(null, false);
   }, TABLE_UPDATE_TIME);
 
-  updateFirmwareSelection(true);
+  await updateFirmwareSelection(true);
 });
 
 function updateBtnState() {
@@ -250,134 +250,66 @@ function updateBtnState() {
   }
 }
 
-function updateDeviceConfig() {
-  const selectedDevices = dataTable
+async function updateDeviceConfig() {
+  const devices = dataTable
     .rows({ selected: true })
     .data()
     .toArray()
     .map((d) => d["uuid"]);
-  const selectedFirmware = document.getElementById("selected-fw").value;
+  const firmware = document.getElementById("selected-fw").value;
 
-  fetch("/api/devices/update", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      devices: selectedDevices,
-      firmware: selectedFirmware,
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to update devices.");
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+  try {
+    await post("/api/devices/update", { devices, firmware });
+  } catch (error) {
+    console.error("Update device config failed:", error);
+  }
 
   setTimeout(updateDeviceList, 50);
 }
 
-function updateDeviceName() {
-  const selectedDevices = dataTable
+async function updateDeviceName() {
+  const devices = dataTable
     .rows({ selected: true })
     .data()
     .toArray()
     .map((d) => d["uuid"]);
   name = document.getElementById("device-selected-name").value;
 
-  fetch("/api/devices/update", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      devices: selectedDevices,
-      name: name,
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to update devices.");
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+  try {
+    await post("/api/devices/update", { devices, name });
+  } catch (error) {
+    console.error("Update device name failed:", error);
+  }
 
   setTimeout(updateDeviceList, 50);
 }
 
-function forceUpdateDevices(devices) {
-  fetch("/api/devices/force_update", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      devices: devices,
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to force device update.");
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+async function forceUpdateDevices(devices) {
+  try {
+    await post("/api/devices/force_update", { devices });
+  } catch (error) {
+    console.error("Update force update state failed:", error);
+  }
 
   setTimeout(updateDeviceList, 50);
 }
 
-function deleteDevices(devices) {
-  fetch("/api/devices/delete", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      devices: devices,
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to delete devices.");
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+async function deleteDevices(devices) {
+  try {
+    await post("/api/devices/delete", { devices });
+  } catch (error) {
+    console.error("Delete device failed:", error);
+  }
 
   setTimeout(updateDeviceList, 50);
 }
 
-function pinDevices(devices) {
-  fetch("/api/devices/update", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      devices: devices,
-      pinned: true,
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to update devices.");
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+async function pinDevices(devices) {
+  try {
+    await post("/api/devices/update", { devices, pinned: true });
+  } catch (error) {
+    console.error("Error:", error);
+  }
 
   setTimeout(updateDeviceList, 50);
 }

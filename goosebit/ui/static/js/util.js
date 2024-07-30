@@ -19,39 +19,47 @@ function secondsToRecentDate(t) {
   }
 }
 
-function updateFirmwareSelection(addSpecialMode = false) {
-  const url = "/api/firmware/all";
+async function updateFirmwareSelection(addSpecialMode = false) {
+  try {
+    const response = await fetch("/api/firmware/all");
+    if (!response.ok) {
+      console.error("Retrieving firmwares failed.");
+      return;
+    }
+    const data = await response.json();
+    const selectElem = document.getElementById("selected-fw");
 
-  fetch(url)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Request failed");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      const selectElem = document.getElementById("selected-fw");
+    if (addSpecialMode) {
+      let optionElem = document.createElement("option");
+      optionElem.value = "rollout";
+      optionElem.textContent = "rollout";
+      selectElem.appendChild(optionElem);
 
-      if (addSpecialMode) {
-        let optionElem = document.createElement("option");
-        optionElem.value = "rollout";
-        optionElem.textContent = "rollout";
-        selectElem.appendChild(optionElem);
+      optionElem = document.createElement("option");
+      optionElem.value = "latest";
+      optionElem.textContent = "latest";
+      selectElem.appendChild(optionElem);
+    }
 
-        optionElem = document.createElement("option");
-        optionElem.value = "latest";
-        optionElem.textContent = "latest";
-        selectElem.appendChild(optionElem);
-      }
-
-      data.forEach((item) => {
-        const optionElem = document.createElement("option");
-        optionElem.value = item["id"];
-        optionElem.textContent = item["name"];
-        selectElem.appendChild(optionElem);
-      });
-    })
-    .catch((error) => {
-      console.error("Failed to fetch device data:", error);
+    data.forEach((item) => {
+      const optionElem = document.createElement("option");
+      optionElem.value = item["id"];
+      optionElem.textContent = item["name"];
+      selectElem.appendChild(optionElem);
     });
+  } catch (error) {
+    console.error("Failed to fetch device data:", error);
+  }
+}
+
+async function post(url, object) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(object),
+  });
+
+  if (!response.ok) {
+    throw new Error(`POST ${url} failed for ${JSON.stringify(object)}`);
+  }
 }
