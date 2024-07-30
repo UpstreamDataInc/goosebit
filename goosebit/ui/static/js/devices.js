@@ -244,19 +244,6 @@ function updateBtnState() {
     document.querySelector("button.buttons-logs").classList.add("disabled");
     document.querySelector("button.buttons-rename").classList.add("disabled");
   }
-
-  if (
-    dataTable.rows({ selected: true }).ids().toArray().length ===
-    dataTable.rows().ids().toArray().length
-  ) {
-    document
-      .querySelector("button.buttons-select-all")
-      .classList.add("disabled");
-  } else {
-    document
-      .querySelector("button.buttons-select-all")
-      .classList.remove("disabled");
-  }
 }
 
 async function updateDeviceConfig() {
