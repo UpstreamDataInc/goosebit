@@ -4,8 +4,9 @@ import uvicorn
 import yaml
 
 from goosebit import app
+from goosebit.settings import SETTINGS_DIR
 
-with open("logging_config.yaml", "r") as file:
+with open(SETTINGS_DIR.joinpath("logging.yaml"), "r") as file:
     config = yaml.safe_load(file.read())
     logging.config.dictConfig(config)
 

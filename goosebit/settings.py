@@ -9,6 +9,7 @@ from joserfc.rfc7518.oct_key import OctKey
 from goosebit.permissions import Permissions
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+SETTINGS_DIR = BASE_DIR.joinpath("settings")
 TOKEN_SWU_DIR = BASE_DIR.joinpath("swugen")
 SWUPDATE_FILES_DIR = BASE_DIR.joinpath("swupdate")
 UPDATES_DIR = BASE_DIR.joinpath("updates")
@@ -17,7 +18,7 @@ DB_MIGRATIONS_LOC = BASE_DIR.joinpath("migrations")
 SECRET = OctKey.import_key(secrets.token_hex(16))
 PWD_CXT = PasswordHasher()
 
-with open(BASE_DIR.joinpath("settings.yaml"), "r") as f:
+with open(SETTINGS_DIR.joinpath("goosebit.yaml"), "r") as f:
     config = yaml.safe_load(f.read())
 
 TENANT = config.get("tenant", "DEFAULT")
