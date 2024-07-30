@@ -10,7 +10,6 @@ from tortoise.contrib.fastapi import RegisterTortoise
 
 from goosebit import app
 from goosebit.models import UpdateModeEnum, UpdateStateEnum
-from goosebit.updater.manager import reset_update_manager
 
 # Configure logging
 logging.basicConfig(level=logging.WARN)
@@ -48,8 +47,6 @@ async def async_client(test_app):
 
 @pytest_asyncio.fixture(scope="function")
 async def db():
-    reset_update_manager()
-
     await Tortoise.init(config=TORTOISE_CONF)
     await Tortoise.generate_schemas()
     yield

@@ -107,7 +107,6 @@ async def deployment_base(
 async def deployment_feedback(
     request: Request,
     tenant: str,
-    dev_id: str,
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),
 ):
@@ -115,7 +114,7 @@ async def deployment_feedback(
         data = await request.json()
     except json.JSONDecodeError as e:
         logging.warning(
-            f"Parsing deployment feedback failed, error={e}, device={dev_id}"
+            f"Parsing deployment feedback failed, error={e}, device={updater.dev_id}"
         )
         return
     try:
@@ -146,7 +145,7 @@ async def deployment_feedback(
                         await rollout.save()
                     else:
                         logging.warning(
-                            f"Updating rollout success stats failed, firmware={reported_firmware.id}, device={dev_id}"
+                            f"Updating rollout success stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"
                         )
 
                 # setting the currently installed version based on the current assigned firmware / existing rollouts
@@ -168,7 +167,7 @@ async def deployment_feedback(
                         await rollout.save()
                     else:
                         logging.warning(
-                            f"Updating rollout failure stats failed, firmware={reported_firmware.id}, device={dev_id}"
+                            f"Updating rollout failure stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"
                         )
 
                 logger.debug(
@@ -177,13 +176,13 @@ async def deployment_feedback(
 
     except KeyError as e:
         logging.warning(
-            f"Processing deployment feedback failed, error={e}, device={dev_id}"
+            f"Processing deployment feedback failed, error={e}, device={updater.dev_id}"
         )
 
     try:
         log = data["status"]["details"]
         await updater.update_log("\n".join(log))
     except KeyError:
-        logging.warning(f"No details to update update log, device={dev_id}")
+        logging.warning(f"No details to update update log, device={updater.dev_id}")
 
     return {"id": str(action_id)}

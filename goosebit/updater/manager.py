@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 import re
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
@@ -321,28 +320,18 @@ class DeviceUpdateManager(UpdateManager):
 
 device_log_subscriptions: dict[str, list[Callable]] = {}
 device_poll_time: dict[str, str] = {}
-device_managers = {"unknown": UnknownUpdateManager("unknown")}
 
 
 async def get_update_manager(dev_id: str) -> UpdateManager:
-    global device_managers
-    if device_managers.get(dev_id) is not None:
-        return device_managers[dev_id]
-    manager = DeviceUpdateManager(dev_id)
-    devices_count.set(await Device.all().count())
-    return manager
+    if dev_id == "unknown":
+        return UnknownUpdateManager("unknown")
+    else:
+        devices_count.set(await Device.all().count())
+        return DeviceUpdateManager(dev_id)
 
 
-async def delete_device(dev_id: str) -> None:
-    global device_managers
-    try:
-        updater = await get_update_manager(dev_id)
-        await (await updater.get_device()).delete()
-        del device_managers[dev_id]
-    except KeyError as e:
-        logging.warning(f"Deleting device failed, error={e}, device={dev_id}")
-
-
-def reset_update_manager():
-    global device_managers
-    device_managers = {"unknown": UnknownUpdateManager("unknown")}
+async def delete_devices(ids: list[str]):
+    await Device.filter(id__in=ids).delete()
+    cache = Cache(namespace="main")
+    for dev_id in ids:
+        await cache.delete(dev_id)

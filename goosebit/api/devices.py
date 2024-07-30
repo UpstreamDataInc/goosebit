@@ -10,7 +10,7 @@ from goosebit.api.helper import filter_data
 from goosebit.auth import validate_user_permissions
 from goosebit.models import Device, Firmware, UpdateModeEnum, UpdateStateEnum
 from goosebit.permissions import Permissions
-from goosebit.updater.manager import delete_device, get_update_manager
+from goosebit.updater.manager import delete_devices, get_update_manager
 
 router = APIRouter(prefix="/devices")
 
@@ -135,6 +135,5 @@ class DeleteModel(BaseModel):
     ],
 )
 async def devices_delete(_: Request, config: DeleteModel) -> dict:
-    for uuid in config.devices:
-        await delete_device(uuid)
+    await delete_devices(config.devices)
     return {"success": True}
