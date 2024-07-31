@@ -20,6 +20,10 @@ loggers:
         handlers: [console]
         level: INFO
         propagate: yes
+    aiocache:
+        handlers: [console]
+        level: INFO
+        propagate: yes
 root:
     level: DEBUG
     handlers: [console]
