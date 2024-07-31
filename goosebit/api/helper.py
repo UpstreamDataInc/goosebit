@@ -12,10 +12,10 @@ async def filter_data(request, query, search_filter, parse, total_records):
     order_column = params.get(f"columns[{order_column_index}][data]", None)
     order_dir = params.get("order[0][dir]", None)
 
-    if search_value is not None:
+    if search_value:
         query = query.filter(search_filter(search_value))
 
-    if order_column is not None:
+    if order_column:
         query = query.order_by(f"{"-" if order_dir == "desc" else ""}{order_column}")
 
     filtered_records = await query.count()
