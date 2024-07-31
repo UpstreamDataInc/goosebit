@@ -24,7 +24,7 @@ async def rollouts_get_all(request: Request) -> dict[str, int | list[dict]]:
     async def parse(rollout: Rollout) -> dict:
         return {
             "id": rollout.id,
-            "created_at": rollout.created_at,
+            "created_at": int(rollout.created_at.timestamp() * 1000),
             "name": rollout.name,
             "feed": rollout.feed,
             "flavor": rollout.flavor,

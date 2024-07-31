@@ -6,11 +6,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         paging: true,
         processing: true,
         serverSide: true,
-        aaSorting: [],
+        order: [1, "desc"],
         scrollCollapse: true,
         scroller: true,
         scrollY: "65vh",
         stateSave: true,
+        stateLoadParams: (settings, data) => {
+            // if save state is older than last breaking code change...
+            if (data.time <= 1722413708000) {
+                // ... delete it
+                for (const key of Object.keys(data)) {
+                    delete data[key];
+                }
+            }
+        },
         select: true,
         rowId: "id",
         ajax: {
@@ -33,8 +42,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             },
         ],
         columns: [
-            { data: "id" },
-            { data: "created_at" },
+            { data: "id", visible: false },
+            { data: "created_at", render: (data) => new Date(data).toLocaleString() },
             { data: "name" },
             { data: "feed" },
             { data: "flavor" },
@@ -43,7 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 data: "paused",
                 render: (data, type) => {
                     if (type === "display" || type === "filter") {
-                        const color = data ? "success" : "light";
+                        const color = data ? "danger" : "muted";
                         return `
                         <div class="text-${color}">
                             ●
