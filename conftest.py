@@ -14,6 +14,9 @@ from goosebit.models import UpdateModeEnum, UpdateStateEnum
 # Configure logging
 logging.basicConfig(level=logging.WARN)
 
+# disable caching
+os.environ["AIOCACHE_DISABLE"] = "1"
+
 TORTOISE_CONF = {
     "connections": {"default": "sqlite://:memory:"},
     "apps": {
