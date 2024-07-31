@@ -48,6 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             { data: "feed" },
             { data: "flavor" },
             { data: "fw_file" },
+            { data: "fw_version" },
             {
                 data: "paused",
                 render: (data, type) => {

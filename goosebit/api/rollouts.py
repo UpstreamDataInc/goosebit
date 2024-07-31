@@ -29,6 +29,7 @@ async def rollouts_get_all(request: Request) -> dict[str, int | list[dict]]:
             "feed": rollout.feed,
             "flavor": rollout.flavor,
             "fw_file": rollout.firmware.path.name,
+            "fw_version": rollout.firmware.version,
             "paused": rollout.paused,
             "success_count": rollout.success_count,
             "failure_count": rollout.failure_count,
