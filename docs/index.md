@@ -17,7 +17,7 @@ The default login credentials for testing are `admin@goosebit.local`, `admin`.
 
 ## Assumptions
 
-- [SWUpdate](https://swupdate.org) used on device side.
+-   [SWUpdate](https://swupdate.org) used on device side.
 
 ## Current Feature Set
 

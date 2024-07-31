@@ -4,10 +4,10 @@ poll_time_registration: 00:00:10
 poll_time_updating: 00:00:05
 tenant: DEFAULT
 metrics:
-  prometheus:
-    port: 9090
+    prometheus:
+        port: 9090
 users:
-  - email: admin@goosebit.local
-    password: admin
-    permissions:
-      - "*"
+    - email: admin@goosebit.local
+      password: admin
+      permissions:
+          - "*"
