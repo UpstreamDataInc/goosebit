@@ -137,7 +137,7 @@ async def test_rollout_full(async_client, test_data):
     await _feedback(async_client, device.uuid, firmware, "success", "closed")
     devices = await _api_devices_get(async_client)
     assert devices[0]["state"] == "Finished"
-    assert devices[0]["fw"] == firmware.version
+    assert devices[0]["fw_installed_version"] == firmware.version
 
     await rollout.refresh_from_db()
     rollouts = await _api_rollouts_get(async_client)
@@ -194,7 +194,7 @@ async def test_latest(async_client, test_data):
     await _feedback(async_client, device.uuid, firmware, "success", "closed")
     devices = await _api_devices_get(async_client)
     assert devices[0]["state"] == "Finished"
-    assert devices[0]["fw"] == firmware.version
+    assert devices[0]["fw_installed_version"] == firmware.version
 
 
 @pytest.mark.asyncio

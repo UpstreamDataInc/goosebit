@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         stateSave: true,
         stateLoadParams: (settings, data) => {
             // if save state is older than last breaking code change...
-            if (data.time <= 1722413406000) {
+            if (data.time <= 1722434189000) {
                 // ... delete it
                 for (const key of Object.keys(data)) {
                     delete data[key];
@@ -63,8 +63,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             { data: "hw_revision" },
             { data: "feed" },
             { data: "flavor" },
-            { data: "fw" },
-            { data: "fw_version" },
+            { data: "fw_installed_version" },
+            { data: "fw_target_version" },
             { data: "update_mode" },
             { data: "state" },
             {
@@ -145,6 +145,20 @@ document.addEventListener("DOMContentLoaded", async () => {
                     {
                         text: '<i class="bi bi-gear" ></i>',
                         action: () => {
+                            const selectedDevice = dataTable.rows({ selected: true }).data().toArray()[0];
+                            $("#rollout-selected-feed").val(selectedDevice.feed);
+                            $("#rollout-selected-flavor").val(selectedDevice.flavor);
+
+                            let selectedValue;
+                            if (selectedDevice.update_mode === "Rollout") {
+                                selectedValue = "rollout";
+                            } else if (selectedDevice.update_mode === "Latest") {
+                                selectedValue = "latest";
+                            } else {
+                                selectedValue = selectedDevice.fw_assigned;
+                            }
+                            $("#selected-fw").val(selectedValue);
+
                             new bootstrap.Modal("#device-config-modal").show();
                         },
                         className: "buttons-config",
@@ -244,9 +258,11 @@ async function updateDeviceConfig() {
         .toArray()
         .map((d) => d.uuid);
     const firmware = document.getElementById("selected-fw").value;
+    const feed = document.getElementById("rollout-selected-feed").value;
+    const flavor = document.getElementById("rollout-selected-flavor").value;
 
     try {
-        await post("/api/devices/update", { devices, firmware });
+        await post("/api/devices/update", { devices, firmware, feed, flavor });
     } catch (error) {
         console.error("Update device config failed:", error);
     }

@@ -60,6 +60,12 @@ class UpdateManager(ABC):
     async def update_name(self, name: str):
         return
 
+    async def update_feed(self, feed: str):
+        return
+
+    async def update_flavor(self, flavor: str):
+        return
+
     async def update_config_data(self, **kwargs):
         return
 
@@ -200,6 +206,16 @@ class DeviceUpdateManager(UpdateManager):
         device = await self.get_device()
         device.name = name
         await self.save_device(device, update_fields=["name"])
+
+    async def update_feed(self, feed: str):
+        device = await self.get_device()
+        device.feed = feed
+        await self.save_device(device, update_fields=["feed"])
+
+    async def update_flavor(self, flavor: str):
+        device = await self.get_device()
+        device.flavor = flavor
+        await self.save_device(device, update_fields=["flavor"])
 
     async def update_config_data(self, **kwargs):
         model = kwargs.get("hw_model") or "default"

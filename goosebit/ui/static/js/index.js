@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
         stateSave: true,
         stateLoadParams: (settings, data) => {
             // if save state is older than last breaking code change...
-            if (data.time <= 1722413406000) {
+            if (data.time <= 1722434386000) {
                 // ... delete it
                 for (const key of Object.keys(data)) {
                     delete data[key];
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
             },
             { data: "uuid" },
-            { data: "fw" },
+            { data: "fw_installed_version" },
             {
                 data: "progress",
                 render: (data, type) => {
