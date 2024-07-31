@@ -13,19 +13,13 @@ router = APIRouter(prefix="/rollouts")
 
 @router.get(
     "/all",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])],
 )
 async def rollouts_get_all(request: Request) -> dict[str, int | list[dict]]:
     query = Rollout.all().prefetch_related("firmware")
 
     def search_filter(search_value):
-        return (
-            Q(name__icontains=search_value)
-            | Q(feed__icontains=search_value)
-            | Q(flavor__icontains=search_value)
-        )
+        return Q(name__icontains=search_value) | Q(feed__icontains=search_value) | Q(flavor__icontains=search_value)
 
     async def parse(rollout: Rollout) -> dict:
         return {
@@ -53,9 +47,7 @@ class CreateRolloutsModel(BaseModel):
 
 @router.post(
     "/",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.WRITE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.WRITE])],
 )
 async def rollouts_create(_: Request, rollout: CreateRolloutsModel) -> dict:
     await Rollout.create(
@@ -74,9 +66,7 @@ class UpdateRolloutsModel(BaseModel):
 
 @router.post(
     "/update",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.WRITE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.WRITE])],
 )
 async def rollouts_update(_: Request, rollouts: UpdateRolloutsModel) -> dict:
     await Rollout.filter(id__in=rollouts.ids).update(paused=rollouts.paused)
@@ -89,9 +79,7 @@ class DeleteRolloutsModel(BaseModel):
 
 @router.post(
     "/delete",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.DELETE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.DELETE])],
 )
 async def rollouts_delete(_: Request, rollouts: DeleteRolloutsModel) -> dict:
     await Rollout.filter(id__in=rollouts.ids).delete()

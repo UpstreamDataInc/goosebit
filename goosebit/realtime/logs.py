@@ -18,17 +18,16 @@ class RealtimeLogModel(BaseModel):
 
 @router.websocket(
     "/{dev_id}",
-    dependencies=[
-        Security(validate_ws_user_permissions, scopes=[Permissions.HOME.READ])
-    ],
+    dependencies=[Security(validate_ws_user_permissions, scopes=[Permissions.HOME.READ])],
 )
 async def device_logs(websocket: WebSocket, dev_id: str):
     await websocket.accept()
 
     manager = await get_update_manager(dev_id)
+    device = await manager.get_device()
 
     async def callback(log_update):
-        data = RealtimeLogModel(log=log_update, progress=manager.device.progress)
+        data = RealtimeLogModel(log=log_update, progress=device.progress)
         if log_update is None:
             data.clear = True
             data.log = ""

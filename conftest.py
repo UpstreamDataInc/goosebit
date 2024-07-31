@@ -10,7 +10,6 @@ from tortoise.contrib.fastapi import RegisterTortoise
 
 from goosebit import app
 from goosebit.models import UpdateModeEnum, UpdateStateEnum
-from goosebit.updater.manager import reset_update_manager
 
 # Configure logging
 logging.basicConfig(level=logging.WARN)
@@ -36,9 +35,7 @@ async def test_app():
 
 @pytest_asyncio.fixture(scope="module")
 async def async_client(test_app):
-    async with AsyncClient(
-        transport=ASGITransport(app=test_app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=test_app), base_url="http://test") as client:
         login_data = {"username": "admin@goosebit.local", "password": "admin"}
         response = await client.post("/login", data=login_data, follow_redirects=True)
         assert response.status_code == 200
@@ -48,8 +45,6 @@ async def async_client(test_app):
 
 @pytest_asyncio.fixture(scope="function")
 async def db():
-    reset_update_manager()
-
     await Tortoise.init(config=TORTOISE_CONF)
     await Tortoise.generate_schemas()
     yield

@@ -36,9 +36,7 @@ async def create_firmware_update(uri: str):
     for comp in update_info["compatibility"]:
         model = comp.get("hw_model", "default")
         revision = comp.get("hw_revision", "default")
-        await firmware.compatibility.add(
-            (await Hardware.get_or_create(model=model, revision=revision))[0]
-        )
+        await firmware.compatibility.add((await Hardware.get_or_create(model=model, revision=revision))[0])
     await firmware.save()
     return firmware
 

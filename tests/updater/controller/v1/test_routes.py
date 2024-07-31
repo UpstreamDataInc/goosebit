@@ -60,19 +60,14 @@ async def _register(async_client, config_url):
     assert data["message"] == "Updated swupdate data."
 
 
-async def _poll(
-    async_client, device_uuid, firmware: Firmware | None, expect_update=True
-):
+async def _poll(async_client, device_uuid, firmware: Firmware | None, expect_update=True):
     response = await async_client.get(f"/DEFAULT/controller/v1/{device_uuid}")
 
     assert response.status_code == 200
     data = response.json()
     if expect_update:
         deployment_base = data["_links"]["deploymentBase"]["href"]
-        assert (
-            deployment_base
-            == f"http://test/DEFAULT/controller/v1/{device_uuid}/deploymentBase/{firmware.id}"
-        )
+        assert deployment_base == f"http://test/DEFAULT/controller/v1/{device_uuid}/deploymentBase/{firmware.id}"
         return deployment_base
     else:
         assert data["_links"] == {}
@@ -90,10 +85,7 @@ async def _retrieve_firmware_url(async_client, deployment_base, firmware):
         data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]
         == f"http://test/api/download/{firmware.id}"
     )
-    assert (
-        data["deployment"]["chunks"][0]["artifacts"][0]["hashes"]["sha1"]
-        == firmware.hash
-    )
+    assert data["deployment"]["chunks"][0]["artifacts"][0]["hashes"]["sha1"] == firmware.hash
     assert data["deployment"]["chunks"][0]["artifacts"][0]["size"] == firmware.size
 
     return data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]

@@ -37,9 +37,7 @@ async def authenticate_user(request: Request):
 
 
 def create_session(username: str) -> str:
-    return jwt.encode(
-        header={"alg": "HS256"}, claims={"username": username}, key=SECRET
-    )
+    return jwt.encode(header={"alg": "HS256"}, claims={"username": username}, key=SECRET)
 
 
 def authenticate_session(request: Request):

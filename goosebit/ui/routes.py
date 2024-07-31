@@ -13,9 +13,7 @@ from goosebit.updates import create_firmware_update
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-router = APIRouter(
-    prefix="/ui", dependencies=[Depends(authenticate_session)], include_in_schema=False
-)
+router = APIRouter(prefix="/ui", dependencies=[Depends(authenticate_session)], include_in_schema=False)
 
 
 @router.get("/")
@@ -25,21 +23,15 @@ async def ui_root(request: Request):
 
 @router.get(
     "/firmware",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])],
 )
 async def firmware_ui(request: Request):
-    return templates.TemplateResponse(
-        request, "firmware.html", context={"title": "Firmware"}
-    )
+    return templates.TemplateResponse(request, "firmware.html", context={"title": "Firmware"})
 
 
 @router.post(
     "/upload/local",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])],
 )
 async def upload_update_local(
     request: Request,
@@ -67,9 +59,7 @@ async def upload_update_local(
 
 @router.post(
     "/upload/remote",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])],
 )
 async def upload_update_remote(request: Request, url: str = Form(...)):
     firmware = await Firmware.get_or_none(uri=url)
@@ -89,35 +79,23 @@ async def home_ui(request: Request):
 
 @router.get(
     "/devices",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.DEVICE.READ])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.READ])],
 )
 async def devices_ui(request: Request):
-    return templates.TemplateResponse(
-        request, "devices.html", context={"title": "Devices"}
-    )
+    return templates.TemplateResponse(request, "devices.html", context={"title": "Devices"})
 
 
 @router.get(
     "/rollouts",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])],
 )
 async def rollouts_ui(request: Request):
-    return templates.TemplateResponse(
-        request, "rollouts.html", context={"title": "Rollouts"}
-    )
+    return templates.TemplateResponse(request, "rollouts.html", context={"title": "Rollouts"})
 
 
 @router.get(
     "/logs/{dev_id}",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.DEVICE.READ])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.READ])],
 )
 async def logs_ui(request: Request, dev_id: str):
-    return templates.TemplateResponse(
-        request, "logs.html", context={"title": "Log", "device": dev_id}
-    )
+    return templates.TemplateResponse(request, "logs.html", context={"title": "Log", "device": dev_id})

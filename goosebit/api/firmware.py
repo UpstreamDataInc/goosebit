@@ -14,9 +14,7 @@ router = APIRouter(prefix="/firmware")
 
 @router.get(
     "/all",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])],
 )
 async def firmware_get_all(
     request: Request,
@@ -42,9 +40,7 @@ async def firmware_get_all(
 
 @router.post(
     "/delete",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.DELETE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.DELETE])],
 )
 async def firmware_delete(_: Request, files: list[int] = Body()) -> dict:
     success = False

@@ -53,9 +53,8 @@ class Tag(Model):
 class Device(Model):
     uuid = fields.CharField(max_length=255, primary_key=True)
     name = fields.CharField(max_length=255, null=True)
-    assigned_firmware = fields.ForeignKeyField(
-        "models.Firmware", related_name="assigned_devices", null=True
-    )
+    assigned_firmware = fields.ForeignKeyField("models.Firmware", related_name="assigned_devices", null=True)
+    force_update = fields.BooleanField(default=False)
     fw_version = fields.CharField(max_length=255, null=True)
     hardware = fields.ForeignKeyField("models.Hardware", related_name="devices")
     feed = fields.CharField(max_length=255, default="default")
@@ -63,13 +62,12 @@ class Device(Model):
     update_mode = fields.IntEnumField(UpdateModeEnum, default=UpdateModeEnum.ROLLOUT)
     last_state = fields.IntEnumField(UpdateStateEnum, default=UpdateStateEnum.UNKNOWN)
     progress = fields.IntField(null=True)
+    log_complete = fields.BooleanField(default=False)
     last_log = fields.TextField(null=True)
     last_seen = fields.BigIntField(null=True)
     last_ip = fields.CharField(max_length=15, null=True)
     last_ipv6 = fields.CharField(max_length=40, null=True)
-    tags = fields.ManyToManyField(
-        "models.Tag", related_name="devices", through="device_tags"
-    )
+    tags = fields.ManyToManyField("models.Tag", related_name="devices", through="device_tags")
 
 
 class Rollout(Model):

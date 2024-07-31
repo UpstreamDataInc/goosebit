@@ -10,7 +10,7 @@ from goosebit.api.helper import filter_data
 from goosebit.auth import validate_user_permissions
 from goosebit.models import Device, Firmware, UpdateModeEnum, UpdateStateEnum
 from goosebit.permissions import Permissions
-from goosebit.updater.manager import delete_device, get_update_manager
+from goosebit.updater.manager import delete_devices, get_update_manager
 
 router = APIRouter(prefix="/devices")
 
@@ -42,9 +42,7 @@ async def devices_get_all(request: Request) -> dict[str, int | list[Any] | Any]:
             "uuid": device.uuid,
             "name": device.name,
             "fw": device.fw_version,
-            "fw_version": (
-                target_firmware.version if target_firmware is not None else None
-            ),
+            "fw_version": (target_firmware.version if target_firmware is not None else None),
             "hw_model": device.hardware.model,
             "hw_revision": device.hardware.revision,
             "feed": device.feed,
@@ -52,12 +50,10 @@ async def devices_get_all(request: Request) -> dict[str, int | list[Any] | Any]:
             "progress": device.progress,
             "state": str(device.last_state),
             "update_mode": str(device.update_mode),
-            "force_update": manager.force_update,
+            "force_update": device.force_update,
             "last_ip": device.last_ip,
             "last_seen": last_seen,
-            "online": (
-                last_seen < manager.poll_seconds if last_seen is not None else None
-            ),
+            "online": (last_seen < manager.poll_seconds if last_seen is not None else None),
         }
 
     total_records = await Device.all().count()
@@ -73,9 +69,7 @@ class UpdateDevicesModel(BaseModel):
 
 @router.post(
     "/update",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])],
 )
 async def devices_update(_: Request, config: UpdateDevicesModel) -> dict:
     for uuid in config.devices:
@@ -101,14 +95,12 @@ class ForceUpdateModel(BaseModel):
 
 @router.post(
     "/force_update",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])],
 )
 async def devices_force_update(_: Request, config: ForceUpdateModel) -> dict:
     for uuid in config.devices:
         updater = await get_update_manager(uuid)
-        updater.force_update = True
+        await updater.update_force_update(True)
     return {"success": True}
 
 
@@ -130,11 +122,8 @@ class DeleteModel(BaseModel):
 
 @router.post(
     "/delete",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.DEVICE.DELETE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.DELETE])],
 )
 async def devices_delete(_: Request, config: DeleteModel) -> dict:
-    for uuid in config.devices:
-        await delete_device(uuid)
+    await delete_devices(config.devices)
     return {"success": True}
