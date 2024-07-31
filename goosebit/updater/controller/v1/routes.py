@@ -113,9 +113,7 @@ async def deployment_feedback(
     try:
         data = await request.json()
     except json.JSONDecodeError as e:
-        logging.warning(
-            f"Parsing deployment feedback failed, error={e}, device={updater.dev_id}"
-        )
+        logging.warning(f"Parsing deployment feedback failed, error={e}, device={updater.dev_id}")
         return
     try:
         execution = data["status"]["execution"]
@@ -145,16 +143,14 @@ async def deployment_feedback(
                         await rollout.save()
                     else:
                         logging.warning(
-                            f"Updating rollout success stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"
+                            f"Updating rollout success stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"  # noqa: E501
                         )
 
                 # setting the currently installed version based on the current assigned firmware / existing rollouts
                 # is problematic. Better to assign custom action_id for each update (rollout id? firmware id? new id?).
                 # Alternatively - but requires customization on the gateway side - use version reported by the gateway.
                 await updater.update_fw_version(reported_firmware.version)
-                logger.debug(
-                    f"Installation successful, firmware={reported_firmware.version}, device={updater.dev_id}"
-                )
+                logger.debug(f"Installation successful, firmware={reported_firmware.version}, device={updater.dev_id}")
 
             elif state == "failure":
                 await updater.update_device_state(UpdateStateEnum.ERROR)
@@ -167,17 +163,13 @@ async def deployment_feedback(
                         await rollout.save()
                     else:
                         logging.warning(
-                            f"Updating rollout failure stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"
+                            f"Updating rollout failure stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"  # noqa: E501
                         )
 
-                logger.debug(
-                    f"Installation failed, firmware={reported_firmware.version}, device={updater.dev_id}"
-                )
+                logger.debug(f"Installation failed, firmware={reported_firmware.version}, device={updater.dev_id}")
 
     except KeyError as e:
-        logging.warning(
-            f"Processing deployment feedback failed, error={e}, device={updater.dev_id}"
-        )
+        logging.warning(f"Processing deployment feedback failed, error={e}, device={updater.dev_id}")
 
     try:
         log = data["status"]["details"]

@@ -51,9 +51,7 @@ class UpdateManager(ABC):
     async def update_last_connection(self, last_seen: int, last_ip: str) -> None:
         return
 
-    async def update_update(
-        self, update_mode: UpdateModeEnum, firmware: Firmware | None
-    ):
+    async def update_update(self, update_mode: UpdateModeEnum, firmware: Firmware | None):
         return
 
     async def update_name(self, name: str):
@@ -145,14 +143,8 @@ class DeviceUpdateManager(UpdateManager):
         namespace="main",
     )
     async def get_device(self) -> Device:
-        hardware = (await Hardware.get_or_create(model="default", revision="default"))[
-            0
-        ]
-        return (
-            await Device.get_or_create(
-                uuid=self.dev_id, defaults={"hardware": hardware}
-            )
-        )[0]
+        hardware = (await Hardware.get_or_create(model="default", revision="default"))[0]
+        return (await Device.get_or_create(uuid=self.dev_id, defaults={"hardware": hardware}))[0]
 
     async def save_device(self, device: Device, update_fields: list[str]):
         cache = Cache(namespace="main")
@@ -189,15 +181,11 @@ class DeviceUpdateManager(UpdateManager):
             device.last_ip = last_ip
             await self.save_device(device, update_fields=["last_seen", "last_ip"])
 
-    async def update_update(
-        self, update_mode: UpdateModeEnum, firmware: Firmware | None
-    ):
+    async def update_update(self, update_mode: UpdateModeEnum, firmware: Firmware | None):
         device = await self.get_device()
         device.assigned_firmware = firmware
         device.update_mode = update_mode
-        await self.save_device(
-            device, update_fields=["assigned_firmware_id", "update_mode"]
-        )
+        await self.save_device(device, update_fields=["assigned_firmware_id", "update_mode"])
 
     async def update_name(self, name: str):
         device = await self.get_device()

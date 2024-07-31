@@ -53,9 +53,7 @@ class Tag(Model):
 class Device(Model):
     uuid = fields.CharField(max_length=255, primary_key=True)
     name = fields.CharField(max_length=255, null=True)
-    assigned_firmware = fields.ForeignKeyField(
-        "models.Firmware", related_name="assigned_devices", null=True
-    )
+    assigned_firmware = fields.ForeignKeyField("models.Firmware", related_name="assigned_devices", null=True)
     force_update = fields.BooleanField(default=False)
     fw_version = fields.CharField(max_length=255, null=True)
     hardware = fields.ForeignKeyField("models.Hardware", related_name="devices")
@@ -69,9 +67,7 @@ class Device(Model):
     last_seen = fields.BigIntField(null=True)
     last_ip = fields.CharField(max_length=15, null=True)
     last_ipv6 = fields.CharField(max_length=40, null=True)
-    tags = fields.ManyToManyField(
-        "models.Tag", related_name="devices", through="device_tags"
-    )
+    tags = fields.ManyToManyField("models.Tag", related_name="devices", through="device_tags")
 
 
 class Rollout(Model):

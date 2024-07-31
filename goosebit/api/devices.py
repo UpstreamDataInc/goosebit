@@ -42,9 +42,7 @@ async def devices_get_all(request: Request) -> dict[str, int | list[Any] | Any]:
             "uuid": device.uuid,
             "name": device.name,
             "fw": device.fw_version,
-            "fw_version": (
-                target_firmware.version if target_firmware is not None else None
-            ),
+            "fw_version": (target_firmware.version if target_firmware is not None else None),
             "hw_model": device.hardware.model,
             "hw_revision": device.hardware.revision,
             "feed": device.feed,
@@ -55,9 +53,7 @@ async def devices_get_all(request: Request) -> dict[str, int | list[Any] | Any]:
             "force_update": device.force_update,
             "last_ip": device.last_ip,
             "last_seen": last_seen,
-            "online": (
-                last_seen < manager.poll_seconds if last_seen is not None else None
-            ),
+            "online": (last_seen < manager.poll_seconds if last_seen is not None else None),
         }
 
     total_records = await Device.all().count()
@@ -73,9 +69,7 @@ class UpdateDevicesModel(BaseModel):
 
 @router.post(
     "/update",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])],
 )
 async def devices_update(_: Request, config: UpdateDevicesModel) -> dict:
     for uuid in config.devices:
@@ -101,9 +95,7 @@ class ForceUpdateModel(BaseModel):
 
 @router.post(
     "/force_update",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])],
 )
 async def devices_force_update(_: Request, config: ForceUpdateModel) -> dict:
     for uuid in config.devices:
@@ -130,9 +122,7 @@ class DeleteModel(BaseModel):
 
 @router.post(
     "/delete",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[Permissions.DEVICE.DELETE])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.DELETE])],
 )
 async def devices_delete(_: Request, config: DeleteModel) -> dict:
     await delete_devices(config.devices)

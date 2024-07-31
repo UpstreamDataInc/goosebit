@@ -102,9 +102,7 @@ def test_parse_descriptor_several_boardname():
 
 @pytest.mark.asyncio
 async def test_parse_firmware_header():
-    swdesc_attrs = await parse_file(
-        Path(__file__).resolve().parent / "firmware-header.swu"
-    )
+    swdesc_attrs = await parse_file(Path(__file__).resolve().parent / "firmware-header.swu")
     assert str(swdesc_attrs["version"]) == "8.8.1-11-g8c926e5+188370"
     assert swdesc_attrs["compatibility"] == [
         {"hw_model": "smart-gateway-mt7688", "hw_revision": "0.5"},
