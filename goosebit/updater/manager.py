@@ -135,6 +135,8 @@ class UnknownUpdateManager(UpdateManager):
 
 
 class DeviceUpdateManager(UpdateManager):
+    hardware_default = None
+
     @cached(
         ttl=600,
         key_builder=lambda fn, self: self.dev_id,
@@ -143,7 +145,11 @@ class DeviceUpdateManager(UpdateManager):
         namespace="main",
     )
     async def get_device(self) -> Device:
-        hardware = (await Hardware.get_or_create(model="default", revision="default"))[0]
+        hardware = DeviceUpdateManager.hardware_default
+        if hardware is None:
+            hardware = (await Hardware.get_or_create(model="default", revision="default"))[0]
+            DeviceUpdateManager.hardware_default = hardware
+
         return (await Device.get_or_create(uuid=self.dev_id, defaults={"hardware": hardware}))[0]
 
     async def save_device(self, device: Device, update_fields: list[str]):
