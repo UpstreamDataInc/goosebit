@@ -30,6 +30,9 @@ class HandlingType(StrEnum):
 
 
 class UpdateManager(ABC):
+    device_log_subscriptions: dict[str, list[Callable]] = {}
+    device_poll_time: dict[str, str] = {}
+
     def __init__(self, dev_id: str):
         self.dev_id = dev_id
 
@@ -55,6 +58,12 @@ class UpdateManager(ABC):
         return
 
     async def update_name(self, name: str):
+        return
+
+    async def update_feed(self, feed: str):
+        return
+
+    async def update_flavor(self, flavor: str):
         return
 
     async def update_config_data(self, **kwargs):
@@ -89,23 +98,23 @@ class UpdateManager(ABC):
 
     @property
     def log_subscribers(self):
-        return device_log_subscriptions.get(self.dev_id, [])
+        return UpdateManager.device_log_subscriptions.get(self.dev_id, [])
 
     @log_subscribers.setter
     def log_subscribers(self, value: list):
-        device_log_subscriptions[self.dev_id] = value
+        UpdateManager.device_log_subscriptions[self.dev_id] = value
 
     @property
     def poll_time(self):
-        return device_poll_time.get(self.dev_id, POLL_TIME)
+        return UpdateManager.device_poll_time.get(self.dev_id, POLL_TIME)
 
     @poll_time.setter
     def poll_time(self, value: str):
         if not value == POLL_TIME:
-            device_poll_time[self.dev_id] = value
+            UpdateManager.device_poll_time[self.dev_id] = value
             return
-        if self.dev_id in device_poll_time:
-            del device_poll_time[self.dev_id]
+        if self.dev_id in UpdateManager.device_poll_time:
+            del UpdateManager.device_poll_time[self.dev_id]
 
     async def publish_log(self, log_data: str | None):
         for cb in self.log_subscribers:
@@ -135,6 +144,8 @@ class UnknownUpdateManager(UpdateManager):
 
 
 class DeviceUpdateManager(UpdateManager):
+    hardware_default = None
+
     @cached(
         ttl=600,
         key_builder=lambda fn, self: self.dev_id,
@@ -143,7 +154,11 @@ class DeviceUpdateManager(UpdateManager):
         namespace="main",
     )
     async def get_device(self) -> Device:
-        hardware = (await Hardware.get_or_create(model="default", revision="default"))[0]
+        hardware = DeviceUpdateManager.hardware_default
+        if hardware is None:
+            hardware = (await Hardware.get_or_create(model="default", revision="default"))[0]
+            DeviceUpdateManager.hardware_default = hardware
+
         return (await Device.get_or_create(uuid=self.dev_id, defaults={"hardware": hardware}))[0]
 
     async def save_device(self, device: Device, update_fields: list[str]):
@@ -192,6 +207,16 @@ class DeviceUpdateManager(UpdateManager):
         device.name = name
         await self.save_device(device, update_fields=["name"])
 
+    async def update_feed(self, feed: str):
+        device = await self.get_device()
+        device.feed = feed
+        await self.save_device(device, update_fields=["feed"])
+
+    async def update_flavor(self, flavor: str):
+        device = await self.get_device()
+        device.flavor = flavor
+        await self.save_device(device, update_fields=["flavor"])
+
     async def update_config_data(self, **kwargs):
         model = kwargs.get("hw_model") or "default"
         revision = kwargs.get("hw_revision") or "default"
@@ -220,7 +245,12 @@ class DeviceUpdateManager(UpdateManager):
 
         if device.update_mode == UpdateModeEnum.ROLLOUT:
             return (
-                await Rollout.filter(firmware__compatibility__devices__uuid=device.uuid)
+                await Rollout.filter(
+                    feed=device.feed,
+                    flavor=device.flavor,
+                    paused=False,
+                    firmware__compatibility__devices__uuid=device.uuid,
+                )
                 .order_by("-created_at")
                 .first()
                 .prefetch_related("firmware")
@@ -304,10 +334,6 @@ class DeviceUpdateManager(UpdateManager):
         device.last_log = ""
         await self.save_device(device, update_fields=["last_log"])
         await self.publish_log(None)
-
-
-device_log_subscriptions: dict[str, list[Callable]] = {}
-device_poll_time: dict[str, str] = {}
 
 
 async def get_update_manager(dev_id: str) -> UpdateManager:

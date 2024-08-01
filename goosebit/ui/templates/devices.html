@@ -5,21 +5,21 @@
             <table id="device-table" class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Name</th>
                         <th>Up</th>
                         <th>UUID</th>
+                        <th>Name</th>
                         <th>Model</th>
                         <th>Revision</th>
                         <th>Feed</th>
                         <th>Flavor</th>
-                        <th>Firmware</th>
-                        <th>Update Mode</th>
-                        <th>Force Update</th>
+                        <th>Installed Firmware</th>
                         <th>Target Firmware</th>
+                        <th>Update Mode</th>
+                        <th>State</th>
+                        <th>Force Update</th>
                         <th>Progress</th>
                         <th>Last IP</th>
                         <th>Last Seen</th>
-                        <th>State</th>
                     </tr>
                 </thead>
                 <tbody id="devices-list"></tbody>
@@ -40,6 +40,16 @@
                 ></button>
             </div>
             <div class="modal-body">
+                <input
+                    id="rollout-selected-feed"
+                    class="form-control mb-3"
+                    placeholder="Feed"
+                />
+                <input
+                    id="rollout-selected-flavor"
+                    class="form-control mb-3"
+                    placeholder="Flavor"
+                />
                 <select class="form-select" id="selected-fw"></select>
             </div>
             <div class="modal-footer">

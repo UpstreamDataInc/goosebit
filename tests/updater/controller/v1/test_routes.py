@@ -20,6 +20,21 @@ async def _api_devices_get(async_client):
     return response.json()["data"]
 
 
+async def _api_rollout_create(async_client, feed, flavor, firmware, paused):
+    response = await async_client.post(
+        f"/api/rollouts/",
+        json={"name": "", "feed": feed, "flavor": flavor, "firmware_id": firmware.id},
+    )
+    assert response.status_code == 200
+    rollout_id = response.json()["id"]
+
+    response = await async_client.post(
+        f"/api/rollouts/update",
+        json={"ids": [rollout_id], "paused": paused},
+    )
+    assert response.status_code == 200
+
+
 async def _api_rollouts_get(async_client):
     response = await async_client.get("/api/rollouts/all")
     assert response.status_code == 200
@@ -66,6 +81,7 @@ async def _poll(async_client, device_uuid, firmware: Firmware | None, expect_upd
     assert response.status_code == 200
     data = response.json()
     if expect_update:
+        assert "deploymentBase" in data["_links"], "expected update, but none available"
         deployment_base = data["_links"]["deploymentBase"]["href"]
         assert deployment_base == f"http://test/DEFAULT/controller/v1/{device_uuid}/deploymentBase/{firmware.id}"
         return deployment_base
@@ -121,7 +137,7 @@ async def test_register_device(async_client, test_data):
 @pytest.mark.asyncio
 async def test_rollout_full(async_client, test_data):
     device = test_data["device_rollout"]
-    firmware = test_data["firmware_latest"]
+    firmware = test_data["firmware_release"]
     rollout = test_data["rollout_default"]
 
     deployment_base = await _poll(async_client, device.uuid, firmware)
@@ -137,7 +153,7 @@ async def test_rollout_full(async_client, test_data):
     await _feedback(async_client, device.uuid, firmware, "success", "closed")
     devices = await _api_devices_get(async_client)
     assert devices[0]["state"] == "Finished"
-    assert devices[0]["fw"] == firmware.version
+    assert devices[0]["fw_installed_version"] == firmware.version
 
     await rollout.refresh_from_db()
     rollouts = await _api_rollouts_get(async_client)
@@ -148,7 +164,7 @@ async def test_rollout_full(async_client, test_data):
 @pytest.mark.asyncio
 async def test_rollout_signalling_download_failure(async_client, test_data):
     device = test_data["device_rollout"]
-    firmware = test_data["firmware_latest"]
+    firmware = test_data["firmware_release"]
 
     deployment_base = await _poll(async_client, device.uuid, firmware)
 
@@ -175,9 +191,34 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
 
 
 @pytest.mark.asyncio
+async def test_rollout_selection(async_client, test_data):
+    device = test_data["device_rollout"]
+    await _api_device_update(async_client, device, "feed", "qa")
+    await _api_device_update(async_client, device, "flavor", "debug")
+
+    firmware_beta = test_data["firmware_beta"]
+    firmware_rc = test_data["firmware_rc"]
+    firmware_release = test_data["firmware_release"]
+
+    await _poll(async_client, device.uuid, None, False)
+
+    await _api_rollout_create(async_client, "qa", "debug", firmware_beta, False)
+    await _poll(async_client, device.uuid, firmware_beta)
+
+    await _api_rollout_create(async_client, "live", "debug", firmware_rc, False)
+    await _poll(async_client, device.uuid, firmware_beta)
+
+    await _api_rollout_create(async_client, "qa", "debug", firmware_release, True)
+    await _poll(async_client, device.uuid, firmware_beta)
+
+    await _api_rollout_create(async_client, "qa", "debug", firmware_release, False)
+    await _poll(async_client, device.uuid, firmware_release)
+
+
+@pytest.mark.asyncio
 async def test_latest(async_client, test_data):
     device = test_data["device_rollout"]
-    firmware = test_data["firmware_latest"]
+    firmware = test_data["firmware_release"]
 
     await _api_device_update(async_client, device, "firmware", "latest")
 
@@ -194,7 +235,7 @@ async def test_latest(async_client, test_data):
     await _feedback(async_client, device.uuid, firmware, "success", "closed")
     devices = await _api_devices_get(async_client)
     assert devices[0]["state"] == "Finished"
-    assert devices[0]["fw"] == firmware.version
+    assert devices[0]["fw_installed_version"] == firmware.version
 
 
 @pytest.mark.asyncio
@@ -222,7 +263,7 @@ async def test_pinned(async_client, test_data):
 @pytest.mark.asyncio
 async def test_up_to_date(async_client, test_data):
     device = test_data["device_rollout"]
-    firmware = test_data["firmware_latest"]
+    firmware = test_data["firmware_release"]
 
     await _api_device_update(async_client, device, "firmware", "latest")
 

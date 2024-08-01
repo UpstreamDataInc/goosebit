@@ -10,6 +10,15 @@ document.addEventListener("DOMContentLoaded", () => {
         scroller: true,
         scrollY: "65vh",
         stateSave: true,
+        stateLoadParams: (settings, data) => {
+            // if save state is older than last breaking code change...
+            if (data.time <= 1722434386000) {
+                // ... delete it
+                for (const key of Object.keys(data)) {
+                    delete data[key];
+                }
+            }
+        },
         ajax: {
             url: "/api/devices/all",
             contentType: "application/json",
@@ -27,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 targets: "_all",
                 searchable: false,
                 orderable: false,
-                render: (data) => data || "❓",
+                render: (data) => data || "-",
             },
         ],
         columns: [
@@ -47,12 +56,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
             },
             { data: "uuid" },
-            { data: "fw" },
+            { data: "fw_installed_version" },
             {
                 data: "progress",
                 render: (data, type) => {
                     if (type === "display" || type === "filter") {
-                        return `${data || "❓"}%`;
+                        return data ? `${data}%` : "-";
                     }
                     return data;
                 },

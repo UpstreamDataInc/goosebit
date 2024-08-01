@@ -33,12 +33,12 @@ async function updateFirmwareSelection(addSpecialMode = false) {
         if (addSpecialMode) {
             let optionElem = document.createElement("option");
             optionElem.value = "rollout";
-            optionElem.textContent = "rollout";
+            optionElem.textContent = "Rollout";
             selectElem.appendChild(optionElem);
 
             optionElem = document.createElement("option");
             optionElem.value = "latest";
-            optionElem.textContent = "latest";
+            optionElem.textContent = "Latest";
             selectElem.appendChild(optionElem);
         }
 

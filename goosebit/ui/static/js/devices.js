@@ -6,10 +6,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         paging: true,
         processing: false,
         serverSide: true,
+        order: [],
         scrollCollapse: true,
         scroller: true,
         scrollY: "65vh",
         stateSave: true,
+        stateLoadParams: (settings, data) => {
+            // if save state is older than last breaking code change...
+            if (data.time <= 1722434189000) {
+                // ... delete it
+                for (const key of Object.keys(data)) {
+                    delete data[key];
+                }
+            }
+        },
         select: true,
         rowId: "uuid",
         ajax: {
@@ -21,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         columnDefs: [
             {
-                targets: [0, 2, 5, 6, 8, 14],
+                targets: [1, 2, 3, 4, 5, 6, 9, 10],
                 searchable: true,
                 orderable: true,
             },
@@ -29,11 +39,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 targets: "_all",
                 searchable: false,
                 orderable: false,
-                render: (data) => data || "❓",
+                render: (data) => data || "-",
             },
         ],
         columns: [
-            { data: "name" },
             {
                 data: "online",
                 render: (data, type) => {
@@ -49,17 +58,20 @@ document.addEventListener("DOMContentLoaded", async () => {
                 },
             },
             { data: "uuid" },
+            { data: "name" },
             { data: "hw_model" },
             { data: "hw_revision" },
             { data: "feed" },
             { data: "flavor" },
-            { data: "fw" },
+            { data: "fw_installed_version" },
+            { data: "fw_target_version" },
             { data: "update_mode" },
+            { data: "state" },
             {
                 data: "force_update",
                 render: (data, type) => {
                     if (type === "display" || type === "filter") {
-                        const color = data ? "success" : "danger";
+                        const color = data ? "success" : "muted";
                         return `
                         <div class="text-${color}">
                             ●
@@ -69,12 +81,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                     return data;
                 },
             },
-            { data: "fw_version" },
             {
                 data: "progress",
                 render: (data, type) => {
                     if (type === "display" || type === "filter") {
-                        return `${data || "❓"}%`;
+                        return data ? `${data}%` : "-";
                     }
                     return data;
                 },
@@ -89,7 +100,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     return data;
                 },
             },
-            { data: "state" },
         ],
         layout: {
             top1Start: {
@@ -135,6 +145,20 @@ document.addEventListener("DOMContentLoaded", async () => {
                     {
                         text: '<i class="bi bi-gear" ></i>',
                         action: () => {
+                            const selectedDevice = dataTable.rows({ selected: true }).data().toArray()[0];
+                            $("#rollout-selected-feed").val(selectedDevice.feed);
+                            $("#rollout-selected-flavor").val(selectedDevice.flavor);
+
+                            let selectedValue;
+                            if (selectedDevice.update_mode === "Rollout") {
+                                selectedValue = "rollout";
+                            } else if (selectedDevice.update_mode === "Latest") {
+                                selectedValue = "latest";
+                            } else {
+                                selectedValue = selectedDevice.fw_assigned;
+                            }
+                            $("#selected-fw").val(selectedValue);
+
                             new bootstrap.Modal("#device-config-modal").show();
                         },
                         className: "buttons-config",
@@ -234,9 +258,11 @@ async function updateDeviceConfig() {
         .toArray()
         .map((d) => d.uuid);
     const firmware = document.getElementById("selected-fw").value;
+    const feed = document.getElementById("rollout-selected-feed").value;
+    const flavor = document.getElementById("rollout-selected-flavor").value;
 
     try {
-        await post("/api/devices/update", { devices, firmware });
+        await post("/api/devices/update", { devices, firmware, feed, flavor });
     } catch (error) {
         console.error("Update device config failed:", error);
     }

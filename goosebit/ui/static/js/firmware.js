@@ -121,11 +121,20 @@ document.addEventListener("DOMContentLoaded", () => {
         paging: true,
         processing: false,
         serverSide: true,
-        aaSorting: [],
+        order: [2, "desc"],
         scrollCollapse: true,
         scroller: true,
         scrollY: "60vh",
         stateSave: true,
+        stateLoadParams: (settings, data) => {
+            // if save state is older than last breaking code change...
+            if (data.time <= 1722415428000) {
+                // ... delete it
+                for (const key of Object.keys(data)) {
+                    delete data[key];
+                }
+            }
+        },
         ajax: {
             url: "/api/firmware/all",
             contentType: "application/json",
@@ -135,21 +144,16 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         columnDefs: [
             {
-                targets: [0, 2],
-                searchable: true,
-                orderable: true,
-            },
-            {
                 targets: "_all",
                 searchable: false,
                 orderable: false,
-                render: (data) => data || "❓",
+                render: (data) => data || "-",
             },
         ],
         columns: [
-            { data: "name", orderable: false },
-            { data: "id" },
-            { data: "version" },
+            { data: "id", visible: false },
+            { data: "name", searchable: true },
+            { data: "version", searchable: true, orderable: true },
             {
                 data: "size",
                 render: (data, type) => {
@@ -213,8 +217,20 @@ document.addEventListener("DOMContentLoaded", () => {
         .on("mouseenter", "tr", function () {
             const rowData = dataTable.row(this).data();
             const compat = rowData.compatibility;
-            const list = compat?.map((c) => `<b>${c.model}-${c.revision}</b>`).join(", ");
-            const tooltipText = `Compatibility: ${list}`;
+            let tooltipText = "";
+            if (compat) {
+                const result = compat.reduce((acc, { model, revision }) => {
+                    if (!acc[model]) {
+                        acc[model] = [];
+                    }
+                    acc[model].push(revision);
+                    return acc;
+                }, {});
+
+                tooltipText = Object.entries(result)
+                    .map(([model, revision]) => `<b>${model}</b> [${revision.join(", ")}]`)
+                    .join(", ");
+            }
 
             // Initialize Bootstrap tooltip
             $(this)

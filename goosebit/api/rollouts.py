@@ -24,11 +24,12 @@ async def rollouts_get_all(request: Request) -> dict[str, int | list[dict]]:
     async def parse(rollout: Rollout) -> dict:
         return {
             "id": rollout.id,
-            "created_at": rollout.created_at,
+            "created_at": int(rollout.created_at.timestamp() * 1000),
             "name": rollout.name,
             "feed": rollout.feed,
             "flavor": rollout.flavor,
             "fw_file": rollout.firmware.path.name,
+            "fw_version": rollout.firmware.version,
             "paused": rollout.paused,
             "success_count": rollout.success_count,
             "failure_count": rollout.failure_count,
@@ -50,13 +51,13 @@ class CreateRolloutsModel(BaseModel):
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.WRITE])],
 )
 async def rollouts_create(_: Request, rollout: CreateRolloutsModel) -> dict:
-    await Rollout.create(
+    rollout = await Rollout.create(
         name=rollout.name,
         feed=rollout.feed,
         flavor=rollout.flavor,
         firmware_id=rollout.firmware_id,
     )
-    return {"success": True}
+    return {"success": True, "id": rollout.id}
 
 
 class UpdateRolloutsModel(BaseModel):

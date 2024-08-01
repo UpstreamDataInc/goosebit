@@ -41,8 +41,9 @@ async def devices_get_all(request: Request) -> dict[str, int | list[Any] | Any]:
         return {
             "uuid": device.uuid,
             "name": device.name,
-            "fw": device.fw_version,
-            "fw_version": (target_firmware.version if target_firmware is not None else None),
+            "fw_installed_version": device.fw_version,
+            "fw_target_version": (target_firmware.version if target_firmware is not None else None),
+            "fw_assigned": (device.assigned_firmware.id if device.assigned_firmware is not None else None),
             "hw_model": device.hardware.model,
             "hw_revision": device.hardware.revision,
             "feed": device.feed,
@@ -64,7 +65,9 @@ class UpdateDevicesModel(BaseModel):
     devices: list[str]
     firmware: str | None = None
     name: str | None = None
-    pinned: bool = False
+    pinned: bool | None = None
+    feed: str | None = None
+    flavor: str | None = None
 
 
 @router.post(
@@ -82,10 +85,14 @@ async def devices_update(_: Request, config: UpdateDevicesModel) -> dict:
             else:
                 firmware = await Firmware.get_or_none(id=config.firmware)
                 await updater.update_update(UpdateModeEnum.ASSIGNED, firmware)
-        if config.pinned:
+        if config.pinned is not None:
             await updater.update_update(UpdateModeEnum.PINNED, None)
         if config.name is not None:
             await updater.update_name(config.name)
+        if config.feed is not None:
+            await updater.update_feed(config.feed)
+        if config.flavor is not None:
+            await updater.update_flavor(config.flavor)
     return {"success": True}
 
 
