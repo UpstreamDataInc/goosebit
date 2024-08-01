@@ -30,6 +30,9 @@ class HandlingType(StrEnum):
 
 
 class UpdateManager(ABC):
+    device_log_subscriptions: dict[str, list[Callable]] = {}
+    device_poll_time: dict[str, str] = {}
+
     def __init__(self, dev_id: str):
         self.dev_id = dev_id
 
@@ -89,23 +92,23 @@ class UpdateManager(ABC):
 
     @property
     def log_subscribers(self):
-        return device_log_subscriptions.get(self.dev_id, [])
+        return UpdateManager.device_log_subscriptions.get(self.dev_id, [])
 
     @log_subscribers.setter
     def log_subscribers(self, value: list):
-        device_log_subscriptions[self.dev_id] = value
+        UpdateManager.device_log_subscriptions[self.dev_id] = value
 
     @property
     def poll_time(self):
-        return device_poll_time.get(self.dev_id, POLL_TIME)
+        return UpdateManager.device_poll_time.get(self.dev_id, POLL_TIME)
 
     @poll_time.setter
     def poll_time(self, value: str):
         if not value == POLL_TIME:
-            device_poll_time[self.dev_id] = value
+            UpdateManager.device_poll_time[self.dev_id] = value
             return
-        if self.dev_id in device_poll_time:
-            del device_poll_time[self.dev_id]
+        if self.dev_id in UpdateManager.device_poll_time:
+            del UpdateManager.device_poll_time[self.dev_id]
 
     async def publish_log(self, log_data: str | None):
         for cb in self.log_subscribers:
@@ -310,10 +313,6 @@ class DeviceUpdateManager(UpdateManager):
         device.last_log = ""
         await self.save_device(device, update_fields=["last_log"])
         await self.publish_log(None)
-
-
-device_log_subscriptions: dict[str, list[Callable]] = {}
-device_poll_time: dict[str, str] = {}
 
 
 async def get_update_manager(dev_id: str) -> UpdateManager:
