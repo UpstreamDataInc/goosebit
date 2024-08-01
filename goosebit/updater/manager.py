@@ -245,7 +245,12 @@ class DeviceUpdateManager(UpdateManager):
 
         if device.update_mode == UpdateModeEnum.ROLLOUT:
             return (
-                await Rollout.filter(firmware__compatibility__devices__uuid=device.uuid)
+                await Rollout.filter(
+                    feed=device.feed,
+                    flavor=device.flavor,
+                    paused=False,
+                    firmware__compatibility__devices__uuid=device.uuid,
+                )
                 .order_by("-created_at")
                 .first()
                 .prefetch_related("firmware")

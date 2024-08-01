@@ -83,13 +83,13 @@ async def test_data(db):
         )
         await firmware_beta.compatibility.add(compatibility)
 
-        firmware_latest = await Firmware.create(
+        firmware_release = await Firmware.create(
             version="1.0.0",
             hash="dummy",
             size=1200,
             uri=uri,
         )
-        await firmware_latest.compatibility.add(compatibility)
+        await firmware_release.compatibility.add(compatibility)
 
         firmware_rc = await Firmware.create(
             version="1.0.0-rc2+build77",
@@ -99,10 +99,12 @@ async def test_data(db):
         )
         await firmware_rc.compatibility.add(compatibility)
 
-        rollout_default = await Rollout.create(firmware_id=firmware_latest.id)
+        rollout_default = await Rollout.create(firmware_id=firmware_release.id)
 
         yield dict(
             device_rollout=device_rollout,
-            firmware_latest=firmware_latest,
+            firmware_release=firmware_release,
+            firmware_rc=firmware_rc,
+            firmware_beta=firmware_beta,
             rollout_default=rollout_default,
         )

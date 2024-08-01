@@ -51,13 +51,13 @@ class CreateRolloutsModel(BaseModel):
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.WRITE])],
 )
 async def rollouts_create(_: Request, rollout: CreateRolloutsModel) -> dict:
-    await Rollout.create(
+    rollout = await Rollout.create(
         name=rollout.name,
         feed=rollout.feed,
         flavor=rollout.flavor,
         firmware_id=rollout.firmware_id,
     )
-    return {"success": True}
+    return {"success": True, "id": rollout.id}
 
 
 class UpdateRolloutsModel(BaseModel):
