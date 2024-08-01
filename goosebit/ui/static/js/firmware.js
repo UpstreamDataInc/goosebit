@@ -217,8 +217,20 @@ document.addEventListener("DOMContentLoaded", () => {
         .on("mouseenter", "tr", function () {
             const rowData = dataTable.row(this).data();
             const compat = rowData.compatibility;
-            const list = compat?.map((c) => `<b>${c.model}-${c.revision}</b>`).join(", ");
-            const tooltipText = `Compatibility: ${list}`;
+            let tooltipText = "";
+            if (compat) {
+                const result = compat.reduce((acc, { model, revision }) => {
+                    if (!acc[model]) {
+                        acc[model] = [];
+                    }
+                    acc[model].push(revision);
+                    return acc;
+                }, {});
+
+                tooltipText = Object.entries(result)
+                    .map(([model, revision]) => `<b>${model}</b> [${revision.join(", ")}]`)
+                    .join(", ");
+            }
 
             // Initialize Bootstrap tooltip
             $(this)
