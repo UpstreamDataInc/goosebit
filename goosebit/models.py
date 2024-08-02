@@ -7,6 +7,8 @@ from urllib.request import url2pathname
 import semver
 from tortoise import Model, fields
 
+from goosebit.telemetry import devices_count
+
 
 class UpdateModeEnum(IntEnum):
     NONE = 0
@@ -68,6 +70,24 @@ class Device(Model):
     last_ip = fields.CharField(max_length=15, null=True)
     last_ipv6 = fields.CharField(max_length=40, null=True)
     tags = fields.ManyToManyField("models.Tag", related_name="devices", through="device_tags")
+
+    async def save(self, *args, **kwargs):
+        is_new = self._saved_in_db is False
+        await super().save(*args, **kwargs)
+        if is_new:
+            await self.notify_created()
+
+    async def delete(self, *args, **kwargs):
+        await super().delete(*args, **kwargs)
+        await self.notify_deleted()
+
+    @staticmethod
+    async def notify_created():
+        devices_count.set(await Device.all().count())
+
+    @staticmethod
+    async def notify_deleted():
+        devices_count.set(await Device.all().count())
 
 
 class Rollout(Model):
