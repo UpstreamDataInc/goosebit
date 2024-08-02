@@ -1,3 +1,5 @@
+import logging
+
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends, HTTPException
 from fastapi.requests import Request
@@ -8,6 +10,7 @@ from joserfc.errors import BadSignatureError
 
 from goosebit.settings import PWD_CXT, SECRET, USERS
 
+logger = logging.getLogger(__name__)
 
 async def authenticate_user(request: Request):
     form_data = await request.form()
@@ -113,6 +116,7 @@ def validate_user_permissions(
         return request
     for scope in security.scopes:
         if scope not in user.permissions:
+            logger.warning(f"User {username} does not have permission {scope}")
             raise HTTPException(
                 status_code=403,
                 detail="Not enough permissions",
