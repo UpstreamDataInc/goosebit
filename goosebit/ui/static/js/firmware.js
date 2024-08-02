@@ -116,6 +116,47 @@ function resetProgress() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    const buttons = [
+        {
+            text: '<i class="bi bi-cloud-download" ></i>',
+            action: (e, dt) => {
+                const selectedFirmware = dt
+                    .rows({ selected: true })
+                    .data()
+                    .toArray()
+                    .map((d) => d.id);
+                downloadFirmware(selectedFirmware[0]);
+            },
+            className: "buttons-download",
+            titleAttr: "Download Firmware",
+        },
+        {
+            text: '<i class="bi bi-trash" ></i>',
+            action: async (e, dt) => {
+                const selectedFirmware = dt
+                    .rows({ selected: true })
+                    .data()
+                    .toArray()
+                    .map((d) => d.id);
+                await deleteFirmware(selectedFirmware);
+            },
+            className: "buttons-delete",
+            titleAttr: "Delete Firmware",
+        },
+    ];
+
+    // add create button at the beginning if upload modal exists
+    if ($("#upload-modal").length > 0) {
+        buttons.unshift({
+            text: '<i class="bi bi-plus" ></i>',
+            action: () => {
+                new bootstrap.Modal("#upload-modal").show();
+            },
+            className: "buttons-create",
+            titleAttr: "Add Firmware",
+        });
+    }
+
     dataTable = new DataTable("#firmware-table", {
         responsive: true,
         paging: true,
@@ -168,34 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
         rowId: "id",
         layout: {
             bottom1Start: {
-                buttons: [
-                    {
-                        text: '<i class="bi bi-cloud-download" ></i>',
-                        action: (e, dt) => {
-                            const selectedFirmware = dt
-                                .rows({ selected: true })
-                                .data()
-                                .toArray()
-                                .map((d) => d.id);
-                            downloadFirmware(selectedFirmware[0]);
-                        },
-                        className: "buttons-download",
-                        titleAttr: "Download Firmware",
-                    },
-                    {
-                        text: '<i class="bi bi-trash" ></i>',
-                        action: async (e, dt) => {
-                            const selectedFirmware = dt
-                                .rows({ selected: true })
-                                .data()
-                                .toArray()
-                                .map((d) => d.id);
-                            await deleteFirmware(selectedFirmware);
-                        },
-                        className: "buttons-delete",
-                        titleAttr: "Delete Firmware",
-                    },
-                ],
+                buttons,
             },
         },
     });
