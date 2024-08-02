@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                             new bootstrap.Modal("#rollout-create-modal").show();
                         },
                         className: "buttons-create",
-                        titleAttr: "Create Rollout",
+                        titleAttr: "Add Rollout",
                     },
                     {
                         text: '<i class="bi bi-play-fill" ></i>',

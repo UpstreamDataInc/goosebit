@@ -1,18 +1,6 @@
 {% extends "nav.html" %} {% block content %}
 <div class="container-fluid">
     <div class="row p-2 pt-4 g-4 d-flex justify-content-center">
-        {% if "firmware.write" in request.user.permissions %}
-        <div class="col col-12">
-            <button
-                type="button"
-                class="btn btn-lg btn-outline-light w-100"
-                data-bs-toggle="modal"
-                data-bs-target="#upload-modal"
-            >
-                Upload
-            </button>
-        </div>
-        {% endif %}
         <div class="col">
             <table id="firmware-table" class="table table-hover">
                 <thead>
