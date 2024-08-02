@@ -20,7 +20,6 @@ from goosebit.models import (
     UpdateStateEnum,
 )
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
-from goosebit.telemetry import devices_count
 
 
 class HandlingType(StrEnum):
@@ -340,7 +339,6 @@ async def get_update_manager(dev_id: str) -> UpdateManager:
     if dev_id == "unknown":
         return UnknownUpdateManager("unknown")
     else:
-        devices_count.set(await Device.all().count())
         return DeviceUpdateManager(dev_id)
 
 

@@ -3,7 +3,6 @@ from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 
 from goosebit import settings
-from goosebit.models import Device
 
 from . import prometheus
 
@@ -26,5 +25,4 @@ users_count = meter.create_gauge(
 
 
 async def init():
-    devices_count.set(await Device.all().count())
     users_count.set(len(settings.USERS))
