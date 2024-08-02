@@ -1,10 +1,16 @@
 from enum import Enum
+from typing import TypeVar, cast
+
+T = TypeVar("T", bound="PermissionsBase")
 
 
 class PermissionsBase(str, Enum):
     @classmethod
-    def full(cls) -> list:
-        return [i for i in cls]
+    def full(cls) -> set[T]:
+        all_items = set[T]()
+        for permission in cls:
+            all_items.add(cast(T, permission))
+        return all_items
 
     def __str__(self):
         return self.value
@@ -39,25 +45,25 @@ class Permissions:
     ROLLOUT = RolloutPermissions
 
     @classmethod
-    def full(cls):
+    def full(cls) -> set[T]:
         all_items = set()
         for item in [cls.HOME, cls.FIRMWARE, cls.DEVICE, cls.ROLLOUT]:
             all_items.update(item.full())
-        return list(all_items)
+        return all_items
 
     @classmethod
-    def from_str(cls, permission: str):
+    def from_str(cls, permission: str) -> set[T]:
         if permission == "*":
             return cls.full()
-        permission_type = permission.split(".")[0]
-        if permission_type == "firmware":
-            return FirmwarePermissions(permission)
-        if permission_type == "devices":
-            return DevicePermissions(permission)
-        if permission_type == "rollouts":
-            return RolloutPermissions(permission)
-        if permission_type == "home":
-            return HomePermissions(permission)
+        area, action = permission.upper().split(".")
+        if area == "FIRMWARE":
+            return {FirmwarePermissions[action]}
+        if area == "DEVICES":
+            return {DevicePermissions[action]}
+        if area == "ROLLOUTS":
+            return {RolloutPermissions[action]}
+        if area == "HOME":
+            return {HomePermissions[action]}
 
 
 ADMIN = Permissions.full()
