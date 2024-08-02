@@ -86,7 +86,9 @@ async function sendFileUrl(url) {
         body: formData,
     });
 
-    if (!response.ok) {
+    if (response.ok) {
+        updateFirmwareList();
+    } else {
         if (response.status === 400) {
             const result = await response.json();
             const alerts = document.getElementById("url-alerts");
