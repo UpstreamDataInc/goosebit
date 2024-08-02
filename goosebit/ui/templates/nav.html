@@ -86,14 +86,14 @@
                             href="/ui/firmware"
                             >Firmware</a
                         >
-                        {% endif %} {% if "devices.read" in
+                        {% endif %} {% if "device.read" in
                         request.user.permissions %}
                         <a
                             class="nav-link{% if request.url.path.endswith('devices') %} active{% endif %}"
                             href="/ui/devices"
                             >Devices</a
                         >
-                        {% endif %} {% if "rollouts.read" in
+                        {% endif %} {% if "rollout.read" in
                         request.user.permissions %}
                         <a
                             class="nav-link{% if request.url.path.endswith('rollouts') %} active{% endif %}"

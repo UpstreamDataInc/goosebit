@@ -23,15 +23,15 @@ class FirmwarePermissions(PermissionsBase):
 
 
 class DevicePermissions(PermissionsBase):
-    READ = "devices.read"
-    WRITE = "devices.write"
-    DELETE = "devices.delete"
+    READ = "device.read"
+    WRITE = "device.write"
+    DELETE = "device.delete"
 
 
 class RolloutPermissions(PermissionsBase):
-    READ = "rollouts.read"
-    WRITE = "rollouts.write"
-    DELETE = "rollouts.delete"
+    READ = "rollout.read"
+    WRITE = "rollout.write"
+    DELETE = "rollout.delete"
 
 
 class HomePermissions(PermissionsBase):
@@ -58,9 +58,9 @@ class Permissions:
         area, action = permission.upper().split(".")
         if area == "FIRMWARE":
             return {FirmwarePermissions[action]}
-        if area == "DEVICES":
+        if area == "DEVICE":
             return {DevicePermissions[action]}
-        if area == "ROLLOUTS":
+        if area == "ROLLOUT":
             return {RolloutPermissions[action]}
         if area == "HOME":
             return {HomePermissions[action]}
