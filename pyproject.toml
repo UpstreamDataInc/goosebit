@@ -39,6 +39,9 @@ mkdocs-material = "^9.5.29"
 pytest = "^8.3.1"
 pytest-asyncio = "^0.23.8"
 
+[tool.poetry.group.examples.dependencies]
+example-plugin = {path = "examples/example_plugin"}
+
 [tool.isort]
 profile = "black"
 

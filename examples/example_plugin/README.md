@@ -1,0 +1,1 @@
+# gooseBit Example Plugin
