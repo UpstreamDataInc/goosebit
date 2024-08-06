@@ -45,7 +45,9 @@ async function updateFirmwareSelection(addSpecialMode = false) {
         for (const item of data) {
             const optionElem = document.createElement("option");
             optionElem.value = item.id;
-            optionElem.textContent = item.name;
+            optionElem.textContent = `${item.version}`;
+            const models = [...new Set(item.compatibility.map((item) => item.model))];
+            optionElem.textContent = `${item.version} (${models})`;
             selectElem.appendChild(optionElem);
         }
     } catch (error) {

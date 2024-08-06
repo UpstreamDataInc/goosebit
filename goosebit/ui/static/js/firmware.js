@@ -198,6 +198,22 @@ document.addEventListener("DOMContentLoaded", () => {
             { data: "name", searchable: true },
             { data: "version", searchable: true, orderable: true },
             {
+                data: "compatibility",
+                render: (data) => {
+                    const result = data.reduce((acc, { model, revision }) => {
+                        if (!acc[model]) {
+                            acc[model] = [];
+                        }
+                        acc[model].push(revision);
+                        return acc;
+                    }, {});
+
+                    return Object.entries(result)
+                        .map(([model, revision]) => `${model} - ${revision.join(", ")}`)
+                        .join("\n");
+                },
+            },
+            {
                 data: "size",
                 render: (data, type) => {
                     if (type === "display" || type === "filter") {
@@ -222,45 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .on("deselect", () => {
             updateBtnState();
-        });
-
-    // Compatibility tooltip
-    $(() => {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
-
-    $("#firmware-table tbody")
-        .on("mouseenter", "tr", function () {
-            const rowData = dataTable.row(this).data();
-            const compat = rowData.compatibility;
-            let tooltipText = "";
-            if (compat) {
-                const result = compat.reduce((acc, { model, revision }) => {
-                    if (!acc[model]) {
-                        acc[model] = [];
-                    }
-                    acc[model].push(revision);
-                    return acc;
-                }, {});
-
-                tooltipText = Object.entries(result)
-                    .map(([model, revision]) => `<b>${model}</b> [${revision.join(", ")}]`)
-                    .join(", ");
-            }
-
-            // Initialize Bootstrap tooltip
-            $(this)
-                .attr("title", tooltipText)
-                .tooltip({
-                    placement: "top",
-                    trigger: "hover",
-                    container: "body",
-                    html: true,
-                })
-                .tooltip("show");
-        })
-        .on("mouseleave", "tr", function () {
-            $(this).tooltip("dispose");
         });
 
     updateFirmwareList();

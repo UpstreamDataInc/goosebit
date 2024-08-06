@@ -25,13 +25,15 @@ async def firmware_get_all(
         return Q(uri__icontains=search_value) | Q(version__icontains=search_value)
 
     async def parse(f):
+        compatibility = await f.compatibility.all().values()
+
         return {
             "id": f.id,
             "name": f.path.name,
             "size": f.size,
             "hash": f.hash,
             "version": f.version,
-            "compatibility": list(await f.compatibility.all().values()),
+            "compatibility": compatibility,
         }
 
     total_records = await Firmware.all().count()
