@@ -9,7 +9,6 @@ from joserfc.jwk import OctKey
 from goosebit.permissions import Permissions
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-UPDATES_DIR = BASE_DIR.joinpath("updates")
 DB_MIGRATIONS_LOC = BASE_DIR.joinpath("migrations")
 
 SECRET = OctKey.import_key(secrets.token_hex(16))
@@ -19,6 +18,8 @@ config = Dynaconf(
     envvar_prefix="GOOSEBIT",
     settings_files=[BASE_DIR.joinpath("settings.yaml"), BASE_DIR.joinpath(".secrets.yaml")],
 )
+
+UPDATES_DIR = Path(config.get("artifacts_dir", BASE_DIR.joinpath("updates")))
 
 LOGGING = config.get("logging", {})
 
