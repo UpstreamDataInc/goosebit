@@ -129,23 +129,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 buttons: [
                     {
                         text: '<i class="bi bi-pen" ></i>',
-                        action: (e, dt) => {
-                            const input = document.getElementById("device-selected-name");
-                            input.value = dt
-                                .rows({ selected: true })
-                                .data()
-                                .toArray()
-                                .map((d) => d.name)[0];
-
-                            new bootstrap.Modal("#device-rename-modal").show();
-                        },
-                        className: "buttons-rename",
-                        titleAttr: "Rename Devices",
-                    },
-                    {
-                        text: '<i class="bi bi-gear" ></i>',
                         action: () => {
                             const selectedDevice = dataTable.rows({ selected: true }).data().toArray()[0];
+                            $("#device-selected-name").val(selectedDevice.name);
                             $("#device-selected-feed").val(selectedDevice.feed);
                             $("#device-selected-flavor").val(selectedDevice.flavor);
 
@@ -247,19 +233,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         false,
     );
-
-    // Rename form submit
-    const renameForm = document.getElementById("device-rename-form");
-    renameForm.addEventListener(
-        "submit",
-        async (event) => {
-            event.preventDefault();
-            await updateDeviceName();
-            const modal = bootstrap.Modal.getInstance(document.getElementById("device-rename-modal"));
-            modal.hide();
-        },
-        false,
-    );
 });
 
 function updateBtnState() {
@@ -291,31 +264,15 @@ async function updateDeviceConfig() {
         .data()
         .toArray()
         .map((d) => d.uuid);
-    const firmware = document.getElementById("selected-fw").value;
+    const name = document.getElementById("device-selected-name").value;
     const feed = document.getElementById("device-selected-feed").value;
     const flavor = document.getElementById("device-selected-flavor").value;
+    const firmware = document.getElementById("selected-fw").value;
 
     try {
-        await post("/api/devices/update", { devices, firmware, feed, flavor });
+        await post("/api/devices/update", { devices, name, feed, flavor, firmware });
     } catch (error) {
         console.error("Update device config failed:", error);
-    }
-
-    setTimeout(updateDeviceList, 50);
-}
-
-async function updateDeviceName() {
-    const devices = dataTable
-        .rows({ selected: true })
-        .data()
-        .toArray()
-        .map((d) => d.uuid);
-    const name = document.getElementById("device-selected-name").value;
-
-    try {
-        await post("/api/devices/update", { devices, name });
-    } catch (error) {
-        console.error("Update device name failed:", error);
     }
 
     setTimeout(updateDeviceList, 50);
