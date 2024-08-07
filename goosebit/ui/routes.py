@@ -1,11 +1,11 @@
 import aiofiles
-from fastapi import APIRouter, Depends, Form, Security, UploadFile
+from fastapi import APIRouter, Depends, Form, HTTPException, Security, UploadFile
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 
 from goosebit.auth import authenticate_session, validate_user_permissions
-from goosebit.models import Firmware
+from goosebit.models import Firmware, Rollout
 from goosebit.permissions import Permissions
 from goosebit.settings import UPDATES_DIR
 from goosebit.ui.templates import templates
@@ -41,20 +41,21 @@ async def upload_update_local(
     filename: str = Form(...),
 ):
     file = UPDATES_DIR.joinpath(filename)
-    firmware = await Firmware.get_or_none(uri=file.absolute().as_uri())
-    if firmware is not None:
-        await firmware.delete()
 
-    tmpfile = file.with_suffix(".tmp")
-    contents = await chunk.read()
+    temp_file = file.with_suffix(".tmp")
     if init:
-        file.unlink(missing_ok=True)
+        temp_file.unlink(missing_ok=True)
 
-    async with aiofiles.open(tmpfile, mode="ab") as f:
+    contents = await chunk.read()
+
+    async with aiofiles.open(temp_file, mode="ab") as f:
         await f.write(contents)
+
     if done:
-        tmpfile.replace(file)
-        await create_firmware_update(file.absolute().as_uri())
+        try:
+            await create_firmware_update(file.absolute().as_uri(), temp_file)
+        finally:
+            temp_file.unlink(missing_ok=True)
 
 
 @router.post(
@@ -64,9 +65,13 @@ async def upload_update_local(
 async def upload_update_remote(request: Request, url: str = Form(...)):
     firmware = await Firmware.get_or_none(uri=url)
     if firmware is not None:
-        await firmware.delete()
+        rollout_count = await Rollout.filter(firmware=firmware).count()
+        if rollout_count == 0:
+            await firmware.delete()
+        else:
+            raise HTTPException(409, "Firmware with same URL already exists and is referenced by rollout")
 
-    await create_firmware_update(url)
+    await create_firmware_update(url, None)
 
 
 @router.get(
