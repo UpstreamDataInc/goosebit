@@ -5,7 +5,7 @@ from starlette.responses import Response
 
 from goosebit.models import Firmware
 
-router = APIRouter(prefix="/download")
+router = APIRouter(prefix="/download", tags=["download"])
 
 
 @router.head("/{file_id}")
