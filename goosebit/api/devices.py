@@ -27,7 +27,6 @@ async def devices_get_all(request: Request) -> dict[str, int | list[Any] | Any]:
             Q(uuid__icontains=search_value)
             | Q(name__icontains=search_value)
             | Q(feed__icontains=search_value)
-            | Q(flavor__icontains=search_value)
             | Q(update_mode__icontains=UpdateModeEnum.from_str(search_value))
             | Q(last_state__icontains=UpdateStateEnum.from_str(search_value))
         )
@@ -47,7 +46,6 @@ async def devices_get_all(request: Request) -> dict[str, int | list[Any] | Any]:
             "hw_model": device.hardware.model,
             "hw_revision": device.hardware.revision,
             "feed": device.feed,
-            "flavor": device.flavor,
             "progress": device.progress,
             "state": str(device.last_state),
             "update_mode": str(device.update_mode),
@@ -67,7 +65,6 @@ class UpdateDevicesModel(BaseModel):
     name: str | None = None
     pinned: bool | None = None
     feed: str | None = None
-    flavor: str | None = None
 
 
 @router.post(
@@ -91,8 +88,6 @@ async def devices_update(_: Request, config: UpdateDevicesModel) -> dict:
             await updater.update_name(config.name)
         if config.feed is not None:
             await updater.update_feed(config.feed)
-        if config.flavor is not None:
-            await updater.update_flavor(config.flavor)
     return {"success": True}
 
 

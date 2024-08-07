@@ -46,7 +46,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             { data: "created_at", render: (data) => new Date(data).toLocaleString() },
             { data: "name" },
             { data: "feed" },
-            { data: "flavor" },
             { data: "fw_file" },
             { data: "fw_version" },
             {
@@ -181,11 +180,10 @@ function updateBtnState() {
 async function createRollout() {
     const name = document.getElementById("rollout-selected-name").value;
     const feed = document.getElementById("rollout-selected-feed").value;
-    const flavor = document.getElementById("rollout-selected-flavor").value;
     const firmware_id = document.getElementById("selected-fw").value;
 
     try {
-        await post("/api/rollouts", { name, feed, flavor, firmware_id });
+        await post("/api/rollouts", { name, feed, firmware_id });
     } catch (error) {
         console.error("Rollout creation failed:", error);
     }
