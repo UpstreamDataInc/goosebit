@@ -19,7 +19,7 @@ async def rollouts_get_all(request: Request) -> dict[str, int | list[dict]]:
     query = Rollout.all().prefetch_related("firmware")
 
     def search_filter(search_value):
-        return Q(name__icontains=search_value) | Q(feed__icontains=search_value) | Q(flavor__icontains=search_value)
+        return Q(name__icontains=search_value) | Q(feed__icontains=search_value)
 
     async def parse(rollout: Rollout) -> dict:
         return {
@@ -27,7 +27,6 @@ async def rollouts_get_all(request: Request) -> dict[str, int | list[dict]]:
             "created_at": int(rollout.created_at.timestamp() * 1000),
             "name": rollout.name,
             "feed": rollout.feed,
-            "flavor": rollout.flavor,
             "fw_file": rollout.firmware.path.name,
             "fw_version": rollout.firmware.version,
             "paused": rollout.paused,
@@ -42,7 +41,6 @@ async def rollouts_get_all(request: Request) -> dict[str, int | list[dict]]:
 class CreateRolloutsModel(BaseModel):
     name: str
     feed: str
-    flavor: str
     firmware_id: int
 
 
@@ -54,7 +52,6 @@ async def rollouts_create(_: Request, rollout: CreateRolloutsModel) -> dict:
     rollout = await Rollout.create(
         name=rollout.name,
         feed=rollout.feed,
-        flavor=rollout.flavor,
         firmware_id=rollout.firmware_id,
     )
     return {"success": True, "id": rollout.id}

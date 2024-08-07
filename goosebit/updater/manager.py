@@ -71,9 +71,6 @@ class UpdateManager(ABC):
     async def update_feed(self, feed: str):
         return
 
-    async def update_flavor(self, flavor: str):
-        return
-
     async def update_config_data(self, **kwargs):
         return
 
@@ -214,11 +211,6 @@ class DeviceUpdateManager(UpdateManager):
         device.feed = feed
         await self.save_device(device, update_fields=["feed"])
 
-    async def update_flavor(self, flavor: str):
-        device = await self.get_device()
-        device.flavor = flavor
-        await self.save_device(device, update_fields=["flavor"])
-
     async def update_config_data(self, **kwargs):
         model = kwargs.get("hw_boardname") or "default"
         revision = kwargs.get("hw_revision") or "default"
@@ -255,7 +247,6 @@ class DeviceUpdateManager(UpdateManager):
             return (
                 await Rollout.filter(
                     feed=device.feed,
-                    flavor=device.flavor,
                     paused=False,
                     firmware__compatibility__devices__uuid=device.uuid,
                 )

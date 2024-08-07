@@ -62,7 +62,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             { data: "hw_model" },
             { data: "hw_revision" },
             { data: "feed" },
-            { data: "flavor" },
             { data: "fw_installed_version" },
             { data: "fw_target_version" },
             { data: "update_mode" },
@@ -133,7 +132,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                             const selectedDevice = dataTable.rows({ selected: true }).data().toArray()[0];
                             $("#device-selected-name").val(selectedDevice.name);
                             $("#device-selected-feed").val(selectedDevice.feed);
-                            $("#device-selected-flavor").val(selectedDevice.flavor);
 
                             let selectedValue;
                             if (selectedDevice.update_mode === "Rollout") {
@@ -266,11 +264,10 @@ async function updateDeviceConfig() {
         .map((d) => d.uuid);
     const name = document.getElementById("device-selected-name").value;
     const feed = document.getElementById("device-selected-feed").value;
-    const flavor = document.getElementById("device-selected-flavor").value;
     const firmware = document.getElementById("selected-fw").value;
 
     try {
-        await post("/api/devices/update", { devices, name, feed, flavor, firmware });
+        await post("/api/devices/update", { devices, name, feed, firmware });
     } catch (error) {
         console.error("Update device config failed:", error);
     }

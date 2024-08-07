@@ -43,12 +43,10 @@ Frontend allows to assign specific firmware to be rolled out.
 ### Firmware rollout
 
 Rollouts allow a fine-grained assignment of firmwares to devices. The reported device model and revision is combined
-with the manually set feed and flavor values on a device to determine a matching rollout.
+with the manually set feed value on a device to determine a matching rollout.
 
 The feed is meant to model either different environments (like: dev, qa, live) or update channels (like. candidate,
 fast, stable).
-
-The flavor can be used for different type of builds (like: debug, prod).
 
 ### Pause updates
 

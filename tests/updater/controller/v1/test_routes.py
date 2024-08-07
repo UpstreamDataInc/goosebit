@@ -21,10 +21,10 @@ async def _api_device_get(async_client, dev_id):
     return next(d for d in devices if d["uuid"] == dev_id)
 
 
-async def _api_rollout_create(async_client, feed, flavor, firmware, paused):
+async def _api_rollout_create(async_client, feed, firmware, paused):
     response = await async_client.post(
         f"/api/rollouts/",
-        json={"name": "", "feed": feed, "flavor": flavor, "firmware_id": firmware.id},
+        json={"name": "", "feed": feed, "firmware_id": firmware.id},
     )
     assert response.status_code == 200
     rollout_id = response.json()["id"]
@@ -198,7 +198,6 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
 async def test_rollout_selection(async_client, test_data):
     device = test_data["device_rollout"]
     await _api_device_update(async_client, device, "feed", "qa")
-    await _api_device_update(async_client, device, "flavor", "debug")
 
     firmware_beta = test_data["firmware_beta"]
     firmware_rc = test_data["firmware_rc"]
@@ -206,16 +205,16 @@ async def test_rollout_selection(async_client, test_data):
 
     await _poll(async_client, device.uuid, None, False)
 
-    await _api_rollout_create(async_client, "qa", "debug", firmware_beta, False)
+    await _api_rollout_create(async_client, "qa", firmware_beta, False)
     await _poll(async_client, device.uuid, firmware_beta)
 
-    await _api_rollout_create(async_client, "live", "debug", firmware_rc, False)
+    await _api_rollout_create(async_client, "live", firmware_rc, False)
     await _poll(async_client, device.uuid, firmware_beta)
 
-    await _api_rollout_create(async_client, "qa", "debug", firmware_release, True)
+    await _api_rollout_create(async_client, "qa", firmware_release, True)
     await _poll(async_client, device.uuid, firmware_beta)
 
-    await _api_rollout_create(async_client, "qa", "debug", firmware_release, False)
+    await _api_rollout_create(async_client, "qa", firmware_release, False)
     await _poll(async_client, device.uuid, firmware_release)
 
 
