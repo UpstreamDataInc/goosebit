@@ -220,8 +220,10 @@ class DeviceUpdateManager(UpdateManager):
         await self.save_device(device, update_fields=["flavor"])
 
     async def update_config_data(self, **kwargs):
-        model = kwargs.get("hw_model") or "default"
+        model = kwargs.get("hw_boardname") or "default"
         revision = kwargs.get("hw_revision") or "default"
+        fw_version = kwargs.get("sw_version")
+
         hardware = (await Hardware.get_or_create(model=model, revision=revision))[0]
         device = await self.get_device()
         modified = False
@@ -234,8 +236,12 @@ class DeviceUpdateManager(UpdateManager):
             device.last_state = UpdateStateEnum.REGISTERED
             modified = True
 
+        if device.fw_version != fw_version:
+            device.fw_version = fw_version
+            modified = True
+
         if modified:
-            await self.save_device(device, update_fields=["hardware_id", "last_state"])
+            await self.save_device(device, update_fields=["hardware_id", "last_state", "fw_version"])
 
     async def update_log_complete(self, log_complete: bool):
         device = await self.get_device()

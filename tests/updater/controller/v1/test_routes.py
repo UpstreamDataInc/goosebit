@@ -65,8 +65,8 @@ async def _register(async_client, config_url):
                 "details": [""],
             },
             "data": {
-                "hw_model": "smart-gateway-mt7688",
-                "installed_version": "8.8.1-12-g302f635+189128",
+                "hw_boardname": "smart-gateway-mt7688",
+                "sw_version": "8.8.1-12-g302f635+189128",
             },
         },
     )
@@ -133,6 +133,9 @@ async def test_register_device(async_client, test_data):
 
     device_api = await _api_device_get(async_client, UUID)
     assert device_api["state"] == "Registered"
+    assert device_api["fw_installed_version"] == "8.8.1-12-g302f635+189128"
+    assert device_api["hw_model"] == "smart-gateway-mt7688"
+    assert device_api["hw_revision"] == "default"
 
 
 @pytest.mark.asyncio
