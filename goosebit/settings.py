@@ -9,8 +9,6 @@ from joserfc.jwk import OctKey
 from goosebit.permissions import Permissions
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-TOKEN_SWU_DIR = BASE_DIR.joinpath("swugen")
-SWUPDATE_FILES_DIR = BASE_DIR.joinpath("swupdate")
 UPDATES_DIR = BASE_DIR.joinpath("updates")
 DB_MIGRATIONS_LOC = BASE_DIR.joinpath("migrations")
 
