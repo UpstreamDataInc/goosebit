@@ -29,7 +29,7 @@ async def firmware_get_all(
 
         return {
             "id": f.id,
-            "name": f.path.name,
+            "name": f.path_user,
             "size": f.size,
             "hash": f.hash,
             "version": f.version,

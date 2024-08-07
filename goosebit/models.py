@@ -136,5 +136,12 @@ class Firmware(Model):
         return Path(url2pathname(unquote(urlparse(self.uri).path)))
 
     @property
-    def local(self):
+    def local(self) -> bool:
         return urlparse(self.uri).scheme == "file"
+
+    @property
+    def path_user(self) -> str:
+        if self.local:
+            return self.path.name
+        else:
+            return self.uri
