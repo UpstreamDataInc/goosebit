@@ -39,36 +39,57 @@
                     aria-label="Close"
                 ></button>
             </div>
-            <div class="modal-body">
-                <input
-                    id="rollout-selected-feed"
-                    class="form-control mb-3"
-                    placeholder="Feed"
-                />
-                <input
-                    id="rollout-selected-flavor"
-                    class="form-control mb-3"
-                    placeholder="Flavor"
-                />
-                <select class="form-select" id="selected-fw"></select>
-            </div>
-            <div class="modal-footer">
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal"
-                >
-                    Close
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-outline-light"
-                    data-bs-dismiss="modal"
-                    onclick="updateDeviceConfig()"
-                >
-                    Save changes
-                </button>
-            </div>
+            <form id="device-config-form" class="needs-validation" novalidate>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="device-selected-feed">Feed</label>
+                        <input
+                            id="device-selected-feed"
+                            class="form-control"
+                            placeholder="Feed"
+                            required
+                        />
+                        <div class="invalid-feedback">
+                            Feed missing. Use "default" if working with a single
+                            feed.
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="device-selected-flavor">Flavor</label>
+                        <input
+                            id="device-selected-flavor"
+                            class="form-control"
+                            placeholder="Flavor"
+                            required
+                        />
+                        <div class="invalid-feedback">
+                            Flavor missing. Use "default" if working with a
+                            single flavor.
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="selected-fw">Update Mode</label>
+                        <select class="form-select" id="selected-fw" required>
+                            <option value="" disabled selected>
+                                Select firmware
+                            </option>
+                        </select>
+                        <div class="invalid-feedback">Mode missing.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-outline-light">
+                        Save changes
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -84,13 +105,18 @@
                     aria-label="Close"
                 ></button>
             </div>
-            <div class="modal-body">
-                <input
-                    id="device-selected-name"
-                    class="form-control"
-                    placeholder="Name"
-                />
-            </div>
+            <form id="device-rename-form">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="device-selected-name">Feed</label>
+                        <input
+                            id="device-selected-name"
+                            class="form-control"
+                            placeholder="Name"
+                        />
+                    </div>
+                </div>
+            </form>
             <div class="modal-footer">
                 <button
                     type="button"
@@ -99,12 +125,7 @@
                 >
                     Close
                 </button>
-                <button
-                    type="button"
-                    class="btn btn-outline-light"
-                    data-bs-dismiss="modal"
-                    onclick="updateDeviceName()"
-                >
+                <button type="submit" class="btn btn-outline-light">
                     Save changes
                 </button>
             </div>

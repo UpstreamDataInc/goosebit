@@ -135,6 +135,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateRolloutList();
 
     await updateFirmwareSelection();
+
+    // Creation form submit
+    const form = document.getElementById("rollout-form");
+    form.addEventListener(
+        "submit",
+        (event) => {
+            if (form.checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+                form.classList.add("was-validated");
+            } else {
+                event.preventDefault();
+                createRollout();
+                form.classList.remove("was-validated");
+                form.reset();
+                const modal = bootstrap.Modal.getInstance(document.getElementById("rollout-create-modal"));
+                modal.hide();
+            }
+        },
+        false,
+    );
 });
 
 function updateBtnState() {
