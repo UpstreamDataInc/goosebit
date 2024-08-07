@@ -12,6 +12,9 @@ uploadForm.addEventListener("submit", async (e) => {
 });
 
 async function sendFileChunks(file) {
+    const alerts = document.getElementById("upload-alerts");
+    alerts.innerHTML = "";
+
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
     let start = 0;
     let uploadedChunks = 0;
@@ -50,9 +53,8 @@ async function sendFileChunks(file) {
             uploadProgressBar.style.width = `${progress}%`;
             uploadProgressBar.innerHTML = `${Math.round(progress)}%`;
         } else {
-            if (response.status === 400) {
+            if (response.status >= 400 && response.status < 500) {
                 const result = await response.json();
-                const alerts = document.getElementById("upload-alerts");
                 alerts.innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert">
                     ${result.detail}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -78,6 +80,9 @@ urlForm.addEventListener("submit", async (e) => {
 });
 
 async function sendFileUrl(url) {
+    const alerts = document.getElementById("url-alerts");
+    alerts.innerHTML = "";
+
     const formData = new FormData();
     formData.append("url", url);
 
@@ -87,11 +92,14 @@ async function sendFileUrl(url) {
     });
 
     if (response.ok) {
+        alerts.innerHTML = `<div class="alert alert-success alert-dismissible fade show" role="alert">
+            Firmware creation (or replacement) successful
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`;
         updateFirmwareList();
     } else {
-        if (response.status === 400) {
+        if (response.status >= 400 && response.status < 500) {
             const result = await response.json();
-            const alerts = document.getElementById("url-alerts");
             alerts.innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert">
                 ${result.detail}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
