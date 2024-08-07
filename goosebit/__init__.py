@@ -31,6 +31,8 @@ async def lifespan(_: FastAPI):
 for plugin in plugins:
     plugin.load()
 
+TORTOISE_CONF = db.DATABASE.get_config()
+
 app = FastAPI(lifespan=lifespan)
 app.include_router(updater.router)
 app.include_router(ui.router)

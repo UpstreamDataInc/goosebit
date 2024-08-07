@@ -4,19 +4,32 @@ from tortoise import Tortoise, run_async
 from goosebit.models import Firmware
 from goosebit.settings import DB_MIGRATIONS_LOC, DB_URI
 
-TORTOISE_CONF = {
-    "connections": {"default": DB_URI},
-    "apps": {
-        "models": {
-            "models": ["goosebit.models", "aerich.models"],
-        },
-    },
-}
+
+class Database:
+    def __init__(self):
+        self.models = ["goosebit.models", "aerich.models"]
+
+    def add_models(self, module: str):
+        self.models.append(module)
+
+    def get_config(self):
+        return {
+            "connections": {"default": DB_URI},
+            "apps": {
+                "models": {
+                    "models": self.models,
+                },
+            },
+        }
+
+
+DATABASE = Database()
 
 
 async def init():
-    command = Command(tortoise_config=TORTOISE_CONF, location=DB_MIGRATIONS_LOC)
-    await Tortoise.init(config=TORTOISE_CONF)
+    conf = DATABASE.get_config()
+    command = Command(tortoise_config=conf, location=DB_MIGRATIONS_LOC)
+    await Tortoise.init(config=conf)
     if not DB_MIGRATIONS_LOC.exists():
         await command.init_db(safe=True)
     await command.init()

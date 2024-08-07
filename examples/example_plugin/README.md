@@ -88,5 +88,14 @@ from goosebit.ui.static import router as static_router
 
 static = StaticFiles(directory="custom_static")
 
-static_router.mount(path="/example_plugin", name="example_plugin_static", app=static)
+static_router.mount(path="/custom", name="custom_static", app=static)
+```
+
+### Adding DB models:
+
+```python
+from goosebit.db import DATABASE
+
+# define models as normal in a file, then register them
+DATABASE.add_models(module="custom.models")
 ```
