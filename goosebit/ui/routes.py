@@ -7,9 +7,8 @@ from fastapi.security import OAuth2PasswordBearer
 from goosebit.auth import authenticate_session, validate_user_permissions
 from goosebit.models import Firmware, Rollout
 from goosebit.permissions import Permissions
-from goosebit.plugins import UI
 from goosebit.settings import UPDATES_DIR
-from goosebit.ui.templates import templates
+from goosebit.ui.templates import TEMPLATES
 from goosebit.updates import create_firmware_update
 
 from .nav import NAVIGATION
@@ -30,7 +29,7 @@ async def ui_root(request: Request):
 )
 @NAVIGATION.add("Home")
 async def home_ui(request: Request):
-    return templates.TemplateResponse(request, "index.html", context={"title": "Home"})
+    return TEMPLATES.handler.TemplateResponse(request, "index.html", context={"title": "Home"})
 
 
 @router.get(
@@ -39,7 +38,7 @@ async def home_ui(request: Request):
 )
 @NAVIGATION.add("Firmware")
 async def firmware_ui(request: Request):
-    return templates.TemplateResponse(request, "firmware.html", context={"title": "Firmware"})
+    return TEMPLATES.handler.TemplateResponse(request, "firmware.html", context={"title": "Firmware"})
 
 
 @router.post(
@@ -93,7 +92,7 @@ async def upload_update_remote(request: Request, url: str = Form(...)):
 )
 @NAVIGATION.add("Devices")
 async def devices_ui(request: Request):
-    return templates.TemplateResponse(request, "devices.html", context={"title": "Devices"})
+    return TEMPLATES.handler.TemplateResponse(request, "devices.html", context={"title": "Devices"})
 
 
 @router.get(
@@ -102,7 +101,7 @@ async def devices_ui(request: Request):
 )
 @NAVIGATION.add("Rollouts")
 async def rollouts_ui(request: Request):
-    return templates.TemplateResponse(request, "rollouts.html", context={"title": "Rollouts"})
+    return TEMPLATES.handler.TemplateResponse(request, "rollouts.html", context={"title": "Rollouts"})
 
 
 @router.get(
@@ -110,8 +109,4 @@ async def rollouts_ui(request: Request):
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.READ])],
 )
 async def logs_ui(request: Request, dev_id: str):
-    return templates.TemplateResponse(request, "logs.html", context={"title": "Log", "device": dev_id})
-
-
-for r in UI:
-    router.include_router(r.load())
+    return TEMPLATES.handler.TemplateResponse(request, "logs.html", context={"title": "Log", "device": dev_id})

@@ -10,9 +10,7 @@ python = "^3.11"
 goosebit = {path = "../.."}
 
 [tool.poetry.plugins.'goosebit.plugins']
-example_plugin-api = "example_plugin.api:router"
-example_plugin-templates = "example_plugin.templates:loader"
-example_plugin-ui = "example_plugin.ui:router"
+example_plugin = "example_plugin"
 
 [build-system]
 requires = ["poetry-core"]

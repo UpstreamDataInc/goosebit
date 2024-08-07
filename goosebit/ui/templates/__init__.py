@@ -3,15 +3,22 @@ from pathlib import Path
 import jinja2
 from fastapi.templating import Jinja2Templates
 
-from goosebit.plugins import TEMPLATES
+TEMPLATE_DIR = str(Path(__file__).resolve().parent)
 
-template_dir = str(Path(__file__).resolve().parent)
 
-template_loaders = [jinja2.FileSystemLoader(template_dir)]
+class Templates:
+    def __init__(self):
+        self.loader = jinja2.ChoiceLoader([jinja2.FileSystemLoader(TEMPLATE_DIR)])
+        self._handler = None
 
-for t in TEMPLATES:
-    template_loaders.append(t.load())
+    @property
+    def handler(self):
+        if self._handler is None:
+            self._handler = Jinja2Templates(directory=TEMPLATE_DIR, loader=self.loader)
+        return self._handler
 
-loader = jinja2.ChoiceLoader(template_loaders)
+    def register_handler(self, handler):
+        self.loader.loaders = [*self.loader.loaders, handler]
 
-templates = Jinja2Templates(directory=template_dir, loader=loader)
+
+TEMPLATES = Templates()
