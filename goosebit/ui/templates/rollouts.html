@@ -34,41 +34,67 @@
                     aria-label="Close"
                 ></button>
             </div>
-            <div class="modal-body">
-                <input
-                    id="rollout-selected-name"
-                    class="form-control mb-3"
-                    placeholder="Name"
-                />
-                <input
-                    id="rollout-selected-feed"
-                    class="form-control mb-3"
-                    placeholder="Feed"
-                />
-                <input
-                    id="rollout-selected-flavor"
-                    class="form-control mb-3"
-                    placeholder="Flavor"
-                />
-                <select class="form-select" id="selected-fw"></select>
-            </div>
-            <div class="modal-footer">
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal"
-                >
-                    Close
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-outline-light"
-                    data-bs-dismiss="modal"
-                    onclick="createRollout()"
-                >
-                    Save changes
-                </button>
-            </div>
+            <form id="rollout-form" class="needs-validation" novalidate>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="rollout-selected-name">Name</label>
+                        <input
+                            id="rollout-selected-name"
+                            class="form-control"
+                            placeholder="Release 1"
+                        />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="rollout-selected-feed">Feed</label>
+                        <input
+                            id="rollout-selected-feed"
+                            class="form-control"
+                            placeholder="qa"
+                            required
+                        />
+                        <div class="invalid-feedback">
+                            Feed missing. Use "default" if working with a single
+                            feed.
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="rollout-selected-flavor">Flavor</label>
+                        <input
+                            id="rollout-selected-flavor"
+                            class="form-control"
+                            placeholder="debug"
+                            required
+                        />
+                        <div class="invalid-feedback">
+                            Flavor missing. Use "default" if working with a
+                            single flavor.
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="selected-fw">Firmware</label>
+                        <select class="form-select" id="selected-fw" required>
+                            <option value="" disabled selected>
+                                Select firmware
+                            </option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Select firmware for the rollout.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-outline-light">
+                        Save changes
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

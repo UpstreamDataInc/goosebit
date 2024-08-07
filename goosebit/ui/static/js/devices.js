@@ -146,8 +146,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                         text: '<i class="bi bi-gear" ></i>',
                         action: () => {
                             const selectedDevice = dataTable.rows({ selected: true }).data().toArray()[0];
-                            $("#rollout-selected-feed").val(selectedDevice.feed);
-                            $("#rollout-selected-flavor").val(selectedDevice.flavor);
+                            $("#device-selected-feed").val(selectedDevice.feed);
+                            $("#device-selected-flavor").val(selectedDevice.flavor);
 
                             let selectedValue;
                             if (selectedDevice.update_mode === "Rollout") {
@@ -226,6 +226,40 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, TABLE_UPDATE_TIME);
 
     await updateFirmwareSelection(true);
+
+    // Config form submit
+    const configForm = document.getElementById("device-config-form");
+    configForm.addEventListener(
+        "submit",
+        async (event) => {
+            if (configForm.checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+                configForm.classList.add("was-validated");
+            } else {
+                event.preventDefault();
+                await updateDeviceConfig();
+                configForm.classList.remove("was-validated");
+                configForm.reset();
+                const modal = bootstrap.Modal.getInstance(document.getElementById("device-config-modal"));
+                modal.hide();
+            }
+        },
+        false,
+    );
+
+    // Rename form submit
+    const renameForm = document.getElementById("device-rename-form");
+    renameForm.addEventListener(
+        "submit",
+        async (event) => {
+            event.preventDefault();
+            await updateDeviceName();
+            const modal = bootstrap.Modal.getInstance(document.getElementById("device-rename-modal"));
+            modal.hide();
+        },
+        false,
+    );
 });
 
 function updateBtnState() {
@@ -258,8 +292,8 @@ async function updateDeviceConfig() {
         .toArray()
         .map((d) => d.uuid);
     const firmware = document.getElementById("selected-fw").value;
-    const feed = document.getElementById("rollout-selected-feed").value;
-    const flavor = document.getElementById("rollout-selected-flavor").value;
+    const feed = document.getElementById("device-selected-feed").value;
+    const flavor = document.getElementById("device-selected-flavor").value;
 
     try {
         await post("/api/devices/update", { devices, firmware, feed, flavor });
