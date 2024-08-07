@@ -8,8 +8,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Callable, Optional
 
-from aiocache import Cache, cached
-from aiocache.serializers import PickleSerializer
+from aiocache import cached, caches
 
 from goosebit.models import (
     Device,
@@ -20,6 +19,16 @@ from goosebit.models import (
     UpdateStateEnum,
 )
 from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
+
+caches.set_config(
+    {
+        "default": {
+            "cache": "aiocache.SimpleMemoryCache",
+            "serializer": {"class": "aiocache.serializers.PickleSerializer"},
+            "ttl": 600,
+        },
+    }
+)
 
 
 class HandlingType(StrEnum):
@@ -145,13 +154,7 @@ class UnknownUpdateManager(UpdateManager):
 class DeviceUpdateManager(UpdateManager):
     hardware_default = None
 
-    @cached(
-        ttl=600,
-        key_builder=lambda fn, self: self.dev_id,
-        cache=Cache.MEMORY,
-        serializer=PickleSerializer(),
-        namespace="main",
-    )
+    @cached(key_builder=lambda fn, self: self.dev_id, alias="default")
     async def get_device(self) -> Device:
         hardware = DeviceUpdateManager.hardware_default
         if hardware is None:
@@ -161,8 +164,8 @@ class DeviceUpdateManager(UpdateManager):
         return (await Device.get_or_create(uuid=self.dev_id, defaults={"hardware": hardware}))[0]
 
     async def save_device(self, device: Device, update_fields: list[str]):
-        cache = Cache(namespace="main")
-        await cache.set(self.dev_id, device, ttl=600)
+        result = await caches.get("default").set(self.dev_id, device, ttl=600)
+        assert result, "device being cached"
         await device.save(update_fields=update_fields)
 
     async def update_force_update(self, force_update: bool) -> None:
@@ -344,6 +347,6 @@ async def get_update_manager(dev_id: str) -> UpdateManager:
 
 async def delete_devices(ids: list[str]):
     await Device.filter(uuid__in=ids).delete()
-    cache = Cache(namespace="main")
     for dev_id in ids:
-        await cache.delete(dev_id)
+        result = await caches.get("default").delete(dev_id)
+        assert result == 1, "device has been cached"
