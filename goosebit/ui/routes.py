@@ -12,12 +12,11 @@ from goosebit.settings import UPDATES_DIR
 from goosebit.ui.templates import templates
 from goosebit.updates import create_firmware_update
 
+from .nav import NAVIGATION
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 router = APIRouter(prefix="/ui", dependencies=[Depends(authenticate_session)], include_in_schema=False)
-
-for r in UI:
-    router.include_router(r.load())
 
 
 @router.get("/")
@@ -26,9 +25,19 @@ async def ui_root(request: Request):
 
 
 @router.get(
+    "/home",
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
+)
+@NAVIGATION.add("Home")
+async def home_ui(request: Request):
+    return templates.TemplateResponse(request, "index.html", context={"title": "Home"})
+
+
+@router.get(
     "/firmware",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])],
 )
+@NAVIGATION.add("Firmware")
 async def firmware_ui(request: Request):
     return templates.TemplateResponse(request, "firmware.html", context={"title": "Firmware"})
 
@@ -79,17 +88,10 @@ async def upload_update_remote(request: Request, url: str = Form(...)):
 
 
 @router.get(
-    "/home",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
-)
-async def home_ui(request: Request):
-    return templates.TemplateResponse(request, "index.html", context={"title": "Home"})
-
-
-@router.get(
     "/devices",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.READ])],
 )
+@NAVIGATION.add("Devices")
 async def devices_ui(request: Request):
     return templates.TemplateResponse(request, "devices.html", context={"title": "Devices"})
 
@@ -98,6 +100,7 @@ async def devices_ui(request: Request):
     "/rollouts",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])],
 )
+@NAVIGATION.add("Rollouts")
 async def rollouts_ui(request: Request):
     return templates.TemplateResponse(request, "rollouts.html", context={"title": "Rollouts"})
 
@@ -108,3 +111,7 @@ async def rollouts_ui(request: Request):
 )
 async def logs_ui(request: Request, dev_id: str):
     return templates.TemplateResponse(request, "logs.html", context={"title": "Log", "device": dev_id})
+
+
+for r in UI:
+    router.include_router(r.load())

@@ -14,6 +14,7 @@ from goosebit.auth import (
     create_session,
     get_current_user,
 )
+from goosebit.ui.nav import NAVIGATION
 from goosebit.ui.static import static
 from goosebit.ui.templates import templates
 
@@ -38,6 +39,12 @@ Instrumentor.instrument_app(app)
 @app.middleware("http")
 async def attach_user(request: Request, call_next):
     request.scope["user"] = get_current_user(request)
+    return await call_next(request)
+
+
+@app.middleware("http")
+async def attach_nav(request: Request, call_next):
+    request.scope["nav"] = NAVIGATION.items
     return await call_next(request)
 
 
