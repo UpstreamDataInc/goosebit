@@ -9,7 +9,6 @@ from joserfc.jwk import OctKey
 from goosebit.permissions import Permissions
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-ARTIFACTS_DIR = BASE_DIR.joinpath("artifacts")
 DB_MIGRATIONS_LOC = BASE_DIR.joinpath("migrations")
 
 SECRET = OctKey.import_key(secrets.token_hex(16))
@@ -17,6 +16,8 @@ PWD_CXT = PasswordHasher()
 
 with open(BASE_DIR.joinpath("settings.yaml"), "r") as f:
     config = yaml.safe_load(f.read())
+
+ARTIFACTS_DIR = Path(config.get("artifacts_dir", BASE_DIR.joinpath("artifacts")))
 
 LOGGING = config.get("logging", {})
 
