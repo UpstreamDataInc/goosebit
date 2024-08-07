@@ -7,6 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from goosebit.auth import authenticate_session, validate_user_permissions
 from goosebit.models import Firmware, Rollout
 from goosebit.permissions import Permissions
+from goosebit.plugins import UI
 from goosebit.settings import UPDATES_DIR
 from goosebit.ui.templates import templates
 from goosebit.updates import create_firmware_update
@@ -14,6 +15,9 @@ from goosebit.updates import create_firmware_update
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 router = APIRouter(prefix="/ui", dependencies=[Depends(authenticate_session)], include_in_schema=False)
+
+for r in UI:
+    router.include_router(r.load())
 
 
 @router.get("/")

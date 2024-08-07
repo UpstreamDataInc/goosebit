@@ -2,12 +2,16 @@ from fastapi import APIRouter, Depends
 
 from goosebit.api import devices, download, firmware, rollouts
 from goosebit.auth import authenticate_api_session
+from goosebit.plugins import API
 
 # main router that requires authentication
 main_router = APIRouter(prefix="/api", dependencies=[Depends(authenticate_api_session)], tags=["api"])
 main_router.include_router(firmware.router)
 main_router.include_router(devices.router)
 main_router.include_router(rollouts.router)
+
+for r in API:
+    main_router.include_router(r.load())
 
 # download router without authentication
 download_router = APIRouter(prefix="/api", tags=["api"])
