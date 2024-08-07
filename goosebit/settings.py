@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 from argon2 import PasswordHasher
-from joserfc.rfc7518.oct_key import OctKey
+from joserfc.jwk import OctKey
 
 from goosebit.permissions import Permissions
 
