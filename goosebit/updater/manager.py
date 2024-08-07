@@ -343,7 +343,7 @@ async def get_update_manager(dev_id: str) -> UpdateManager:
 
 
 async def delete_devices(ids: list[str]):
-    await Device.filter(id__in=ids).delete()
+    await Device.filter(uuid__in=ids).delete()
     cache = Cache(namespace="main")
     for dev_id in ids:
         await cache.delete(dev_id)
