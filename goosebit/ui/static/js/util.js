@@ -75,4 +75,16 @@ async function post(url, object) {
 
         throw new Error(`POST ${url} failed for ${JSON.stringify(object)}`);
     }
+    return response;
+}
+
+async function get(url) {
+    const response = await fetch(url, {
+        method: "GET",
+    });
+
+    if (!response.ok) {
+        throw new Error(`GET ${url} failed`);
+    }
+    return response;
 }
