@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 
 import pytest_asyncio
+from aiocache import caches
 from httpx import ASGITransport, AsyncClient
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
@@ -14,9 +15,6 @@ from goosebit.models import UpdateModeEnum, UpdateStateEnum
 # Configure logging
 logging.basicConfig(level=logging.WARN)
 
-# disable caching
-os.environ["AIOCACHE_DISABLE"] = "1"
-
 TORTOISE_CONF = {
     "connections": {"default": "sqlite://:memory:"},
     "apps": {
@@ -25,6 +23,12 @@ TORTOISE_CONF = {
         },
     },
 }
+
+
+@pytest_asyncio.fixture(scope="function", autouse=True)
+async def clear_cache():
+    await caches.get("default").clear()
+    yield
 
 
 @pytest_asyncio.fixture(scope="module")
