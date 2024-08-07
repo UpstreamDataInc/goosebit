@@ -63,6 +63,16 @@ async function post(url, object) {
     });
 
     if (!response.ok) {
+        const result = await response.json();
+        if (result.detail) {
+            Swal.fire({
+                title: "Warning",
+                text: result.detail,
+                icon: "warning",
+                confirmButtonText: "Understood",
+            });
+        }
+
         throw new Error(`POST ${url} failed for ${JSON.stringify(object)}`);
     }
 }

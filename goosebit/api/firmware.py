@@ -1,12 +1,12 @@
 from typing import Any
 
-from fastapi import APIRouter, Body, Security
+from fastapi import APIRouter, Body, HTTPException, Security
 from fastapi.requests import Request
 from tortoise.expressions import Q
 
 from goosebit.api.helper import filter_data
 from goosebit.auth import validate_user_permissions
-from goosebit.models import Firmware
+from goosebit.models import Firmware, Rollout
 from goosebit.permissions import Permissions
 
 router = APIRouter(prefix="/firmware")
@@ -48,12 +48,19 @@ async def firmware_delete(_: Request, files: list[int] = Body()) -> dict:
     success = False
     for f_id in files:
         firmware = await Firmware.get_or_none(id=f_id)
+
         if firmware is None:
             continue
+
+        rollout_count = await Rollout.filter(firmware=firmware).count()
+        if rollout_count > 0:
+            raise HTTPException(409, "Firmware is referenced by rollout")
+
         if firmware.local:
             path = firmware.path
             if path.exists():
                 path.unlink()
+
         await firmware.delete()
         success = True
     return {"success": success}
