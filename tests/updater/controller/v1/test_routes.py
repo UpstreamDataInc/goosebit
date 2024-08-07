@@ -14,10 +14,11 @@ async def _api_device_update(async_client, device, update_attribute, update_valu
     assert response.status_code == 200
 
 
-async def _api_devices_get(async_client):
+async def _api_device_get(async_client, dev_id):
     response = await async_client.get("/api/devices/all")
     assert response.status_code == 200
-    return response.json()["data"]
+    devices = response.json()["data"]
+    return next(d for d in devices if d["uuid"] == dev_id)
 
 
 async def _api_rollout_create(async_client, feed, flavor, firmware, paused):
@@ -130,8 +131,8 @@ async def test_register_device(async_client, test_data):
 
     await _poll(async_client, UUID, None, False)
 
-    devices = await _api_devices_get(async_client)
-    assert devices[0]["state"] == "Registered"
+    device_api = await _api_device_get(async_client, UUID)
+    assert device_api["state"] == "Registered"
 
 
 @pytest.mark.asyncio
@@ -146,14 +147,14 @@ async def test_rollout_full(async_client, test_data):
 
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
-    devices = await _api_devices_get(async_client)
-    assert devices[0]["state"] == "Running"
+    device_api = await _api_device_get(async_client, device.uuid)
+    assert device_api["state"] == "Running"
 
     # report finished installation
     await _feedback(async_client, device.uuid, firmware, "success", "closed")
-    devices = await _api_devices_get(async_client)
-    assert devices[0]["state"] == "Finished"
-    assert devices[0]["fw_installed_version"] == firmware.version
+    device_api = await _api_device_get(async_client, device.uuid)
+    assert device_api["state"] == "Finished"
+    assert device_api["fw_installed_version"] == firmware.version
 
     await rollout.refresh_from_db()
     rollouts = await _api_rollouts_get(async_client)
@@ -172,8 +173,8 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
 
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
-    devices = await _api_devices_get(async_client)
-    assert devices[0]["state"] == "Running"
+    device_api = await _api_device_get(async_client, device.uuid)
+    assert device_api["state"] == "Running"
 
     # HEAD /api/download/1 HTTP/1.1 (reason not clear)
     response = await async_client.head(firmware_url)
@@ -186,8 +187,8 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
 
     # report failure
     await _feedback(async_client, device.uuid, firmware, "failure", "closed")
-    devices = await _api_devices_get(async_client)
-    assert devices[0]["state"] == "Error"
+    device_api = await _api_device_get(async_client, device.uuid)
+    assert device_api["state"] == "Error"
 
 
 @pytest.mark.asyncio
@@ -228,14 +229,14 @@ async def test_latest(async_client, test_data):
 
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
-    devices = await _api_devices_get(async_client)
-    assert devices[0]["state"] == "Running"
+    device_api = await _api_device_get(async_client, device.uuid)
+    assert device_api["state"] == "Running"
 
     # report finished installation
     await _feedback(async_client, device.uuid, firmware, "success", "closed")
-    devices = await _api_devices_get(async_client)
-    assert devices[0]["state"] == "Finished"
-    assert devices[0]["fw_installed_version"] == firmware.version
+    device_api = await _api_device_get(async_client, device.uuid)
+    assert device_api["state"] == "Finished"
+    assert device_api["fw_installed_version"] == firmware.version
 
 
 @pytest.mark.asyncio
