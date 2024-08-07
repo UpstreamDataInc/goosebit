@@ -55,7 +55,9 @@ class Tag(Model):
 class Device(Model):
     uuid = fields.CharField(max_length=255, primary_key=True)
     name = fields.CharField(max_length=255, null=True)
-    assigned_firmware = fields.ForeignKeyField("models.Firmware", related_name="assigned_devices", null=True)
+    assigned_firmware = fields.ForeignKeyField(
+        "models.Firmware", related_name="assigned_devices", null=True, on_delete=fields.SET_NULL
+    )
     force_update = fields.BooleanField(default=False)
     fw_version = fields.CharField(max_length=255, null=True)
     hardware = fields.ForeignKeyField("models.Hardware", related_name="devices")
