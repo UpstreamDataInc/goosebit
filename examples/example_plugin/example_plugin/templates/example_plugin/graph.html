@@ -5,31 +5,5 @@
         <div id="hardware-pie" style="height: 80vh"></div>
     </div>
 </div>
-<script>
-    document.addEventListener("DOMContentLoaded", async () => {
-        response = await get("/api/example_plugin/graph");
-        data = await response.json();
-        var options = {
-            series: data.series,
-            labels: data.labels,
-            chart: {
-                type: "donut",
-                height: "100%",
-            },
-            title: { text: "Hardware", style: { color: "#FFFFFF" } },
-
-            legend: {
-                labels: {
-                    colors: "#FFFFFF",
-                },
-            },
-        };
-
-        var chart = new ApexCharts(
-            document.querySelector("#hardware-pie"),
-            options,
-        );
-        chart.render();
-    });
-</script>
+<script src="{{ url_for('example_plugin_static', path='js/graph.js') }}"></script>
 {% endblock content %}

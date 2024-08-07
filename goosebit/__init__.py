@@ -15,8 +15,8 @@ from goosebit.auth import (
     get_current_user,
 )
 from goosebit.plugins import plugins
+from goosebit.ui import static
 from goosebit.ui.nav import NAVIGATION
-from goosebit.ui.static import static
 from goosebit.ui.templates import TEMPLATES
 
 
@@ -37,7 +37,7 @@ app.include_router(ui.router)
 app.include_router(api.router)
 app.include_router(download.router)
 app.include_router(realtime.router)
-app.mount("/static", static, name="static")
+app.mount("/static", static.router)
 Instrumentor.instrument_app(app)
 
 
