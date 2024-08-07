@@ -12,6 +12,7 @@ from goosebit.settings import PWD_CXT, SECRET, USERS
 
 logger = logging.getLogger(__name__)
 
+
 async def authenticate_user(request: Request):
     form_data = await request.form()
     username = form_data.get("username")
