@@ -150,39 +150,39 @@ document.addEventListener("DOMContentLoaded", async () => {
                     },
                     {
                         text: '<i class="bi bi-trash" ></i>',
-                        action: (e, dt) => {
+                        action: async (e, dt) => {
                             const selectedDevices = dt
                                 .rows({ selected: true })
                                 .data()
                                 .toArray()
                                 .map((d) => d.uuid);
-                            deleteDevices(selectedDevices);
+                            await deleteDevices(selectedDevices);
                         },
                         className: "buttons-delete",
                         titleAttr: "Delete Devices",
                     },
                     {
                         text: '<i class="bi bi-box-arrow-in-up-right"></i>',
-                        action: () => {
+                        action: async () => {
                             const selectedDevices = dataTable
                                 .rows({ selected: true })
                                 .data()
                                 .toArray()
                                 .map((d) => d.uuid);
-                            forceUpdateDevices(selectedDevices);
+                            await forceUpdateDevices(selectedDevices);
                         },
                         className: "buttons-force-update",
                         titleAttr: "Force Update",
                     },
                     {
                         text: '<i class="bi bi-pin-angle"></i>',
-                        action: () => {
+                        action: async () => {
                             const selectedDevices = dataTable
                                 .rows({ selected: true })
                                 .data()
                                 .toArray()
                                 .map((d) => d.uuid);
-                            pinDevices(selectedDevices);
+                            await pinDevices(selectedDevices);
                         },
                         className: "buttons-pin",
                         titleAttr: "Pin Version",
@@ -190,11 +190,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 ],
             },
         },
-    });
-
-    dataTable.on("click", "button.edit-name", (e) => {
-        const data = dataTable.row(e.target.closest("tr")).data();
-        updateDeviceName(data.uuid);
     });
 
     dataTable
