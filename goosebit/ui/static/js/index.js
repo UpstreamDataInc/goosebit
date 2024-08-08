@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         },
         ajax: {
-            url: "/api/devices/all",
+            url: "/api/devices/table",
             contentType: "application/json",
         },
         initComplete: () => {

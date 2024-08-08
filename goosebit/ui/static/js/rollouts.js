@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         select: true,
         rowId: "id",
         ajax: {
-            url: "/api/rollouts/all",
+            url: "/api/rollouts/table",
             contentType: "application/json",
         },
         initComplete: () => {
