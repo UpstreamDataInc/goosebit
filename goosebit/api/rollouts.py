@@ -45,7 +45,7 @@ class CreateRolloutsModel(BaseModel):
 
 
 @router.post(
-    "/",
+    "/create",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.WRITE])],
 )
 async def rollouts_create(_: Request, rollout: CreateRolloutsModel) -> dict:

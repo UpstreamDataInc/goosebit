@@ -17,13 +17,13 @@ async def _api_device_update(async_client, device, update_attribute, update_valu
 async def _api_device_get(async_client, dev_id):
     response = await async_client.get("/api/devices/all")
     assert response.status_code == 200
-    devices = response.json()["data"]
+    devices = response.json()["devices"]
     return next(d for d in devices if d["uuid"] == dev_id)
 
 
 async def _api_rollout_create(async_client, feed, firmware, paused):
     response = await async_client.post(
-        f"/api/rollouts/",
+        f"/api/rollouts/create",
         json={"name": "", "feed": feed, "firmware_id": firmware.id},
     )
     assert response.status_code == 200

@@ -183,7 +183,7 @@ async function createRollout() {
     const firmware_id = document.getElementById("selected-fw").value;
 
     try {
-        await post("/api/rollouts", { name, feed, firmware_id });
+        await post("/api/rollouts/create", { name, feed, firmware_id });
     } catch (error) {
         console.error("Rollout creation failed:", error);
     }
