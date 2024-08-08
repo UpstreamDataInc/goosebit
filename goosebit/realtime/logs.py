@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from fastapi import APIRouter, Security
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from websockets.exceptions import ConnectionClosed
 
-from goosebit.auth import validate_ws_user_permissions
+from goosebit.auth import validate_user_permissions
 from goosebit.permissions import Permissions
 from goosebit.updater.manager import get_update_manager
 
@@ -18,7 +20,7 @@ class RealtimeLogModel(BaseModel):
 
 @router.websocket(
     "/{dev_id}",
-    dependencies=[Security(validate_ws_user_permissions, scopes=[Permissions.HOME.READ])],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
 )
 async def device_logs(websocket: WebSocket, dev_id: str):
     await websocket.accept()
