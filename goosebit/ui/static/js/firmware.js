@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         },
         ajax: {
-            url: "/api/firmware/all",
+            url: "/api/firmware/table",
             contentType: "application/json",
         },
         initComplete: () => {

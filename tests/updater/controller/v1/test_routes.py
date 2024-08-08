@@ -161,8 +161,8 @@ async def test_rollout_full(async_client, test_data):
 
     await rollout.refresh_from_db()
     rollouts = await _api_rollouts_get(async_client)
-    assert rollouts["data"][0]["success_count"] == 1
-    assert rollouts["data"][0]["failure_count"] == 0
+    assert rollouts["rollouts"][0]["success_count"] == 1
+    assert rollouts["rollouts"][0]["failure_count"] == 0
 
 
 @pytest.mark.asyncio
