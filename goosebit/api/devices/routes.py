@@ -4,19 +4,18 @@ from fastapi import APIRouter, Security
 from fastapi.requests import Request
 from tortoise.expressions import Q
 
-from goosebit.api.devices.models import (
-    DeleteDevicesRequest,
-    DeviceAllResponse,
-    DeviceTableResponse,
-    ForceUpdateDevicesRequest,
-    LogsDeviceResponse,
-    UpdateDevicesRequest,
-)
-from goosebit.api.model import StatusResponse
+from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.models import Device, Firmware, UpdateModeEnum, UpdateStateEnum
 from goosebit.permissions import Permissions
 from goosebit.updater.manager import delete_devices, get_update_manager
+
+from .requests import (
+    DeleteDevicesRequest,
+    ForceUpdateDevicesRequest,
+    UpdateDevicesRequest,
+)
+from .responses import DeviceAllResponse, DeviceTableResponse, LogsDeviceResponse
 
 router = APIRouter(prefix="/devices", tags=["devices"])
 
