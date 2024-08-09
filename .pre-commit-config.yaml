@@ -1,40 +1,40 @@
 repos:
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.6.0
-      hooks:
-          - id: trailing-whitespace
-          - id: check-yaml
-          - id: check-added-large-files
-    - repo: https://github.com/psf/black
-      rev: 24.4.2
-      hooks:
-          - id: black
-    - repo: https://github.com/pycqa/isort
-      rev: 5.13.2
-      hooks:
-          - id: isort
-            name: isort (python)
-    - repo: local
-      hooks:
-          - id: pytest
-            name: pytest
-            entry: env poetry run pytest tests
-            language: system
-            types: [python]
-            pass_filenames: false
-            always_run: true
-    - repo: https://github.com/pycqa/flake8
-      rev: 7.1.0 # You can specify the version of Flake8 you want to use
-      hooks:
-          - id: flake8
-            additional_dependencies: []
-    - repo: https://github.com/biomejs/pre-commit
-      rev: "v0.4.0"
-      hooks:
-          - id: biome-check
-            additional_dependencies: ["@biomejs/biome@1.8.3"]
-    - repo: https://github.com/rbubley/mirrors-prettier
-      rev: "v3.3.3"
-      hooks:
-          - id: prettier
-            files: \.(html|md|yml|yaml)$
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-added-large-files
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort (python)
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: env poetry run pytest tests
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.0 # You can specify the version of Flake8 you want to use
+    hooks:
+      - id: flake8
+        additional_dependencies: []
+  - repo: https://github.com/biomejs/pre-commit
+    rev: "v0.4.0"
+    hooks:
+      - id: biome-check
+        additional_dependencies: ["@biomejs/biome@1.8.3"]
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: "v3.3.3"
+    hooks:
+      - id: prettier
+        files: \.(html|md|yml|yaml)$
