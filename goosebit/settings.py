@@ -26,8 +26,7 @@ POLL_TIME = config.get("poll_time_default", "00:01:00")
 POLL_TIME_UPDATING = config.get("poll_time_updating", "00:00:05")
 POLL_TIME_REGISTRATION = config.get("poll_time_registration", "00:00:10")
 
-DB_LOC = BASE_DIR.joinpath(config.get("db_location", "db.sqlite3"))
-DB_URI = f"sqlite:///{DB_LOC}"
+DB_URI = config.get("db_uri", f"sqlite:///{BASE_DIR.joinpath('db.sqlite3')}")
 
 
 @dataclass

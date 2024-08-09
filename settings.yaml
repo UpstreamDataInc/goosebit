@@ -1,7 +1,7 @@
 ## Settings to adjust for each installation
 
-# Database to be used
-db_location: db.sqlite3
+# Database to be used, default:
+# db_uri: sqlite:///<project root>/db.sqlite3
 
 # Frequency that devices should check for available updates.
 poll_time_default: 00:01:00
