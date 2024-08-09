@@ -1,0 +1,31 @@
+version: "3.7"
+
+volumes:
+  db:
+  artifacts:
+
+services:
+  postgres:
+    image: "postgres:16.3"
+    environment:
+      POSTGRES_USER: "goosebit"
+      POSTGRES_PASSWORD: "goosebit"
+      POSTGRES_DB: "goosebit"
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  goosebit:
+    image: goosebit
+    build:
+      context: .
+      args:
+        GOOSEBIT_VERSION: 0.1.2
+    environment:
+      GOOSEBIT_DB_URI: postgres://postgres:admin@postgres:5432/goosebit
+      GOOSEBIT_USERS: >-
+        [{email="admin@goosebit.local", password="admin", permissions="*"}]
+      GOOSEBIT_ARTIFACTS_DIR: /artifacts
+    ports:
+      - "8080:8080"
+    volumes:
+      - artifacts:/artifacts

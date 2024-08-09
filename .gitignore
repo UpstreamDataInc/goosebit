@@ -167,3 +167,5 @@ cython_debug/
 /db.sqlite3*
 /migrations
 /poetry.lock
+# Ignore dynaconf secret files
+.secrets.*
