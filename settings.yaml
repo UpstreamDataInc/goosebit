@@ -16,44 +16,44 @@ poll_time_updating: 00:00:05
 # "rollout.read", "rollout.write", "rollout.delete"
 # "home.read"
 users:
-    - email: admin@goosebit.local
-      password: admin
-      permissions:
-          - "*"
-    - email: ops@goosebit.local
-      password: ops
-      permissions:
-          - "home.read"
+  - email: admin@goosebit.local
+    password: admin
+    permissions:
+      - "*"
+  - email: ops@goosebit.local
+    password: ops
+    permissions:
+      - "home.read"
 
 ## Internal settings that usually don't need to be modified
 poll_time_registration: 00:00:10
 tenant: DEFAULT
 metrics:
-    prometheus:
-        port: 9090
+  prometheus:
+    port: 9090
 logging:
-    version: 1
-    formatters:
-        simple:
-            format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    handlers:
-        console:
-            class: logging.StreamHandler
-            formatter: simple
-            level: DEBUG
-    loggers:
-        tortoise:
-            handlers: [console]
-            level: WARNING
-            propagate: yes
-        aiosqlite:
-            handlers: [console]
-            level: WARNING
-            propagate: yes
-        multipart:
-            handlers: [console]
-            level: INFO
-            propagate: yes
-    root:
-        level: INFO
-        handlers: [console]
+  version: 1
+  formatters:
+    simple:
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  handlers:
+    console:
+      class: logging.StreamHandler
+      formatter: simple
+      level: DEBUG
+  loggers:
+    tortoise:
+      handlers: [console]
+      level: WARNING
+      propagate: yes
+    aiosqlite:
+      handlers: [console]
+      level: WARNING
+      propagate: yes
+    multipart:
+      handlers: [console]
+      level: INFO
+      propagate: yes
+  root:
+    level: INFO
+    handlers: [console]
