@@ -20,6 +20,8 @@ PWD_CXT = PasswordHasher()
 with open(BASE_DIR.joinpath("settings.yaml"), "r") as f:
     config = yaml.safe_load(f.read())
 
+PLUGINS = config.get("plugins", []) or []
+
 LOGGING = config.get("logging", {})
 
 TENANT = config.get("tenant", "DEFAULT")

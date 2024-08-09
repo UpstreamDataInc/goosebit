@@ -2,7 +2,7 @@ from goosebit.api.routes import router as api_router
 from goosebit.ui import router as ui_router
 from goosebit.ui.static import router as static_router
 
-from . import api, static, ui
+from . import api, static, templates, ui  # noqa: F401
 
 api_router.include_router(api.router)
 ui_router.include_router(ui.router)
