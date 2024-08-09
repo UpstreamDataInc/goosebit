@@ -1,0 +1,63 @@
+name: Docker
+
+# on:
+#   workflow_run:
+#     workflows: ["PyPI"]
+#     types:
+#       - completed
+
+on:
+  push:
+    branches:
+      - "gardena/eb/docker_test"
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set GOOSEBIT_VERSION env var
+        run: |
+          if [ $GITHUB_REF_TYPE = tag ]; then
+            tag=$GITHUB_REF_NAME
+          else
+            tag=v0.1.2  # TODO: fail instead
+          fi
+          echo "GOOSEBIT_VERSION=${tag#v}" >> $GITHUB_ENV
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3.3.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5.5.1
+        with:
+          images: upstreamdata/goosebit
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6.6.1
+        with:
+          context: .
+          build-args: GOOSEBIT_VERSION=${{ env.GOOSEBIT_VERSION }}
+          file: ./Dockerfile
+          push: false # TODO: set to `true`
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: false # TODO: set to `true`
