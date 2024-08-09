@@ -20,6 +20,6 @@ function create_ws(s) {
     const l = window.location;
     const protocol = l.protocol === "https:" ? "wss://" : "ws://";
     const port = l.port !== "80" || l.port !== "443" ? l.port : "";
-    const url = `${protocol}${l.hostname}${port}${s}`;
+    const url = `${protocol}${l.hostname}:${port}${s}`;
     return new WebSocket(url);
 }

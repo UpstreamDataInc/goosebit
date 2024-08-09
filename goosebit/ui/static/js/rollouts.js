@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         select: true,
         rowId: "id",
         ajax: {
-            url: "/api/rollouts/all",
+            url: "/api/rollouts/table",
             contentType: "application/json",
         },
         initComplete: () => {
@@ -183,7 +183,7 @@ async function createRollout() {
     const firmware_id = document.getElementById("selected-fw").value;
 
     try {
-        await post("/api/rollouts", { name, feed, firmware_id });
+        await post("/api/rollouts/create", { name, feed, firmware_id });
     } catch (error) {
         console.error("Rollout creation failed:", error);
     }

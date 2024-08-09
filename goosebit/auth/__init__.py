@@ -2,15 +2,40 @@ import logging
 
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends, HTTPException
-from fastapi.requests import Request
+from fastapi.requests import HTTPConnection, Request
 from fastapi.security import SecurityScopes
-from fastapi.websockets import WebSocket
 from joserfc import jwt
 from joserfc.errors import BadSignatureError
 
 from goosebit.settings import PWD_CXT, SECRET, USERS
 
 logger = logging.getLogger(__name__)
+
+
+class Authentication:
+    def __init__(self, redirect: bool = False):
+        if redirect:
+            self.status_code = 302
+        else:
+            self.status_code = 401
+
+    def __call__(self, connection: HTTPConnection):
+        session_id = connection.cookies.get("session_id")
+        headers = {"location": str(connection.url_for("login"))}
+        if session_id is None:
+            raise HTTPException(
+                status_code=self.status_code,
+                headers=headers,
+                detail="Invalid session ID",
+            )
+        user = get_user_from_session(session_id)
+        if user is None:
+            raise HTTPException(
+                status_code=self.status_code,
+                headers=headers,
+                detail="Invalid username",
+            )
+        return user
 
 
 async def authenticate_user(request: Request):
@@ -44,40 +69,6 @@ def create_session(username: str) -> str:
     return jwt.encode(header={"alg": "HS256"}, claims={"username": username}, key=SECRET)
 
 
-def authenticate_session(request: Request):
-    session_id = request.cookies.get("session_id")
-    if session_id is None:
-        raise HTTPException(
-            status_code=302,
-            headers={"location": str(request.url_for("login"))},
-            detail="Invalid session ID",
-        )
-    user = get_user_from_session(session_id)
-    if user is None:
-        raise HTTPException(
-            status_code=302,
-            headers={"location": str(request.url_for("login"))},
-            detail="Invalid username",
-        )
-    return user
-
-
-def authenticate_api_session(request: Request):
-    session_id = request.cookies.get("session_id")
-    user = get_user_from_session(session_id)
-    if user is None:
-        raise HTTPException(status_code=401, detail="Not logged in")
-    return user
-
-
-def authenticate_ws_session(websocket: WebSocket):
-    session_id = websocket.cookies.get("session_id")
-    user = get_user_from_session(session_id)
-    if user is None:
-        raise HTTPException(status_code=401, detail="Not logged in")
-    return user
-
-
 def auto_redirect(request: Request):
     session_id = request.cookies.get("session_id")
     if get_user_from_session(session_id) is None:
@@ -108,32 +99,16 @@ def get_current_user(request: Request):
 
 
 def validate_user_permissions(
-    request: Request,
+    connection: HTTPConnection,
     security: SecurityScopes,
-    username: str = Depends(authenticate_session),
-) -> Request:
+    username: str = Depends(Authentication()),
+) -> HTTPConnection:
     user = USERS[username]
     if security.scopes is None:
-        return request
+        return connection
     for scope in security.scopes:
         if scope not in user.permissions:
             logger.warning(f"User {username} does not have permission {scope}")
-            raise HTTPException(
-                status_code=403,
-                detail="Not enough permissions",
-            )
-
-
-def validate_ws_user_permissions(
-    websocket: WebSocket,
-    security: SecurityScopes,
-    username: str = Depends(authenticate_ws_session),
-) -> WebSocket:
-    user = USERS[username]
-    if security.scopes is None:
-        return websocket
-    for scope in security.scopes:
-        if scope not in user.permissions:
             raise HTTPException(
                 status_code=403,
                 detail="Not enough permissions",
