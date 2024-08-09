@@ -1,0 +1,9 @@
+{% extends "nav.html" %} {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<div class="container-fluid">
+    <div class="row p-2 pt-4 g-4 d-flex justify-content-center">
+        <div id="hardware-pie" style="height: 80vh"></div>
+    </div>
+</div>
+<script src="{{ url_for('example_plugin_static', path='js/graph.js') }}"></script>
+{% endblock content %}

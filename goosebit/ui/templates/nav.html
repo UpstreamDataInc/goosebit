@@ -85,34 +85,15 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbar">
                     <div class="navbar-nav">
-                        {% if "home.read" in request.user.permissions %}
-                        <a
-                            class="nav-link{% if request.url.path.endswith('home') %} active{% endif %}"
-                            href="/ui/home"
-                            >Home</a
-                        >
-                        {% endif %} {% if "firmware.read" in
+                        {% for nav_item in request.nav %} {% if
+                        nav_item.permissions == None or nav_item.permissions in
                         request.user.permissions %}
                         <a
-                            class="nav-link{% if request.url.path.endswith('firmware') %} active{% endif %}"
-                            href="/ui/firmware"
-                            >Firmware</a
+                            class="nav-link{% if request.url == request.url_for(nav_item.function) %} active{% endif %}"
+                            href="{{ request.url_for(nav_item.function) }}"
+                            >{{nav_item.text}}</a
                         >
-                        {% endif %} {% if "device.read" in
-                        request.user.permissions %}
-                        <a
-                            class="nav-link{% if request.url.path.endswith('devices') %} active{% endif %}"
-                            href="/ui/devices"
-                            >Devices</a
-                        >
-                        {% endif %} {% if "rollout.read" in
-                        request.user.permissions %}
-                        <a
-                            class="nav-link{% if request.url.path.endswith('rollouts') %} active{% endif %}"
-                            href="/ui/rollouts"
-                            >Rollouts</a
-                        >
-                        {% endif %}
+                        {% endif %} {% endfor %}
                     </div>
                     <div
                         class="navbar-nav d-flex flex-fill justify-content-end"

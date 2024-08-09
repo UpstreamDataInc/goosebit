@@ -166,4 +166,4 @@ cython_debug/
 /updates
 /db.sqlite3*
 /migrations
-/poetry.lock
+*/poetry.lock

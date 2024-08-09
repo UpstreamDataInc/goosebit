@@ -274,5 +274,5 @@ async function deleteFirmware(files) {
 }
 
 function downloadFirmware(file) {
-    window.location.href = `/api/download/${file}`;
+    window.location.href = `/download/${file}`;
 }

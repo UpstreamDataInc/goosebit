@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "example-plugin"
+version = "1.0.0"
+description = ""
+authors = ["Upstream Data <brett@upstreamdata.ca>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+goosebit = {path = "../.."}
+
+[tool.poetry.plugins.'goosebit.plugins']
+example_plugin = "example_plugin"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

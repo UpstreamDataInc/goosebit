@@ -10,6 +10,9 @@ poll_time_default: 00:01:00
 # and device logs get updated.
 poll_time_updating: 00:00:05
 
+plugins:
+#  - "example_plugin"
+
 # User account for the frontend. Available permissions:
 # "firmware.read", "firmware.write", "firmware.delete"
 # "device.read", "device.write", "device.delete"
