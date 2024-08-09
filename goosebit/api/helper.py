@@ -16,7 +16,7 @@ async def filter_data(request, query, search_filter, parse, total_records):
         query = query.filter(search_filter(search_value))
 
     if order_column:
-        query = query.order_by(f"{"-" if order_dir == "desc" else ""}{order_column}")
+        query = query.order_by(f"{'-' if order_dir == 'desc' else ''}{order_column}")
 
     filtered_records = await query.count()
     rollouts = await query.offset(start).limit(length).all()
