@@ -9,7 +9,7 @@ from joserfc.jwk import OctKey
 from goosebit.permissions import Permissions
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-UPDATES_DIR = BASE_DIR.joinpath("updates")
+ARTIFACTS_DIR = BASE_DIR.joinpath("artifacts")
 DB_MIGRATIONS_LOC = BASE_DIR.joinpath("migrations")
 
 SECRET = OctKey.import_key(secrets.token_hex(16))

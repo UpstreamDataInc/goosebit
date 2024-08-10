@@ -163,7 +163,7 @@ cython_debug/
 .idea/
 
 # application files
-/updates
+/artifacts
 /db.sqlite3*
 /migrations
 /poetry.lock
