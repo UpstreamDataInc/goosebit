@@ -8,8 +8,6 @@ import httpx
 import libconf
 import semver
 
-from goosebit.settings import ARTIFACTS_DIR
-
 logger = logging.getLogger(__name__)
 
 
@@ -69,12 +67,11 @@ async def parse_file(file: Path):
 async def parse_remote(url: str):
     async with httpx.AsyncClient() as c:
         file = await c.get(url)
-        temp_file = ARTIFACTS_DIR.joinpath("temp.swu")
-        async with aiofiles.open(temp_file, "w+b") as f:
+        async with aiofiles.tempfile.NamedTemporaryFile("w+b") as f:
             await f.write(file.content)
-    parsed_file = await parse_file(temp_file)
-    temp_file.unlink()
-    return parsed_file
+            f.close()
+            swdesc_attrs = await parse_file(Path(f.name))
+    return swdesc_attrs
 
 
 def _sha1_hash_file(file_path: Path):
