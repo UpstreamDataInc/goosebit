@@ -8,7 +8,7 @@ import httpx
 import libconf
 import semver
 
-from goosebit.settings import UPDATES_DIR
+from goosebit.settings import ARTIFACTS_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ async def parse_file(file: Path):
 async def parse_remote(url: str):
     async with httpx.AsyncClient() as c:
         file = await c.get(url)
-        temp_file = UPDATES_DIR.joinpath("temp.swu")
+        temp_file = ARTIFACTS_DIR.joinpath("temp.swu")
         async with aiofiles.open(temp_file, "w+b") as f:
             await f.write(file.content)
     parsed_file = await parse_file(temp_file)
