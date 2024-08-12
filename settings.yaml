@@ -3,6 +3,9 @@
 # Database to be used, default:
 # db_uri: sqlite:///<project root>/db.sqlite3
 
+# Path to the directory containing artifact files, default:
+# artifacts_dir: /<project root>/artifacts
+
 # Frequency that devices should check for available updates.
 poll_time_default: 00:01:00
 
