@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrumentor
 
-from goosebit import api, db, realtime, telemetry, ui, updater
+from goosebit import api, db, download, realtime, telemetry, ui, updater
 from goosebit.auth import (
     authenticate_user,
     auto_redirect,
@@ -30,6 +30,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(updater.router)
 app.include_router(ui.router)
 app.include_router(api.router)
+app.include_router(download.router)
 app.include_router(realtime.router)
 app.mount("/static", static, name="static")
 Instrumentor.instrument_app(app)

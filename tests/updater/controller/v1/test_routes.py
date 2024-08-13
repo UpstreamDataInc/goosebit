@@ -100,7 +100,7 @@ async def _retrieve_firmware_url(async_client, deployment_base, firmware):
     assert data["id"] == str(firmware.id)
     assert (
         data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]
-        == f"http://test/api/download/{firmware.id}"
+        == f"http://test/download/{firmware.id}"
     )
     assert data["deployment"]["chunks"][0]["artifacts"][0]["hashes"]["sha1"] == firmware.hash
     assert data["deployment"]["chunks"][0]["artifacts"][0]["size"] == firmware.size
@@ -179,12 +179,12 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
     device_api = await _api_device_get(async_client, device.uuid)
     assert device_api["state"] == "Running"
 
-    # HEAD /api/download/1 HTTP/1.1 (reason not clear)
+    # HEAD /download/1 HTTP/1.1 (reason not clear)
     response = await async_client.head(firmware_url)
     assert response.status_code == 200
     assert response.headers["Content-Length"] == "1200"
 
-    # GET /api/download/1 HTTP/1.1
+    # GET /download/1 HTTP/1.1
     response = await async_client.get(firmware_url)
     assert response.status_code == 200
 
