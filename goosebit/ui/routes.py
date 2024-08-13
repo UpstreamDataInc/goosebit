@@ -8,6 +8,7 @@ from goosebit.auth import authenticate_session, validate_user_permissions
 from goosebit.models import Firmware, Rollout
 from goosebit.permissions import Permissions
 from goosebit.settings import ARTIFACTS_DIR
+from goosebit.ui.nav import nav
 from goosebit.ui.templates import templates
 from goosebit.updates import create_firmware_update
 
@@ -22,9 +23,19 @@ async def ui_root(request: Request):
 
 
 @router.get(
+    "/home",
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
+)
+@nav.route("Home", permissions=Permissions.HOME.READ)
+async def home_ui(request: Request):
+    return templates.TemplateResponse(request, "index.html", context={"title": "Home"})
+
+
+@router.get(
     "/firmware",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])],
 )
+@nav.route("Firmware", permissions=Permissions.FIRMWARE.READ)
 async def firmware_ui(request: Request):
     return templates.TemplateResponse(request, "firmware.html", context={"title": "Firmware"})
 
@@ -75,17 +86,10 @@ async def upload_update_remote(request: Request, url: str = Form(...)):
 
 
 @router.get(
-    "/home",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
-)
-async def home_ui(request: Request):
-    return templates.TemplateResponse(request, "index.html", context={"title": "Home"})
-
-
-@router.get(
     "/devices",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.READ])],
 )
+@nav.route("Devices", permissions=Permissions.DEVICE.READ)
 async def devices_ui(request: Request):
     return templates.TemplateResponse(request, "devices.html", context={"title": "Devices"})
 
@@ -94,6 +98,7 @@ async def devices_ui(request: Request):
     "/rollouts",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])],
 )
+@nav.route("Rollouts", permissions=Permissions.ROLLOUT.READ)
 async def rollouts_ui(request: Request):
     return templates.TemplateResponse(request, "rollouts.html", context={"title": "Rollouts"})
 
