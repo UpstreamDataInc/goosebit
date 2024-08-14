@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from goosebit.models import Rollout
 
 
-class RolloutModel(BaseModel):
+class RolloutSchema(BaseModel):
     id: int
     created_at: int
     name: str | None

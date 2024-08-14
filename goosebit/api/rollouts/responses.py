@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from goosebit.api.responses import StatusResponse
 from goosebit.models import Rollout
 
-from .models import RolloutModel
+from .schema import RolloutSchema
 
 
 class CreateRolloutResponse(StatusResponse):
@@ -12,15 +12,15 @@ class CreateRolloutResponse(StatusResponse):
 
 
 class RolloutsAllResponse(BaseModel):
-    rollouts: list[RolloutModel]
+    rollouts: list[RolloutSchema]
 
     @classmethod
     async def parse(cls, devices: list[Rollout]):
-        return cls(rollouts=[RolloutModel.parse(d) for d in devices])
+        return cls(rollouts=[RolloutSchema.parse(d) for d in devices])
 
 
 class RolloutsTableResponse(BaseModel):
-    data: list[RolloutModel]
+    data: list[RolloutSchema]
     draw: int
     records_total: int = Field(serialization_alias="recordsTotal")
     records_filtered: int = Field(serialization_alias="recordsFiltered")
@@ -45,6 +45,6 @@ class RolloutsTableResponse(BaseModel):
 
         filtered_records = await query.count()
         rollouts = await query.offset(start).limit(length).all()
-        data = [RolloutModel.parse(r) for r in rollouts]
+        data = [RolloutSchema.parse(r) for r in rollouts]
 
         return cls(data=data, draw=draw, records_total=total_records, records_filtered=filtered_records)

@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from goosebit.models import Firmware, Hardware
 
 
-class HardwareModel(BaseModel):
+class HardwareSchema(BaseModel):
     id: int
     model: str
     revision: str
@@ -15,13 +15,13 @@ class HardwareModel(BaseModel):
         return cls(id=hardware.id, model=hardware.model, revision=hardware.revision)
 
 
-class FirmwareModel(BaseModel):
+class FirmwareSchema(BaseModel):
     id: int
     name: str
     size: int
     hash: str
     version: str
-    compatibility: list[HardwareModel]
+    compatibility: list[HardwareSchema]
 
     @classmethod
     async def parse(cls, firmware: Firmware):
@@ -31,5 +31,5 @@ class FirmwareModel(BaseModel):
             size=firmware.size,
             hash=firmware.hash,
             version=firmware.version,
-            compatibility=[HardwareModel.parse(h) for h in firmware.compatibility],
+            compatibility=[HardwareSchema.parse(h) for h in firmware.compatibility],
         )

@@ -7,11 +7,11 @@ from pydantic import BaseModel, Field
 
 from goosebit.models import Firmware
 
-from .models import FirmwareModel
+from .schema import FirmwareSchema
 
 
 class FirmwareTableResponse(BaseModel):
-    data: list[FirmwareModel]
+    data: list[FirmwareSchema]
     draw: int
     records_total: int = Field(serialization_alias="recordsTotal")
     records_filtered: int = Field(serialization_alias="recordsFiltered")
@@ -36,14 +36,14 @@ class FirmwareTableResponse(BaseModel):
 
         filtered_records = await query.count()
         devices = await query.offset(start).limit(length).all()
-        data = list(await asyncio.gather(*[FirmwareModel.parse(d) for d in devices]))
+        data = list(await asyncio.gather(*[FirmwareSchema.parse(d) for d in devices]))
 
         return cls(data=data, draw=draw, records_total=total_records, records_filtered=filtered_records)
 
 
 class FirmwareAllResponse(BaseModel):
-    firmware: list[FirmwareModel]
+    firmware: list[FirmwareSchema]
 
     @classmethod
     async def parse(cls, firmware: list[Firmware]):
-        return cls(firmware=await asyncio.gather(*[FirmwareModel.parse(f) for f in firmware]))
+        return cls(firmware=await asyncio.gather(*[FirmwareSchema.parse(f) for f in firmware]))
