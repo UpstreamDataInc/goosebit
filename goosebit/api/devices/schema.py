@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from enum import StrEnum
+from enum import Enum, IntEnum, StrEnum
 from typing import Annotated
 
 from pydantic import BaseModel, BeforeValidator, computed_field
@@ -10,29 +10,19 @@ from goosebit.models import Device, UpdateModeEnum, UpdateStateEnum
 from goosebit.updater.manager import get_update_manager
 
 
-class UpdateStateSchema(StrEnum):
-    NONE = str(UpdateStateEnum.NONE)
-    UNKNOWN = str(UpdateStateEnum.UNKNOWN)
-    REGISTERED = str(UpdateStateEnum.REGISTERED)
-    RUNNING = str(UpdateStateEnum.RUNNING)
-    ERROR = str(UpdateStateEnum.ERROR)
-    FINISHED = str(UpdateStateEnum.FINISHED)
-
+class ParseableEnum(StrEnum):
     @classmethod
-    def parse(cls, update_state: UpdateStateEnum):
-        return cls(str(update_state))
+    def parse(cls, value: IntEnum):
+        return cls(str(value))
 
 
-class UpdateModeSchema(StrEnum):
-    NONE = str(UpdateModeEnum.NONE)
-    LATEST = str(UpdateModeEnum.LATEST)
-    PINNED = str(UpdateModeEnum.PINNED)
-    ROLLOUT = str(UpdateModeEnum.ROLLOUT)
-    ASSIGNED = str(UpdateModeEnum.ASSIGNED)
+def enum_factory(name: str, base: type[Enum]) -> type[ParseableEnum]:
+    enum_dict = {item.name: str(item) for item in base}
+    return ParseableEnum(name, enum_dict)  # type: ignore
 
-    @classmethod
-    def parse(cls, update_mode: UpdateModeEnum):
-        return cls(str(update_mode))
+
+UpdateStateSchema = enum_factory("UpdateStateSchema", UpdateStateEnum)
+UpdateModeSchema = enum_factory("UpdateModeSchema", UpdateModeEnum)
 
 
 class DeviceSchema(BaseModel):
