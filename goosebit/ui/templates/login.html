@@ -22,13 +22,25 @@
         <link rel="icon" href="{{ url_for('static', path='favicon.svg') }}" />
     </head>
     <body data-bs-theme="dark">
-        <div class="container py-5 h-100">
+        <div class="container py-2">
             <div
                 class="row d-flex justify-content-center align-items-center h-100"
             >
                 <div class="col-12 col-md-8 col-lg-6 col-xl-5">
                     <div class="mb-md-5 mt-md-4 pb-5">
-                        <h2 class="fw-bold mb-3 text-uppercase">Login</h2>
+                        <div class="row mb-2 p-2">
+                            <div class="col d-flex align-items-center">
+                                <h2 class="fw-bold m-0 text-uppercase">
+                                    gooseBit
+                                </h2>
+                            </div>
+                            <img
+                                src="{{ request.url_for('static', path='svg/goosebit-logo.svg') }}"
+                                class="p-0 mx-3"
+                                style="height: 35px; width: 35px"
+                            />
+                        </div>
+
                         <form method="post">
                             <div class="form-outline form-white mb-4">
                                 <input
