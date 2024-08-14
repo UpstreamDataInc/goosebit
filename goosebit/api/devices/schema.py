@@ -10,7 +10,7 @@ from goosebit.models import Device, UpdateModeEnum, UpdateStateEnum
 from goosebit.updater.manager import get_update_manager
 
 
-class UpdateStateModel(StrEnum):
+class UpdateStateSchema(StrEnum):
     NONE = str(UpdateStateEnum.NONE)
     UNKNOWN = str(UpdateStateEnum.UNKNOWN)
     REGISTERED = str(UpdateStateEnum.REGISTERED)
@@ -23,7 +23,7 @@ class UpdateStateModel(StrEnum):
         return cls(str(update_state))
 
 
-class UpdateModeModel(StrEnum):
+class UpdateModeSchema(StrEnum):
     NONE = str(UpdateModeEnum.NONE)
     LATEST = str(UpdateModeEnum.LATEST)
     PINNED = str(UpdateModeEnum.PINNED)
@@ -35,7 +35,7 @@ class UpdateModeModel(StrEnum):
         return cls(str(update_mode))
 
 
-class DeviceModel(BaseModel):
+class DeviceSchema(BaseModel):
     uuid: str
     name: str | None
     fw_installed_version: str | None
@@ -45,8 +45,8 @@ class DeviceModel(BaseModel):
     hw_revision: str
     feed: str
     progress: int | None
-    state: Annotated[UpdateStateModel, BeforeValidator(UpdateStateModel.parse)]
-    update_mode: Annotated[UpdateModeModel, BeforeValidator(UpdateModeModel.parse)]
+    state: Annotated[UpdateStateSchema, BeforeValidator(UpdateStateSchema.parse)]
+    update_mode: Annotated[UpdateModeSchema, BeforeValidator(UpdateModeSchema.parse)]
     force_update: bool
     last_ip: str | None
     last_seen: int | None

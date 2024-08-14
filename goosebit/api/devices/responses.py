@@ -7,11 +7,11 @@ from pydantic import BaseModel, Field
 
 from goosebit.models import Device
 
-from .models import DeviceModel
+from .schema import DeviceSchema
 
 
 class DeviceTableResponse(BaseModel):
-    data: list[DeviceModel]
+    data: list[DeviceSchema]
     draw: int
     records_total: int = Field(serialization_alias="recordsTotal")
     records_filtered: int = Field(serialization_alias="recordsFiltered")
@@ -36,17 +36,17 @@ class DeviceTableResponse(BaseModel):
 
         filtered_records = await query.count()
         devices = await query.offset(start).limit(length).all()
-        data = list(await asyncio.gather(*[DeviceModel.parse(d) for d in devices]))
+        data = list(await asyncio.gather(*[DeviceSchema.parse(d) for d in devices]))
 
         return cls(data=data, draw=draw, records_total=total_records, records_filtered=filtered_records)
 
 
 class DeviceAllResponse(BaseModel):
-    devices: list[DeviceModel]
+    devices: list[DeviceSchema]
 
     @classmethod
     async def parse(cls, devices: list[Device]):
-        return cls(devices=await asyncio.gather(*[DeviceModel.parse(d) for d in devices]))
+        return cls(devices=await asyncio.gather(*[DeviceSchema.parse(d) for d in devices]))
 
 
 class LogsDeviceResponse(BaseModel):
