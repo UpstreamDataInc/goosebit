@@ -9,8 +9,9 @@ from goosebit.models import Device, Firmware, UpdateModeEnum
 from goosebit.permissions import Permissions
 from goosebit.updater.manager import delete_devices, get_update_manager
 
+from . import device
 from .requests import DevicesDeleteRequest, DevicesPatchRequest
-from .responses import DeviceResponse, LogsDeviceResponse
+from .responses import DevicesResponse
 
 router = APIRouter(prefix="/devices", tags=["devices"])
 
@@ -19,8 +20,8 @@ router = APIRouter(prefix="/devices", tags=["devices"])
     "",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
 )
-async def devices_get(_: Request) -> DeviceResponse:
-    return await DeviceResponse.convert(await Device.all().prefetch_related("assigned_firmware", "hardware"))
+async def devices_get(_: Request) -> DevicesResponse:
+    return await DevicesResponse.convert(await Device.all().prefetch_related("assigned_firmware", "hardware"))
 
 
 @router.patch(
@@ -58,11 +59,4 @@ async def devices_delete(_: Request, config: DevicesDeleteRequest) -> StatusResp
     return StatusResponse(success=True)
 
 
-@router.get(
-    "/logs/{dev_id}",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
-)
-async def device_logs(_: Request, dev_id: str) -> LogsDeviceResponse:
-    updater = await get_update_manager(dev_id)
-    device = await updater.get_device()
-    return LogsDeviceResponse(log=device.last_log)
+router.include_router(device.router)
