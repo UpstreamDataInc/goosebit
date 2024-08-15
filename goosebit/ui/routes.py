@@ -9,7 +9,6 @@ from goosebit.models import Firmware, Rollout
 from goosebit.permissions import Permissions
 from goosebit.settings import config
 from goosebit.ui.nav import nav
-from goosebit.ui.templates import templates
 from goosebit.updates import create_firmware_update
 
 from . import bff
