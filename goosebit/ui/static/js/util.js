@@ -22,12 +22,12 @@ function secondsToRecentDate(t) {
 
 async function updateFirmwareSelection(addSpecialMode = false) {
     try {
-        const response = await fetch("/api/firmware/all");
+        const response = await fetch("/api/firmware");
         if (!response.ok) {
             console.error("Retrieving firmwares failed.");
             return;
         }
-        const data = (await response.json()).data;
+        const data = (await response.json()).firmware;
         const selectElem = document.getElementById("selected-fw");
 
         if (addSpecialMode) {
@@ -55,6 +55,7 @@ async function updateFirmwareSelection(addSpecialMode = false) {
     }
 }
 
+// TODO: rename this function
 async function post(url, object) {
     const response = await fetch(url, {
         method: "POST",

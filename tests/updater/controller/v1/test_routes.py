@@ -23,21 +23,21 @@ async def _api_device_get(async_client, dev_id):
 
 async def _api_rollout_create(async_client, feed, firmware, paused):
     response = await async_client.post(
-        f"/api/rollouts/create",
+        f"/api/rollouts",
         json={"name": "", "feed": feed, "firmware_id": firmware.id},
     )
     assert response.status_code == 200
     rollout_id = response.json()["id"]
 
-    response = await async_client.post(
-        f"/api/rollouts/update",
+    response = await async_client.patch(
+        f"/api/rollouts",
         json={"ids": [rollout_id], "paused": paused},
     )
     assert response.status_code == 200
 
 
 async def _api_rollouts_get(async_client):
-    response = await async_client.get("/api/rollouts/all")
+    response = await async_client.get("/api/rollouts")
     assert response.status_code == 200
     return response.json()
 

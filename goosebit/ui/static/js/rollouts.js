@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         select: true,
         rowId: "id",
         ajax: {
-            url: "/api/rollouts/table",
+            url: "/ui/bff/rollouts",
             contentType: "application/json",
         },
         initComplete: () => {
@@ -183,7 +183,7 @@ async function createRollout() {
     const firmware_id = document.getElementById("selected-fw").value;
 
     try {
-        await post("/api/rollouts/create", { name, feed, firmware_id });
+        await post("/api/rollouts", { name, feed, firmware_id });
     } catch (error) {
         console.error("Rollout creation failed:", error);
     }
@@ -197,7 +197,7 @@ function updateRolloutList() {
 
 async function deleteRollouts(ids) {
     try {
-        await post("/api/rollouts/delete", { ids });
+        await delete_request("/api/rollouts", { ids });
     } catch (error) {
         console.error("Rollouts deletion failed:", error);
     }
@@ -208,7 +208,7 @@ async function deleteRollouts(ids) {
 
 async function pauseRollouts(ids, paused) {
     try {
-        await post("/api/rollouts/update", { ids, paused });
+        await patch_request("/api/rollouts", { ids, paused });
     } catch (error) {
         console.error(`Rollouts ${paused ? "pausing" : "unpausing"} failed:`, error);
     }
