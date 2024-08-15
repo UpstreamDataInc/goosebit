@@ -3,7 +3,7 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 
-class DeleteDevicesRequest(BaseModel):
+class DevicesDeleteRequest(BaseModel):
     devices: list[str]
 
 
@@ -11,7 +11,7 @@ class ForceUpdateDevicesRequest(BaseModel):
     devices: list[str]
 
 
-class UpdateDevicesRequest(BaseModel):
+class DevicesPatchRequest(BaseModel):
     devices: list[str]
     firmware: str | None = None
     name: str | None = None

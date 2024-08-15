@@ -7,15 +7,15 @@ UUID = "221326d9-7873-418e-960c-c074026a3b7c"
 
 
 async def _api_device_update(async_client, device, update_attribute, update_value):
-    response = await async_client.post(
-        f"/api/devices/update",
+    response = await async_client.patch(
+        f"/api/devices",
         json={"devices": [f"{device.uuid}"], update_attribute: update_value},
     )
     assert response.status_code == 200
 
 
 async def _api_device_get(async_client, dev_id):
-    response = await async_client.get("/api/devices/all")
+    response = await async_client.get("/api/devices")
     assert response.status_code == 200
     devices = response.json()["devices"]
     return next(d for d in devices if d["uuid"] == dev_id)

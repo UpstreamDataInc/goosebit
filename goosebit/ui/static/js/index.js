@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         },
         ajax: {
-            url: "/api/devices/table",
+            url: "/ui/bff/devices",
             contentType: "application/json",
         },
         initComplete: () => {

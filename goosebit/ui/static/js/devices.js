@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         select: true,
         rowId: "uuid",
         ajax: {
-            url: "/api/devices/table",
+            url: "/ui/bff/devices/",
             contentType: "application/json",
         },
         initComplete: () => {
@@ -262,7 +262,7 @@ async function updateDeviceConfig() {
     const firmware = document.getElementById("selected-fw").value;
 
     try {
-        await post("/api/devices/update", { devices, name, feed, firmware });
+        await patch_request("/api/devices", { devices, name, feed, firmware });
     } catch (error) {
         console.error("Update device config failed:", error);
     }
@@ -282,7 +282,7 @@ async function forceUpdateDevices(devices) {
 
 async function deleteDevices(devices) {
     try {
-        await post("/api/devices/delete", { devices });
+        await delete_request("/api/devices", { devices });
     } catch (error) {
         console.error("Delete device failed:", error);
     }
@@ -292,7 +292,7 @@ async function deleteDevices(devices) {
 
 async function pinDevices(devices) {
     try {
-        await post("/api/devices/update", { devices, pinned: true });
+        await patch_request("/api/devices", { devices, pinned: true });
     } catch (error) {
         console.error("Error:", error);
     }

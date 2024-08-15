@@ -12,12 +12,16 @@ from goosebit.ui.nav import nav
 from goosebit.ui.templates import templates
 from goosebit.updates import create_firmware_update
 
+from . import bff
+from .templates import templates
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 router = APIRouter(prefix="/ui", dependencies=[Depends(Authentication(redirect=True))], include_in_schema=False)
+router.include_router(bff.router)
 
 
-@router.get("/")
+@router.get("")
 async def ui_root(request: Request):
     return RedirectResponse(request.url_for("home_ui"))
 
