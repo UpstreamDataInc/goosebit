@@ -31,6 +31,7 @@ class User(BaseModel):
 
 
 class PrometheusSettings(BaseModel):
+    enable: bool = False
     port: int = 9090
 
 

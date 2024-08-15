@@ -34,6 +34,7 @@ poll_time_registration: 00:00:10
 tenant: DEFAULT
 metrics:
   prometheus:
+    enable: false
     port: 9090
 logging:
   version: 1
