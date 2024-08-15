@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi.requests import Request
 from pydantic import BaseModel, Field
 
@@ -15,8 +17,8 @@ class RolloutsAllResponse(BaseModel):
     rollouts: list[RolloutSchema]
 
     @classmethod
-    async def parse(cls, devices: list[Rollout]):
-        return cls(rollouts=[RolloutSchema.parse(d) for d in devices])
+    async def convert(cls, devices: list[Rollout]):
+        return cls(rollouts=await asyncio.gather(*[RolloutSchema.convert(d) for d in devices]))
 
 
 class RolloutsTableResponse(BaseModel):
@@ -26,7 +28,7 @@ class RolloutsTableResponse(BaseModel):
     records_filtered: int = Field(serialization_alias="recordsFiltered")
 
     @classmethod
-    async def parse(cls, request: Request, query, search_filter, total_records):
+    async def convert(cls, request: Request, query, search_filter, total_records):
         params = request.query_params
 
         draw = int(params.get("draw", 1))
@@ -45,6 +47,6 @@ class RolloutsTableResponse(BaseModel):
 
         filtered_records = await query.count()
         rollouts = await query.offset(start).limit(length).all()
-        data = [RolloutSchema.parse(r) for r in rollouts]
+        data = await asyncio.gather(*[RolloutSchema.convert(r) for r in rollouts])
 
         return cls(data=data, draw=draw, records_total=total_records, records_filtered=filtered_records)

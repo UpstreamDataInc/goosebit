@@ -18,7 +18,7 @@ router = APIRouter(prefix="/firmware", tags=["firmware"])
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])],
 )
 async def firmware_get_all(_: Request) -> FirmwareAllResponse:
-    return await FirmwareAllResponse.parse(await Firmware.all().prefetch_related("compatibility"))
+    return await FirmwareAllResponse.convert(await Firmware.all().prefetch_related("compatibility"))
 
 
 @router.get(
@@ -32,7 +32,7 @@ async def firmware_get_table(request: Request) -> FirmwareTableResponse:
     query = Firmware.all().prefetch_related("compatibility")
     total_records = await Firmware.all().count()
 
-    return await FirmwareTableResponse.parse(request, query, search_filter, total_records)
+    return await FirmwareTableResponse.convert(request, query, search_filter, total_records)
 
 
 @router.post(

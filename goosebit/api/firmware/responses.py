@@ -17,7 +17,7 @@ class FirmwareTableResponse(BaseModel):
     records_filtered: int = Field(serialization_alias="recordsFiltered")
 
     @classmethod
-    async def parse(cls, request: Request, query, search_filter, total_records):
+    async def convert(cls, request: Request, query, search_filter, total_records):
         params = request.query_params
 
         draw = int(params.get("draw", 1))
@@ -36,7 +36,7 @@ class FirmwareTableResponse(BaseModel):
 
         filtered_records = await query.count()
         devices = await query.offset(start).limit(length).all()
-        data = list(await asyncio.gather(*[FirmwareSchema.parse(d) for d in devices]))
+        data = await asyncio.gather(*[FirmwareSchema.convert(d) for d in devices])
 
         return cls(data=data, draw=draw, records_total=total_records, records_filtered=filtered_records)
 
@@ -45,5 +45,5 @@ class FirmwareAllResponse(BaseModel):
     firmware: list[FirmwareSchema]
 
     @classmethod
-    async def parse(cls, firmware: list[Firmware]):
-        return cls(firmware=await asyncio.gather(*[FirmwareSchema.parse(f) for f in firmware]))
+    async def convert(cls, firmware: list[Firmware]):
+        return cls(firmware=await asyncio.gather(*[FirmwareSchema.convert(f) for f in firmware]))

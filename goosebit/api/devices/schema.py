@@ -10,15 +10,15 @@ from goosebit.models import Device, UpdateModeEnum, UpdateStateEnum
 from goosebit.updater.manager import get_update_manager
 
 
-class ParseableEnum(StrEnum):
+class ConvertableEnum(StrEnum):
     @classmethod
-    def parse(cls, value: IntEnum):
+    def convert(cls, value: IntEnum):
         return cls(str(value))
 
 
-def enum_factory(name: str, base: type[Enum]) -> type[ParseableEnum]:
+def enum_factory(name: str, base: type[Enum]) -> type[ConvertableEnum]:
     enum_dict = {item.name: str(item) for item in base}
-    return ParseableEnum(name, enum_dict)  # type: ignore
+    return ConvertableEnum(name, enum_dict)  # type: ignore
 
 
 UpdateStateSchema = enum_factory("UpdateStateSchema", UpdateStateEnum)
@@ -35,8 +35,8 @@ class DeviceSchema(BaseModel):
     hw_revision: str
     feed: str
     progress: int | None
-    state: Annotated[UpdateStateSchema, BeforeValidator(UpdateStateSchema.parse)]
-    update_mode: Annotated[UpdateModeSchema, BeforeValidator(UpdateModeSchema.parse)]
+    state: Annotated[UpdateStateSchema, BeforeValidator(UpdateStateSchema.convert)]
+    update_mode: Annotated[UpdateModeSchema, BeforeValidator(UpdateModeSchema.convert)]
     force_update: bool
     last_ip: str | None
     last_seen: int | None
@@ -47,7 +47,7 @@ class DeviceSchema(BaseModel):
         return self.last_seen < self.poll_seconds if self.last_seen is not None else None
 
     @classmethod
-    async def parse(cls, device: Device):
+    async def convert(cls, device: Device):
         manager = await get_update_manager(device.uuid)
         _, target_firmware = await manager.get_update()
         last_seen = device.last_seen
