@@ -244,10 +244,8 @@ function updateBtnState() {
     }
     if (dataTable.rows({ selected: true }).count() === 1) {
         document.querySelector("button.buttons-logs").classList.remove("disabled");
-        document.querySelector("button.buttons-rename").classList.remove("disabled");
     } else {
         document.querySelector("button.buttons-logs").classList.add("disabled");
-        document.querySelector("button.buttons-rename").classList.add("disabled");
     }
 }
 

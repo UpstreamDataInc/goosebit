@@ -1,16 +1,16 @@
 from pydantic import BaseModel
 
 
-class CreateRolloutsRequest(BaseModel):
+class RolloutsPutRequest(BaseModel):
     name: str
     feed: str
     firmware_id: int
 
 
-class UpdateRolloutsRequest(BaseModel):
+class RolloutsPatchRequest(BaseModel):
     ids: list[int]
     paused: bool
 
 
-class DeleteRolloutsRequest(BaseModel):
+class RolloutsDeleteRequest(BaseModel):
     ids: list[int]

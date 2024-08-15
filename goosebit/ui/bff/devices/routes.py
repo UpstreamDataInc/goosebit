@@ -17,7 +17,7 @@ router = APIRouter(prefix="/devices")
     "",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
 )
-async def devices_get_table(request: Request) -> BFFDeviceResponse:
+async def devices_get(request: Request) -> BFFDeviceResponse:
     def search_filter(search_value):
         return (
             Q(uuid__icontains=search_value)
