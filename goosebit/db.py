@@ -2,10 +2,10 @@ from aerich import Command
 from tortoise import Tortoise, run_async
 
 from goosebit.models import Firmware
-from goosebit.settings import DB_MIGRATIONS_LOC, DB_URI
+from goosebit.settings import DB_MIGRATIONS_LOC, config
 
 TORTOISE_CONF = {
-    "connections": {"default": DB_URI},
+    "connections": {"default": config.db_uri},
     "apps": {
         "models": {
             "models": ["goosebit.models", "aerich.models"],

@@ -2,9 +2,10 @@ import logging.config
 
 import uvicorn
 
-from goosebit import app, settings
+from goosebit import app
+from goosebit.settings import config
 
-logging.config.dictConfig(settings.LOGGING)
+logging.config.dictConfig(config.logging)
 
 uvicorn_args = {"port": 80}
 
