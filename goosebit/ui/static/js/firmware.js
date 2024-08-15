@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         },
         ajax: {
-            url: "/api/firmware/table",
+            url: "/ui/bff/firmware",
             contentType: "application/json",
         },
         initComplete: () => {
@@ -266,7 +266,7 @@ function updateBtnState() {
 
 async function deleteFirmware(files) {
     try {
-        await post("/api/firmware/delete", files);
+        await delete_request("/api/firmware", files);
         updateFirmwareList();
     } catch (error) {
         console.error("Deleting firmwares failed:", error);
