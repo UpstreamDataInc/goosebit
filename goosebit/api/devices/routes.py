@@ -9,11 +9,7 @@ from goosebit.models import Device, Firmware, UpdateModeEnum
 from goosebit.permissions import Permissions
 from goosebit.updater.manager import delete_devices, get_update_manager
 
-from .requests import (
-    DevicesDeleteRequest,
-    DevicesPatchRequest,
-    ForceUpdateDevicesRequest,
-)
+from .requests import DevicesDeleteRequest, DevicesPatchRequest
 from .responses import DeviceResponse, LogsDeviceResponse
 
 router = APIRouter(prefix="/devices", tags=["devices"])
@@ -48,6 +44,8 @@ async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusRespon
             await updater.update_name(config.name)
         if config.feed is not None:
             await updater.update_feed(config.feed)
+        if config.force_update is not None:
+            await updater.update_force_update(config.force_update)
     return StatusResponse(success=True)
 
 
@@ -57,17 +55,6 @@ async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusRespon
 )
 async def devices_delete(_: Request, config: DevicesDeleteRequest) -> StatusResponse:
     await delete_devices(config.devices)
-    return StatusResponse(success=True)
-
-
-@router.post(
-    "/force_update",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])],
-)
-async def devices_force_update(_: Request, config: ForceUpdateDevicesRequest) -> StatusResponse:
-    for uuid in config.devices:
-        updater = await get_update_manager(uuid)
-        await updater.update_force_update(True)
     return StatusResponse(success=True)
 
 

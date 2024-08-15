@@ -7,13 +7,10 @@ class DevicesDeleteRequest(BaseModel):
     devices: list[str]
 
 
-class ForceUpdateDevicesRequest(BaseModel):
-    devices: list[str]
-
-
 class DevicesPatchRequest(BaseModel):
     devices: list[str]
     firmware: str | None = None
     name: str | None = None
     pinned: bool | None = None
     feed: str | None = None
+    force_update: bool | None = None
