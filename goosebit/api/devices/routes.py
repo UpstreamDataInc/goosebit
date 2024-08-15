@@ -25,7 +25,7 @@ router = APIRouter(prefix="/devices", tags=["devices"])
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
 )
 async def devices_get_all(_: Request) -> DeviceAllResponse:
-    return await DeviceAllResponse.parse(await Device.all().prefetch_related("assigned_firmware", "hardware"))
+    return await DeviceAllResponse.convert(await Device.all().prefetch_related("assigned_firmware", "hardware"))
 
 
 @router.get(
@@ -45,7 +45,7 @@ async def devices_get_table(request: Request) -> DeviceTableResponse:
     query = Device.all().prefetch_related("assigned_firmware", "hardware")
     total_records = await Device.all().count()
 
-    return await DeviceTableResponse.parse(request, query, search_filter, total_records)
+    return await DeviceTableResponse.convert(request, query, search_filter, total_records)
 
 
 @router.post(

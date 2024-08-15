@@ -28,7 +28,7 @@ async def rollouts_get_table(request: Request) -> RolloutsTableResponse:
     query = Rollout.all().prefetch_related("firmware")
     total_records = await Rollout.all().count()
 
-    return await RolloutsTableResponse.parse(request, query, search_filter, total_records)
+    return await RolloutsTableResponse.convert(request, query, search_filter, total_records)
 
 
 @router.get(
@@ -36,7 +36,7 @@ async def rollouts_get_table(request: Request) -> RolloutsTableResponse:
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])],
 )
 async def rollouts_get_all(_: Request) -> RolloutsAllResponse:
-    return await RolloutsAllResponse.parse(await Rollout.all().prefetch_related("firmware"))
+    return await RolloutsAllResponse.convert(await Rollout.all().prefetch_related("firmware"))
 
 
 @router.post(

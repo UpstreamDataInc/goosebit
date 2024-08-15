@@ -17,7 +17,7 @@ class RolloutSchema(BaseModel):
     failure_count: int
 
     @classmethod
-    def parse(cls, rollout: Rollout):
+    async def convert(cls, rollout: Rollout):
         return cls(
             id=rollout.id,
             created_at=int(rollout.created_at.timestamp() * 1000),
