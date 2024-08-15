@@ -270,7 +270,7 @@ async function updateDeviceConfig() {
 
 async function forceUpdateDevices(devices) {
     try {
-        await post("/api/devices/force_update", { devices });
+        await patch_request("/api/devices", { devices, force_update: true });
     } catch (error) {
         console.error("Update force update state failed:", error);
     }
