@@ -1,8 +1,9 @@
 import json
 import logging
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
+from fastapi.responses import FileResponse, RedirectResponse, Response
 
 from goosebit.models import Firmware, UpdateStateEnum
 from goosebit.settings import config
@@ -98,7 +99,7 @@ async def deployment_base(
         "deployment": {
             "download": str(handling_type),
             "update": str(handling_type),
-            "chunks": generate_chunk(request, firmware),
+            "chunks": await generate_chunk(request, updater),
         },
     }
 
@@ -178,3 +179,29 @@ async def deployment_feedback(
         logging.warning(f"No details to update update log, device={updater.dev_id}")
 
     return {"id": str(action_id)}
+
+
+@router.head("/{dev_id}/download")
+async def download_artifact_head(_: Request, updater: UpdateManager = Depends(get_update_manager)):
+    _, firmware = await updater.get_update()
+    if firmware is None:
+        raise HTTPException(404)
+
+    response = Response()
+    response.headers["Content-Length"] = str(firmware.size)
+    return response
+
+
+@router.get("/{dev_id}/download")
+async def download_artifact(_: Request, updater: UpdateManager = Depends(get_update_manager)):
+    _, firmware = await updater.get_update()
+    if firmware is None:
+        raise HTTPException(404)
+    if firmware.local:
+        return FileResponse(
+            firmware.path,
+            media_type="application/octet-stream",
+            filename=firmware.path.name,
+        )
+    else:
+        return RedirectResponse(url=firmware.uri)

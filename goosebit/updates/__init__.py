@@ -8,6 +8,8 @@ from tortoise.expressions import Q
 
 from goosebit.models import Firmware, Hardware
 
+from ..settings import TENANT
+from ..updater.manager import UpdateManager
 from . import swdesc
 
 
@@ -96,14 +98,16 @@ def _unique_path(uri):
     return new_path
 
 
-def generate_chunk(request: Request, firmware: Firmware | None) -> list:
+async def generate_chunk(request: Request, updater: UpdateManager) -> list:
+    _, firmware = await updater.get_update()
     if firmware is None:
         return []
     if firmware.local:
         href = str(
             request.url_for(
-                "download_file",
-                file_id=firmware.id,
+                "download_artifact",
+                tenant=TENANT,
+                dev_id=updater.dev_id,
             )
         )
     else:

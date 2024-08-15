@@ -91,7 +91,7 @@ async def _poll(async_client, device_uuid, firmware: Firmware | None, expect_upd
         return None
 
 
-async def _retrieve_firmware_url(async_client, deployment_base, firmware):
+async def _retrieve_firmware_url(async_client, device_uuid, deployment_base, firmware):
     response = await async_client.get(deployment_base)
     assert response.status_code == 200
     data = response.json()
@@ -100,7 +100,7 @@ async def _retrieve_firmware_url(async_client, deployment_base, firmware):
     assert data["id"] == str(firmware.id)
     assert (
         data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]
-        == f"http://test/api/download/{firmware.id}"
+        == f"http://test/DEFAULT/controller/v1/{device_uuid}/download"
     )
     assert data["deployment"]["chunks"][0]["artifacts"][0]["hashes"]["sha1"] == firmware.hash
     assert data["deployment"]["chunks"][0]["artifacts"][0]["size"] == firmware.size
@@ -146,7 +146,7 @@ async def test_rollout_full(async_client, test_data):
 
     deployment_base = await _poll(async_client, device.uuid, firmware)
 
-    await _retrieve_firmware_url(async_client, deployment_base, firmware)
+    await _retrieve_firmware_url(async_client, device.uuid, deployment_base, firmware)
 
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
@@ -172,7 +172,7 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
 
     deployment_base = await _poll(async_client, device.uuid, firmware)
 
-    firmware_url = await _retrieve_firmware_url(async_client, deployment_base, firmware)
+    firmware_url = await _retrieve_firmware_url(async_client, device.uuid, deployment_base, firmware)
 
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
@@ -227,7 +227,7 @@ async def test_latest(async_client, test_data):
 
     deployment_base = await _poll(async_client, device.uuid, firmware)
 
-    await _retrieve_firmware_url(async_client, deployment_base, firmware)
+    await _retrieve_firmware_url(async_client, device.uuid, deployment_base, firmware)
 
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, firmware, "none", "proceeding")
