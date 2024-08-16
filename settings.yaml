@@ -18,12 +18,13 @@ poll_time_updating: 00:00:05
 # "device.read", "device.write", "device.delete"
 # "rollout.read", "rollout.write", "rollout.delete"
 # "home.read"
+
 users:
-  - email: admin@goosebit.local
+  - username: admin@goosebit.local
     password: admin
     permissions:
       - "*"
-  - email: ops@goosebit.local
+  - username: ops@goosebit.local
     password: ops
     permissions:
       - "home.read"
@@ -33,6 +34,7 @@ poll_time_registration: 00:00:10
 tenant: DEFAULT
 metrics:
   prometheus:
+    enable: false
     port: 9090
 logging:
   version: 1

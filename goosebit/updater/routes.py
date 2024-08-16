@@ -3,14 +3,14 @@ import time
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
 
-from goosebit.settings import TENANT
+from goosebit.settings import config
 
 from . import controller
 from .manager import get_update_manager
 
 
 async def verify_tenant(tenant: str):
-    if not tenant == TENANT:
+    if not tenant == config.tenant:
         raise HTTPException(404)
     return tenant
 

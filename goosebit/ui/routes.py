@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from goosebit.auth import authenticate_session, validate_user_permissions
 from goosebit.models import Firmware, Rollout
 from goosebit.permissions import Permissions
-from goosebit.settings import ARTIFACTS_DIR
+from goosebit.settings import config
 from goosebit.ui.nav import nav
 from goosebit.ui.templates import templates
 from goosebit.updates import create_firmware_update
@@ -51,7 +51,7 @@ async def upload_update_local(
     done: bool = Form(...),
     filename: str = Form(...),
 ):
-    file = ARTIFACTS_DIR.joinpath(filename)
+    file = config.artifacts_dir.joinpath(filename)
 
     temp_file = file.with_suffix(".tmp")
     if init:

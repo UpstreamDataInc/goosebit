@@ -1,5 +1,7 @@
 from enum import Enum
-from typing import TypeVar, cast
+from typing import ClassVar, TypeVar, cast
+
+from pydantic import BaseModel
 
 T = TypeVar("T", bound="PermissionsBase")
 
@@ -38,11 +40,11 @@ class HomePermissions(PermissionsBase):
     READ = "home.read"
 
 
-class Permissions:
-    HOME = HomePermissions
-    FIRMWARE = FirmwarePermissions
-    DEVICE = DevicePermissions
-    ROLLOUT = RolloutPermissions
+class Permissions(BaseModel):
+    HOME: ClassVar = HomePermissions
+    FIRMWARE: ClassVar = FirmwarePermissions
+    DEVICE: ClassVar = DevicePermissions
+    ROLLOUT: ClassVar = RolloutPermissions
 
     @classmethod
     def full(cls) -> set[T]:

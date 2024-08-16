@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from fastapi.requests import Request
 
 from goosebit.models import Firmware, UpdateStateEnum
-from goosebit.settings import POLL_TIME_REGISTRATION
+from goosebit.settings import config
 from goosebit.updater.manager import HandlingType, UpdateManager, get_update_manager
 from goosebit.updates import generate_chunk
 
@@ -28,7 +28,7 @@ async def polling(
 
     if device.last_state == UpdateStateEnum.UNKNOWN:
         # device registration
-        sleep = POLL_TIME_REGISTRATION
+        sleep = config.poll_time_registration
         links["configData"] = {
             "href": str(
                 request.url_for(

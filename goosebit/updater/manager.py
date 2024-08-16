@@ -18,7 +18,7 @@ from goosebit.models import (
     UpdateModeEnum,
     UpdateStateEnum,
 )
-from goosebit.settings import POLL_TIME, POLL_TIME_UPDATING
+from goosebit.settings import config
 
 caches.set_config(
     {
@@ -111,11 +111,11 @@ class UpdateManager(ABC):
 
     @property
     def poll_time(self):
-        return UpdateManager.device_poll_time.get(self.dev_id, POLL_TIME)
+        return UpdateManager.device_poll_time.get(self.dev_id, config.poll_time_default)
 
     @poll_time.setter
     def poll_time(self, value: str):
-        if not value == POLL_TIME:
+        if not value == config.poll_time_default:
             UpdateManager.device_poll_time[self.dev_id] = value
             return
         if self.dev_id in UpdateManager.device_poll_time:
@@ -135,7 +135,7 @@ class UpdateManager(ABC):
 class UnknownUpdateManager(UpdateManager):
     def __init__(self, dev_id: str):
         super().__init__(dev_id)
-        self.poll_time = POLL_TIME_UPDATING
+        self.poll_time = config.poll_time_updating
 
     async def _get_firmware(self) -> Firmware:
         return await Firmware.latest(await self.get_device())
@@ -282,19 +282,19 @@ class DeviceUpdateManager(UpdateManager):
 
         if firmware is None:
             handling_type = HandlingType.SKIP
-            self.poll_time = POLL_TIME
+            self.poll_time = config.poll_time_default
 
         elif firmware.version == device.fw_version and not device.force_update:
             handling_type = HandlingType.SKIP
-            self.poll_time = POLL_TIME
+            self.poll_time = config.poll_time_default
 
         elif device.last_state == UpdateStateEnum.ERROR and not device.force_update:
             handling_type = HandlingType.SKIP
-            self.poll_time = POLL_TIME
+            self.poll_time = config.poll_time_default
 
         else:
             handling_type = HandlingType.FORCED
-            self.poll_time = POLL_TIME_UPDATING
+            self.poll_time = config.poll_time_updating
 
             if device.log_complete:
                 await self.update_log_complete(False)
