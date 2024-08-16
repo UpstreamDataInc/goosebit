@@ -90,3 +90,25 @@ Tests are implemented using pytest. To run all tests
 ```bash
 poetry run pytest
 ```
+
+### Structure
+
+The structure of gooseBit is as follows:
+
+-   `api`: Files for the API.
+-   `ui`: Files for the UI.
+    -   `bff`: Backend for frontend API.
+    -   `static`: Static files.
+    -   `templates`: Jinja2 formatted templates.
+    -   `nav`: Navbar handler.
+-   `updater`: DDI API handler and device update manager.
+-   `updates`: SWUpdate file parsing.
+-   `realtime`: Realtime API functionality with websockets.
+-   `auth`: Authentication functions.
+-   `models`: Database models.
+-   `db`: Database config and initialization.
+-   `schema`: Pydantic models used for API type hinting.
+-   `permissions`: Permission handling and permission enums.
+-   `settings`: Settings loader and handler.
+-   `telemetry`: Telemetry data handlers.
+-   `routes`: Routes for a giving endpoint, including the router.

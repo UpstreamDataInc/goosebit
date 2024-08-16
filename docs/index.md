@@ -23,9 +23,8 @@ The default login credentials for testing are `admin@goosebit.local`, `admin`.
 
 ### Firmware repository
 
-Uploading firmware images through frontend. Accepted file naming patterns are `model_revision_date_time.swu` /
-`model_date_time.swu`. Date and time is used to determine the most current version for a device with a give model
-and revision.
+Uploading firmware images through frontend. All files should follow the format `{model}_{revision}_{version}`, where
+`version` is either a semantic version or a datetime version in the format `YYYYMMDD-HHmmSS`.
 
 ### Automatic device registration
 
@@ -56,3 +55,60 @@ Device can be pinned to its current firmware.
 ### Realtime update logs
 
 While an update is running, the update logs are captured and visualized in the frontend.
+
+## Development
+
+### Code formatting and linting
+
+Code is formatted using different tools
+
+-   black and isort for `*.py`
+-   biomejs for `*.js`, `*.json`
+-   prettier for `*.html`, `*.md`, `*.yml`, `*.yaml`
+
+Code is linted using different tools as well
+
+-   flake8 for `*.py`
+-   biomejs for `*.js`
+
+Best to have pre-commit install git hooks that run all those tools before a commit:
+
+```bash
+poetry run pre-commit install
+```
+
+To manually apply the hooks to all files use:
+
+```bash
+pre-commit run --all-files
+```
+
+### Testing
+
+Tests are implemented using pytest. To run all tests
+
+```bash
+poetry run pytest
+```
+
+### Structure
+
+The structure of gooseBit is as follows:
+
+-   `api`: Files for the API.
+-   `ui`: Files for the UI.
+    -   `bff`: Backend for frontend API.
+    -   `static`: Static files.
+    -   `templates`: Jinja2 formatted templates.
+    -   `nav`: Navbar handler.
+-   `updater`: DDI API handler and device update manager.
+-   `updates`: SWUpdate file parsing.
+-   `realtime`: Realtime API functionality with websockets.
+-   `auth`: Authentication functions.
+-   `models`: Database models.
+-   `db`: Database config and initialization.
+-   `schema`: Pydantic models used for API type hinting.
+-   `permissions`: Permission handling and permission enums.
+-   `settings`: Settings loader and handler.
+-   `telemetry`: Telemetry data handlers.
+-   `routes`: Routes for a giving endpoint, including the router.
