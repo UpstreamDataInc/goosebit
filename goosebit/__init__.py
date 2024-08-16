@@ -55,7 +55,7 @@ def root_redirect(request: Request):
 
 @app.get("/login", dependencies=[Depends(auto_redirect)], include_in_schema=False)
 async def login_ui(request: Request):
-    return templates.TemplateResponse(request, "login.html")
+    return templates.TemplateResponse(request, "login.html.jinja")
 
 
 @app.post("/login", include_in_schema=False, dependencies=[Depends(authenticate_user)])

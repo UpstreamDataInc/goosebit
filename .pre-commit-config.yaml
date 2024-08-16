@@ -38,3 +38,8 @@ repos:
     hooks:
       - id: prettier
         files: \.(html|md|yml|yaml)$
+  - repo: https://github.com/djlint/djLint
+    rev: v1.34.1
+    hooks:
+      - id: djlint-reformat-jinja
+      - id: djlint-jinja

@@ -1,0 +1,31 @@
+{% extends "nav.html.jinja" %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row p-2 d-flex justify-content-center">
+            <div class="col col-12 col-lg-9">
+                <div class="card border rounded">
+                    <div class="card-header">
+                        <h3>Logs - {{ device }}</h3>
+                    </div>
+                    <div class="card-header">
+                        <div class="progress m-2"
+                             role="progressbar"
+                             aria-label="Basic example"
+                             aria-valuenow="0"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 id="install-progress"
+                                 style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <pre id="device-log"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>device = "{{ device }}";</script>
+    <script src="{{ url_for('static', path='js/logs.js') }}"></script>
+{% endblock content %}
