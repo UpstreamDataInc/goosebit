@@ -1,0 +1,3 @@
+[tool.aerich]
+tortoise_orm = "goosebit.db.config.TORTOISE_CONF"
+location = "/usr/local/lib/python3.12/site-packages/goosebit/db/migrations"
