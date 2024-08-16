@@ -28,7 +28,7 @@ async def ui_root(request: Request):
 )
 @nav.route("Home", permissions=Permissions.HOME.READ)
 async def home_ui(request: Request):
-    return templates.TemplateResponse(request, "index.html", context={"title": "Home"})
+    return templates.TemplateResponse(request, "index.html.jinja", context={"title": "Home"})
 
 
 @router.get(
@@ -37,7 +37,7 @@ async def home_ui(request: Request):
 )
 @nav.route("Firmware", permissions=Permissions.FIRMWARE.READ)
 async def firmware_ui(request: Request):
-    return templates.TemplateResponse(request, "firmware.html", context={"title": "Firmware"})
+    return templates.TemplateResponse(request, "firmware.html.jinja", context={"title": "Firmware"})
 
 
 @router.post(
@@ -91,7 +91,7 @@ async def upload_update_remote(request: Request, url: str = Form(...)):
 )
 @nav.route("Devices", permissions=Permissions.DEVICE.READ)
 async def devices_ui(request: Request):
-    return templates.TemplateResponse(request, "devices.html", context={"title": "Devices"})
+    return templates.TemplateResponse(request, "devices.html.jinja", context={"title": "Devices"})
 
 
 @router.get(
@@ -100,7 +100,7 @@ async def devices_ui(request: Request):
 )
 @nav.route("Rollouts", permissions=Permissions.ROLLOUT.READ)
 async def rollouts_ui(request: Request):
-    return templates.TemplateResponse(request, "rollouts.html", context={"title": "Rollouts"})
+    return templates.TemplateResponse(request, "rollouts.html.jinja", context={"title": "Rollouts"})
 
 
 @router.get(
@@ -108,4 +108,4 @@ async def rollouts_ui(request: Request):
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.READ])],
 )
 async def logs_ui(request: Request, dev_id: str):
-    return templates.TemplateResponse(request, "logs.html", context={"title": "Log", "device": dev_id})
+    return templates.TemplateResponse(request, "logs.html.jinja", context={"title": "Log", "device": dev_id})
