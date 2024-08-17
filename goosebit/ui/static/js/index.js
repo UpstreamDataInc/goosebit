@@ -28,11 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         columnDefs: [
             {
-                targets: [0, 2],
-                searchable: true,
-                orderable: true,
-            },
-            {
                 targets: "_all",
                 searchable: false,
                 orderable: false,
@@ -40,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
         ],
         columns: [
-            { data: "name" },
+            { data: "name", searchable: true, orderable: true },
             {
                 data: "online",
                 render: (data, type) => {
@@ -55,8 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     return data;
                 },
             },
-            { data: "uuid" },
-            { data: "fw_installed_version" },
+            { data: "uuid", searchable: true, orderable: true },
+            { data: "fw_installed_version", searchable: true, orderable: true },
             {
                 data: "progress",
                 render: (data, type) => {
