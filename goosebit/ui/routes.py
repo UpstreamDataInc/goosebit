@@ -35,6 +35,15 @@ async def home_ui(request: Request):
 
 
 @router.get(
+    "/devices",
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.READ])],
+)
+@nav.route("Devices", permissions=Permissions.DEVICE.READ)
+async def devices_ui(request: Request):
+    return templates.TemplateResponse(request, "devices.html.jinja", context={"title": "Devices"})
+
+
+@router.get(
     "/firmware",
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])],
 )
@@ -86,15 +95,6 @@ async def upload_update_remote(request: Request, url: str = Form(...)):
             raise HTTPException(409, "Firmware with same URL already exists and is referenced by rollout")
 
     await create_firmware_update(url, None)
-
-
-@router.get(
-    "/devices",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.READ])],
-)
-@nav.route("Devices", permissions=Permissions.DEVICE.READ)
-async def devices_ui(request: Request):
-    return templates.TemplateResponse(request, "devices.html.jinja", context={"title": "Devices"})
 
 
 @router.get(
