@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ],
         columns: [
             { data: "id", visible: false },
-            { data: "name", searchable: true },
+            { data: "name" },
             { data: "version", searchable: true, orderable: true },
             {
                 data: "compatibility",

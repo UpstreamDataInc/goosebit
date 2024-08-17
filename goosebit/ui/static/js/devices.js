@@ -31,11 +31,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         columnDefs: [
             {
-                targets: [1, 2, 3, 4, 5, 6, 9, 10],
-                searchable: true,
-                orderable: true,
-            },
-            {
                 targets: "_all",
                 searchable: false,
                 orderable: false,
@@ -57,15 +52,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                     return data;
                 },
             },
-            { data: "uuid" },
-            { data: "name" },
+            { data: "uuid", searchable: true, orderable: true },
+            { data: "name", searchable: true, orderable: true },
             { data: "hw_model" },
             { data: "hw_revision" },
-            { data: "feed" },
-            { data: "fw_installed_version" },
+            { data: "feed", searchable: true, orderable: true },
+            { data: "fw_installed_version", searchable: true, orderable: true },
             { data: "fw_target_version" },
-            { data: "update_mode" },
-            { data: "state" },
+            { data: "update_mode", searchable: true, orderable: true },
+            { data: "state", searchable: true, orderable: true },
             {
                 data: "force_update",
                 render: (data, type) => {

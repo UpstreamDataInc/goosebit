@@ -31,11 +31,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         columnDefs: [
             {
-                targets: [1, 2, 3, 4],
-                searchable: true,
-                orderable: true,
-            },
-            {
                 targets: "_all",
                 searchable: false,
                 orderable: false,
@@ -43,9 +38,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         ],
         columns: [
             { data: "id", visible: false },
-            { data: "created_at", render: (data) => new Date(data).toLocaleString() },
-            { data: "name" },
-            { data: "feed" },
+            { data: "created_at", orderable: true, render: (data) => new Date(data).toLocaleString() },
+            { data: "name", searchable: true, orderable: true },
+            { data: "feed", searchable: true, orderable: true },
             { data: "fw_file" },
             { data: "fw_version" },
             {
