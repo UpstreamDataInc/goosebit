@@ -28,14 +28,14 @@ UpdateModeSchema = enum_factory("UpdateModeSchema", UpdateModeEnum)
 class DeviceSchema(BaseModel):
     uuid: str
     name: str | None
-    fw_installed_version: str | None
+    fw_version: str | None
     fw_target_version: str | None
     fw_assigned: str | None
     hw_model: str
     hw_revision: str
     feed: str
     progress: int | None
-    state: Annotated[UpdateStateSchema, BeforeValidator(UpdateStateSchema.convert)]
+    last_state: Annotated[UpdateStateSchema, BeforeValidator(UpdateStateSchema.convert)]
     update_mode: Annotated[UpdateModeSchema, BeforeValidator(UpdateModeSchema.convert)]
     force_update: bool
     last_ip: str | None
@@ -57,14 +57,14 @@ class DeviceSchema(BaseModel):
         return cls(
             uuid=device.uuid,
             name=device.name,
-            fw_installed_version=device.fw_version,
+            fw_version=device.fw_version,
             fw_target_version=(target_firmware.version if target_firmware is not None else None),
             fw_assigned=(device.assigned_firmware.id if device.assigned_firmware is not None else None),
             hw_model=device.hardware.model,
             hw_revision=device.hardware.revision,
             feed=device.feed,
             progress=device.progress,
-            state=device.last_state,
+            last_state=device.last_state,
             update_mode=device.update_mode,
             force_update=device.force_update,
             last_ip=device.last_ip,

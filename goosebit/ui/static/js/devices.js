@@ -57,10 +57,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             { data: "hw_model" },
             { data: "hw_revision" },
             { data: "feed", searchable: true, orderable: true },
-            { data: "fw_installed_version", searchable: true, orderable: true },
+            { data: "fw_version", searchable: true, orderable: true },
             { data: "fw_target_version" },
             { data: "update_mode", searchable: true, orderable: true },
-            { data: "state", searchable: true, orderable: true },
+            { data: "last_state", searchable: true, orderable: true },
             {
                 data: "force_update",
                 render: (data, type) => {
