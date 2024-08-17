@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
             },
             { data: "uuid", searchable: true, orderable: true },
-            { data: "fw_installed_version", searchable: true, orderable: true },
+            { data: "fw_version", searchable: true, orderable: true },
             {
                 data: "progress",
                 render: (data, type) => {
