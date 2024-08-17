@@ -23,8 +23,9 @@ async def devices_get(request: Request) -> BFFDeviceResponse:
             Q(uuid__icontains=search_value)
             | Q(name__icontains=search_value)
             | Q(feed__icontains=search_value)
-            | Q(update_mode__icontains=UpdateModeEnum.from_str(search_value))
-            | Q(last_state__icontains=UpdateStateEnum.from_str(search_value))
+            | Q(fw_version__icontains=search_value)
+            | Q(update_mode=int(UpdateModeEnum.from_str(search_value)))
+            | Q(last_state=int(UpdateStateEnum.from_str(search_value)))
         )
 
     query = Device.all().prefetch_related("assigned_firmware", "hardware")
