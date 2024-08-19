@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Security
 from fastapi.requests import Request
 
-from goosebit.api.devices.device.responses import DeviceLogResponse, DeviceResponse
+from goosebit.api.v1.devices.device.responses import DeviceLogResponse, DeviceResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.permissions import Permissions
 from goosebit.updater.manager import UpdateManager, get_update_manager

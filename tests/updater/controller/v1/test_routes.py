@@ -8,14 +8,14 @@ UUID = "221326d9-7873-418e-960c-c074026a3b7c"
 
 async def _api_device_update(async_client, device, update_attribute, update_value):
     response = await async_client.patch(
-        f"/api/devices",
+        f"/api/v1/devices",
         json={"devices": [f"{device.uuid}"], update_attribute: update_value},
     )
     assert response.status_code == 200
 
 
 async def _api_device_get(async_client, dev_id):
-    response = await async_client.get("/api/devices")
+    response = await async_client.get("/api/v1/devices")
     assert response.status_code == 200
     devices = response.json()["devices"]
     return next(d for d in devices if d["uuid"] == dev_id)
@@ -23,21 +23,21 @@ async def _api_device_get(async_client, dev_id):
 
 async def _api_rollout_create(async_client, feed, firmware, paused):
     response = await async_client.post(
-        f"/api/rollouts",
+        f"/api/v1/rollouts",
         json={"name": "", "feed": feed, "firmware_id": firmware.id},
     )
     assert response.status_code == 200
     rollout_id = response.json()["id"]
 
     response = await async_client.patch(
-        f"/api/rollouts",
+        f"/api/v1/rollouts",
         json={"ids": [rollout_id], "paused": paused},
     )
     assert response.status_code == 200
 
 
 async def _api_rollouts_get(async_client):
-    response = await async_client.get("/api/rollouts")
+    response = await async_client.get("/api/v1/rollouts")
     assert response.status_code == 200
     return response.json()
 
@@ -179,12 +179,12 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
     device_api = await _api_device_get(async_client, device.uuid)
     assert device_api["last_state"] == "Running"
 
-    # HEAD /api/download/1 HTTP/1.1 (reason not clear)
+    # HEAD /api/v1/download/1 HTTP/1.1 (reason not clear)
     response = await async_client.head(firmware_url)
     assert response.status_code == 200
     assert response.headers["Content-Length"] == "1200"
 
-    # GET /api/download/1 HTTP/1.1
+    # GET /api/v1/download/1 HTTP/1.1
     response = await async_client.get(firmware_url)
     assert response.status_code == 200
 

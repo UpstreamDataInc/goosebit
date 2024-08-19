@@ -255,7 +255,7 @@ async function updateDeviceConfig() {
     const firmware = document.getElementById("selected-fw").value;
 
     try {
-        await patch_request("/api/devices", { devices, name, feed, firmware });
+        await patch_request("/api/v1/devices", { devices, name, feed, firmware });
     } catch (error) {
         console.error("Update device config failed:", error);
     }
@@ -265,7 +265,7 @@ async function updateDeviceConfig() {
 
 async function forceUpdateDevices(devices) {
     try {
-        await patch_request("/api/devices", { devices, force_update: true });
+        await patch_request("/api/v1/devices", { devices, force_update: true });
     } catch (error) {
         console.error("Update force update state failed:", error);
     }
@@ -275,7 +275,7 @@ async function forceUpdateDevices(devices) {
 
 async function deleteDevices(devices) {
     try {
-        await delete_request("/api/devices", { devices });
+        await delete_request("/api/v1/devices", { devices });
     } catch (error) {
         console.error("Delete device failed:", error);
     }
@@ -285,7 +285,7 @@ async function deleteDevices(devices) {
 
 async function pinDevices(devices) {
     try {
-        await patch_request("/api/devices", { devices, pinned: true });
+        await patch_request("/api/v1/devices", { devices, pinned: true });
     } catch (error) {
         console.error("Error:", error);
     }

@@ -22,7 +22,7 @@ function secondsToRecentDate(t) {
 
 async function updateFirmwareSelection(addSpecialMode = false) {
     try {
-        const response = await fetch("/api/firmware");
+        const response = await fetch("/api/v1/firmware");
         if (!response.ok) {
             console.error("Retrieving firmwares failed.");
             return;

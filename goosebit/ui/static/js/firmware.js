@@ -266,7 +266,7 @@ function updateBtnState() {
 
 async function deleteFirmware(files) {
     try {
-        await delete_request("/api/firmware", files);
+        await delete_request("/api/v1/firmware", files);
         updateFirmwareList();
     } catch (error) {
         console.error("Deleting firmwares failed:", error);
@@ -274,5 +274,5 @@ async function deleteFirmware(files) {
 }
 
 function downloadFirmware(file) {
-    window.location.href = `/api/download/${file}`;
+    window.location.href = `/api/v1/download/${file}`;
 }
