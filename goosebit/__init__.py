@@ -7,7 +7,8 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrumentor
 
-from goosebit import api, db, realtime, telemetry, ui, updater
+from goosebit import api, db, realtime, ui, updater
+from goosebit.api.telemetry import metrics
 from goosebit.auth import (
     authenticate_user,
     auto_redirect,
@@ -22,7 +23,7 @@ from goosebit.ui.templates import templates
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     await db.init()
-    await telemetry.init()
+    await metrics.init()
     yield
     await db.close()
 

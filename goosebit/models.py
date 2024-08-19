@@ -7,7 +7,7 @@ from urllib.request import url2pathname
 import semver
 from tortoise import Model, fields
 
-from goosebit.telemetry import devices_count
+from goosebit.api.telemetry.metrics import devices_count
 
 
 class UpdateModeEnum(IntEnum):
