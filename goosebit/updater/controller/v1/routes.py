@@ -1,4 +1,3 @@
-import json
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -10,18 +9,20 @@ from goosebit.settings import config
 from goosebit.updater.manager import HandlingType, UpdateManager, get_update_manager
 from goosebit.updates import generate_chunk
 
+from .schema import (
+    ConfigDataSchema,
+    FeedbackSchema,
+    FeedbackStatusExecutionState,
+    FeedbackStatusResultFinished,
+)
+
 logger = logging.getLogger("DDI API")
 
 router = APIRouter(prefix="/v1")
 
 
 @router.get("/{dev_id}")
-async def polling(
-    request: Request,
-    tenant: str,
-    dev_id: str,
-    updater: UpdateManager = Depends(get_update_manager),
-):
+async def polling(request: Request, tenant: str, dev_id: str, updater: UpdateManager = Depends(get_update_manager)):
     links = {}
 
     sleep = updater.poll_time
@@ -69,15 +70,8 @@ async def polling(
 
 
 @router.put("/{dev_id}/configData")
-async def config_data(
-    request: Request,
-    dev_id: str,
-    tenant: str,
-    updater: UpdateManager = Depends(get_update_manager),
-):
-    data = await request.json()
-    # TODO: make standard schema to deal with this
-    await updater.update_config_data(**data["data"])
+async def config_data(_: Request, cfg: ConfigDataSchema, updater: UpdateManager = Depends(get_update_manager)):
+    await updater.update_config_data(**cfg.data)
     logger.info(f"Updating config data, device={updater.dev_id}")
     return {"success": True, "message": "Updated swupdate data."}
 
@@ -85,8 +79,6 @@ async def config_data(
 @router.get("/{dev_id}/deploymentBase/{action_id}")
 async def deployment_base(
     request: Request,
-    tenant: str,
-    dev_id: str,
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),
 ):
@@ -106,77 +98,66 @@ async def deployment_base(
 
 @router.post("/{dev_id}/deploymentBase/{action_id}/feedback")
 async def deployment_feedback(
-    request: Request,
-    tenant: str,
-    action_id: int,
-    updater: UpdateManager = Depends(get_update_manager),
+    _: Request, data: FeedbackSchema, action_id: int, updater: UpdateManager = Depends(get_update_manager)
 ):
-    try:
-        data = await request.json()
-    except json.JSONDecodeError as e:
-        logging.warning(f"Parsing deployment feedback failed, error={e}, device={updater.dev_id}")
-        return
-    try:
-        execution = data["status"]["execution"]
+    if data.status.execution == FeedbackStatusExecutionState.PROCEEDING:
+        await updater.update_device_state(UpdateStateEnum.RUNNING)
+        logger.debug(f"Installation in progress, device={updater.dev_id}")
 
-        if execution == "proceeding":
-            await updater.update_device_state(UpdateStateEnum.RUNNING)
-            logger.debug(f"Installation in progress, device={updater.dev_id}")
+    elif data.status.execution in [
+        FeedbackStatusExecutionState.CLOSED,
+        FeedbackStatusExecutionState.CANCELED,
+        FeedbackStatusExecutionState.REJECTED,
+    ]:
+        await updater.update_force_update(False)
+        await updater.update_log_complete(True)
 
-        elif execution == "closed":
-            state = data["status"]["result"]["finished"]
+        # TODO: check this, not in DDI schema
+        reported_firmware = await Firmware.get_or_none(id=data.id)
 
-            await updater.update_force_update(False)
-            await updater.update_log_complete(True)
+        # From hawkBit docu: DDI defines also a status NONE which will not be interpreted by the update server
+        # and handled like SUCCESS.
+        if data.status.result.finished in [FeedbackStatusResultFinished.SUCCESS, FeedbackStatusResultFinished.NONE]:
+            await updater.update_device_state(UpdateStateEnum.FINISHED)
 
-            reported_firmware = await Firmware.get_or_none(id=data["id"])
+            # not guaranteed to be the correct rollout - see next comment.
+            rollout = await updater.get_rollout()
+            if rollout:
+                if rollout.firmware == reported_firmware:
+                    rollout.success_count += 1
+                    await rollout.save()
+                else:
+                    logging.warning(
+                        f"Updating rollout success stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"  # noqa: E501
+                    )
 
-            # From hawkBit docu: DDI defines also a status NONE which will not be interpreted by the update server
-            # and handled like SUCCESS.
-            if state == "success" or state == "none":
-                await updater.update_device_state(UpdateStateEnum.FINISHED)
+            # setting the currently installed version based on the current assigned firmware / existing rollouts
+            # is problematic. Better to assign custom action_id for each update (rollout id? firmware id? new id?).
+            # Alternatively - but requires customization on the gateway side - use version reported by the gateway.
+            await updater.update_fw_version(reported_firmware.version)
+            logger.debug(f"Installation successful, firmware={reported_firmware.version}, device={updater.dev_id}")
 
-                # not guaranteed to be the correct rollout - see next comment.
-                rollout = await updater.get_rollout()
-                if rollout:
-                    if rollout.firmware == reported_firmware:
-                        rollout.success_count += 1
-                        await rollout.save()
-                    else:
-                        logging.warning(
-                            f"Updating rollout success stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"  # noqa: E501
-                        )
+        elif data.status.result.finished == FeedbackStatusResultFinished.FAILURE:
+            await updater.update_device_state(UpdateStateEnum.ERROR)
 
-                # setting the currently installed version based on the current assigned firmware / existing rollouts
-                # is problematic. Better to assign custom action_id for each update (rollout id? firmware id? new id?).
-                # Alternatively - but requires customization on the gateway side - use version reported by the gateway.
-                await updater.update_fw_version(reported_firmware.version)
-                logger.debug(f"Installation successful, firmware={reported_firmware.version}, device={updater.dev_id}")
+            # not guaranteed to be the correct rollout - see comment above.
+            rollout = await updater.get_rollout()
+            if rollout:
+                if rollout.firmware == reported_firmware:
+                    rollout.failure_count += 1
+                    await rollout.save()
+                else:
+                    logging.warning(
+                        f"Updating rollout failure stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"  # noqa: E501
+                    )
 
-            elif state == "failure":
-                await updater.update_device_state(UpdateStateEnum.ERROR)
-
-                # not guaranteed to be the correct rollout - see comment above.
-                rollout = await updater.get_rollout()
-                if rollout:
-                    if rollout.firmware == reported_firmware:
-                        rollout.failure_count += 1
-                        await rollout.save()
-                    else:
-                        logging.warning(
-                            f"Updating rollout failure stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"  # noqa: E501
-                        )
-
-                logger.debug(f"Installation failed, firmware={reported_firmware.version}, device={updater.dev_id}")
-
-    except KeyError as e:
-        logging.warning(f"Processing deployment feedback failed, error={e}, device={updater.dev_id}")
+            logger.debug(f"Installation failed, firmware={reported_firmware.version}, device={updater.dev_id}")
 
     try:
-        log = data["status"]["details"]
+        log = data.status.details
         await updater.update_log("\n".join(log))
-    except KeyError:
-        logging.warning(f"No details to update update log, device={updater.dev_id}")
+    except AttributeError:
+        logging.warning(f"No details to update device update log, device={updater.dev_id}")
 
     return {"id": str(action_id)}
 
