@@ -35,7 +35,6 @@ tenant: DEFAULT
 metrics:
   prometheus:
     enable: false
-    port: 9090
 logging:
   version: 1
   formatters:
