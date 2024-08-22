@@ -53,5 +53,4 @@ class FeedbackStatusSchema(BaseModel):
 
 class FeedbackSchema(BaseModel):
     time: str = None
-    id: int = None
     status: FeedbackStatusSchema

@@ -87,7 +87,7 @@ async def deployment_base(
     logger.info(f"Request deployment base, device={updater.dev_id}")
 
     return {
-        "id": f"{action_id}",
+        "id": str(action_id),
         "deployment": {
             "download": str(handling_type),
             "update": str(handling_type),
@@ -104,16 +104,11 @@ async def deployment_feedback(
         await updater.update_device_state(UpdateStateEnum.RUNNING)
         logger.debug(f"Installation in progress, device={updater.dev_id}")
 
-    elif data.status.execution in [
-        FeedbackStatusExecutionState.CLOSED,
-        FeedbackStatusExecutionState.CANCELED,
-        FeedbackStatusExecutionState.REJECTED,
-    ]:
+    elif data.status.execution == FeedbackStatusExecutionState.CLOSED:
         await updater.update_force_update(False)
         await updater.update_log_complete(True)
 
-        # TODO: check this, not in DDI schema
-        reported_firmware = await Firmware.get_or_none(id=data.id)
+        reported_firmware = await Firmware.get_or_none(id=action_id)
 
         # From hawkBit docu: DDI defines also a status NONE which will not be interpreted by the update server
         # and handled like SUCCESS.
@@ -152,6 +147,10 @@ async def deployment_feedback(
                     )
 
             logger.debug(f"Installation failed, firmware={reported_firmware.version}, device={updater.dev_id}")
+    else:
+        logging.warning(
+            f"Device reported unhandled execution state, state={data.status.execution}, device={updater.dev_id}"
+        )
 
     try:
         log = data.status.details
