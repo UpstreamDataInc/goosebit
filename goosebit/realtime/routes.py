@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends
 
-from goosebit.auth import Authentication
+from goosebit.auth import validate_current_user
 
 from . import logs
 
 router = APIRouter(
     prefix="/realtime",
-    dependencies=[Depends(Authentication())],
+    dependencies=[Depends(validate_current_user)],
     tags=["realtime"],
 )
 

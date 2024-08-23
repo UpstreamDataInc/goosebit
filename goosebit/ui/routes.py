@@ -4,7 +4,7 @@ from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 
-from goosebit.auth import Authentication, validate_user_permissions
+from goosebit.auth import redirect_if_unauthenticated, validate_user_permissions
 from goosebit.models import Firmware, Rollout
 from goosebit.permissions import Permissions
 from goosebit.settings import config
@@ -16,7 +16,7 @@ from .templates import templates
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-router = APIRouter(prefix="/ui", dependencies=[Depends(Authentication(redirect=True))], include_in_schema=False)
+router = APIRouter(prefix="/ui", dependencies=[Depends(redirect_if_unauthenticated)], include_in_schema=False)
 router.include_router(bff.router)
 
 
