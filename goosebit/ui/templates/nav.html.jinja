@@ -46,11 +46,12 @@
     <body data-bs-theme="dark">
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
-                <a class="navbar-brand" href="/ui/home">
+                <a class="navbar-brand" href="{{ request.url_for("home_ui") }}">
                     <img src="{{ request.url_for('static', path='svg/goosebit-logo.svg') }}"
                          class="me-2"
-                         style="height: 30px;
-                                width: 30px" />
+                         height="30px"
+                         width="30px"
+                         alt="gooseBit logo" />
                     gooseBit
                 </a>
                 <button class="navbar-toggler"
@@ -74,7 +75,7 @@
                         {% endfor %}
                     </div>
                     <div class="navbar-nav d-flex flex-fill justify-content-end">
-                        <a class="nav-link" href="/logout">Logout<i class="bi bi-box-arrow-right ps-2"></i></a>
+                        <a class="nav-link" href="{{ request.url_for("logout") }}">Logout<i class="bi bi-box-arrow-right ps-2"></i></a>
                     </div>
                 </div>
             </div>
