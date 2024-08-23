@@ -24,12 +24,14 @@
                             <div class="col d-flex align-items-center">
                                 <h2 class="fw-bold m-0 text-uppercase">gooseBit</h2>
                             </div>
-                            <img src="{{ request.url_for('static', path='svg/goosebit-logo.svg') }}"
-                                 class="p-0 mx-3"
-                                 style="height: 35px;
-                                        width: 35px" />
+                            <div class="col d-flex justify-content-end px-3">
+                                <img src="{{ request.url_for('static', path='svg/goosebit-logo.svg') }}"
+                                     height="35px"
+                                     width="35px"
+                                     alt="gooseBit Logo" />
+                            </div>
                         </div>
-                        <form method="post">
+                        <form method="post" id="login_form">
                             <div class="form-outline form-white mb-4">
                                 <input type="email"
                                        id="username"
@@ -50,5 +52,6 @@
                 </div>
             </div>
         </div>
+        <script src="{{ url_for('static', path='js/login.js') }}"></script>
     </body>
 </html>

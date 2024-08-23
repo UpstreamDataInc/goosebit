@@ -13,12 +13,15 @@ poll_time_default: 00:01:00
 # and device logs get updated.
 poll_time_updating: 00:00:05
 
+# Secret key used for parsing user sessions. It is HIGHLY advised to pass this as an environment variable instead.
+# Defaults to a randomized value. If this value is not set, user sessions will not persist when app restarts.
+# secret_key: my_very_top_secret_key123
+
 # User account for the frontend. Available permissions:
 # "firmware.read", "firmware.write", "firmware.delete"
 # "device.read", "device.write", "device.delete"
 # "rollout.read", "rollout.write", "rollout.delete"
 # "home.read"
-
 users:
   - username: admin@goosebit.local
     password: admin

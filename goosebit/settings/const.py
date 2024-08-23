@@ -1,13 +1,10 @@
-import secrets
 from pathlib import Path
 
 from argon2 import PasswordHasher
-from joserfc.jwk import OctKey
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DB_MIGRATIONS_LOC = BASE_DIR.joinpath("migrations")
 
-SECRET = OctKey.import_key(secrets.token_hex(16))
 PWD_CXT = PasswordHasher()
 
 LOGGING_DEFAULT = {

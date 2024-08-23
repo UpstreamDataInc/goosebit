@@ -49,6 +49,9 @@ async def async_client(test_app):
         response = await client.post("/login", data=login_data, follow_redirects=True)
         assert response.status_code == 200
 
+        data = response.json()
+        client.cookies.set("session_id", data["access_token"])
+
         yield client
 
 
