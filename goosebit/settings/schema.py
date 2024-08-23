@@ -1,6 +1,8 @@
+import secrets
 from pathlib import Path
 from typing import Annotated, Iterable
 
+from joserfc.rfc7518.oct_key import OctKey
 from pydantic import BaseModel, BeforeValidator, Field
 from pydantic_settings import (
     BaseSettings,
@@ -48,6 +50,8 @@ class GooseBitSettings(BaseSettings):
     poll_time_default: str = "00:01:00"
     poll_time_updating: str = "00:00:05"
     poll_time_registration: str = "00:00:10"
+
+    secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
 
     users: list[User] = []
 

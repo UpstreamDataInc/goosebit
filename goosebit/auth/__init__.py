@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from joserfc import jwt
 from joserfc.errors import BadSignatureError
 
-from goosebit.settings import PWD_CXT, SECRET, USERS
+from goosebit.settings import PWD_CXT, USERS, config
 from goosebit.settings.schema import User
 
 logger = logging.getLogger(__name__)
@@ -24,14 +24,14 @@ async def session_auth(connection: HTTPConnection) -> str:
 
 
 def create_token(username: str) -> str:
-    return jwt.encode(header={"alg": "HS256"}, claims={"username": username}, key=SECRET)
+    return jwt.encode(header={"alg": "HS256"}, claims={"username": username}, key=config.secret_key)
 
 
 def get_user_from_token(token: str) -> User | None:
     if token is None:
         return
     try:
-        token_data = jwt.decode(token, SECRET)
+        token_data = jwt.decode(token, config.secret_key)
         username = token_data.claims["username"]
         return USERS.get(username)
     except (BadSignatureError, LookupError, ValueError):
