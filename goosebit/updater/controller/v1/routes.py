@@ -22,7 +22,7 @@ router = APIRouter(prefix="/v1")
 
 
 @router.get("/{dev_id}")
-async def polling(request: Request, tenant: str, dev_id: str, updater: UpdateManager = Depends(get_update_manager)):
+async def polling(request: Request, dev_id: str, updater: UpdateManager = Depends(get_update_manager)):
     links = {}
 
     sleep = updater.poll_time
@@ -35,7 +35,6 @@ async def polling(request: Request, tenant: str, dev_id: str, updater: UpdateMan
             "href": str(
                 request.url_for(
                     "config_data",
-                    tenant=tenant,
                     dev_id=dev_id,
                 )
             )
@@ -55,7 +54,6 @@ async def polling(request: Request, tenant: str, dev_id: str, updater: UpdateMan
                 "href": str(
                     request.url_for(
                         "deployment_base",
-                        tenant=tenant,
                         dev_id=dev_id,
                         action_id=firmware.id,
                     )

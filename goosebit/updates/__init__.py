@@ -7,7 +7,6 @@ from fastapi.requests import Request
 from tortoise.expressions import Q
 
 from goosebit.models import Firmware, Hardware
-from goosebit.settings import config
 from goosebit.updater.manager import UpdateManager
 
 from . import swdesc
@@ -106,7 +105,6 @@ async def generate_chunk(request: Request, updater: UpdateManager) -> list:
         href = str(
             request.url_for(
                 "download_artifact",
-                tenant=config.tenant,
                 dev_id=updater.dev_id,
             )
         )

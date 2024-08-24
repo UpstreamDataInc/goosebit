@@ -43,13 +43,13 @@ async def _api_rollouts_get(async_client):
 
 
 async def _poll_first_time(async_client):
-    response = await async_client.get(f"/DEFAULT/controller/v1/{UUID}")
+    response = await async_client.get(f"/ddi/controller/v1/{UUID}")
     assert response.status_code == 200
     data = response.json()
     assert "config" in data
     assert "_links" in data
     config_url = data["_links"]["configData"]["href"]
-    assert config_url == f"http://test/DEFAULT/controller/v1/{UUID}/configData"
+    assert config_url == f"http://test/ddi/controller/v1/{UUID}/configData"
     return config_url
 
 
@@ -77,14 +77,14 @@ async def _register(async_client, config_url):
 
 
 async def _poll(async_client, device_uuid, firmware: Firmware | None, expect_update=True):
-    response = await async_client.get(f"/DEFAULT/controller/v1/{device_uuid}")
+    response = await async_client.get(f"/ddi/controller/v1/{device_uuid}")
 
     assert response.status_code == 200
     data = response.json()
     if expect_update:
         assert "deploymentBase" in data["_links"], "expected update, but none available"
         deployment_base = data["_links"]["deploymentBase"]["href"]
-        assert deployment_base == f"http://test/DEFAULT/controller/v1/{device_uuid}/deploymentBase/{firmware.id}"
+        assert deployment_base == f"http://test/ddi/controller/v1/{device_uuid}/deploymentBase/{firmware.id}"
         return deployment_base
     else:
         assert data["_links"] == {}
@@ -100,7 +100,7 @@ async def _retrieve_firmware_url(async_client, device_uuid, deployment_base, fir
     assert data["id"] == str(firmware.id)
     assert (
         data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]
-        == f"http://test/DEFAULT/controller/v1/{device_uuid}/download"
+        == f"http://test/ddi/controller/v1/{device_uuid}/download"
     )
     assert data["deployment"]["chunks"][0]["artifacts"][0]["hashes"]["sha1"] == firmware.hash
     assert data["deployment"]["chunks"][0]["artifacts"][0]["size"] == firmware.size
@@ -110,7 +110,7 @@ async def _retrieve_firmware_url(async_client, device_uuid, deployment_base, fir
 
 async def _feedback(async_client, device_uuid, firmware, finished, execution):
     response = await async_client.post(
-        f"/DEFAULT/controller/v1/{device_uuid}/deploymentBase/{firmware.id}/feedback",
+        f"/ddi/controller/v1/{device_uuid}/deploymentBase/{firmware.id}/feedback",
         json={
             "id": firmware.id,
             "status": {
