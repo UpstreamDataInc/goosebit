@@ -12,7 +12,7 @@ def test_parse_descriptor_simple():
         {
             "software": {
                 "version": "1.0.0",
-                "description": "Firmware update for XXXXX Project",
+                "description": "Software update for XXXXX Project",
                 "hardware-compatibility": ["1.0", "1.2"],
             }
         }
@@ -32,7 +32,7 @@ def test_parse_descriptor_boardname():
         {
             "software": {
                 "version": "8.8.1-12-g302f635+189128",
-                "description": "Linux System Firmware for the GARDENA smart Gateway gardena-sg-mt7688",
+                "description": "Linux System Software for the GARDENA smart Gateway gardena-sg-mt7688",
                 "smart-gateway-mt7688": {
                     "hardware-compatibility": [
                         "0.5",
@@ -74,7 +74,7 @@ def test_parse_descriptor_several_boardname():
     desc = {
         "software": {
             "version": "8.8.1-12-g302f635+189128",
-            "description": "Linux System Firmware (hawkbit) for the GARDENA smart Gateway gardena-sg-mt7688",
+            "description": "Linux System Software (hawkbit) for the GARDENA smart Gateway gardena-sg-mt7688",
             "smart-gateway-mt7688": {
                 "hardware-compatibility": [
                     "0.5",
@@ -101,8 +101,8 @@ def test_parse_descriptor_several_boardname():
 
 
 @pytest.mark.asyncio
-async def test_parse_firmware_header():
-    swdesc_attrs = await parse_file(Path(__file__).resolve().parent / "firmware-header.swu")
+async def test_parse_software_header():
+    swdesc_attrs = await parse_file(Path(__file__).resolve().parent / "software-header.swu")
     assert str(swdesc_attrs["version"]) == "8.8.1-11-g8c926e5+188370"
     assert swdesc_attrs["compatibility"] == [
         {"hw_model": "smart-gateway-mt7688", "hw_revision": "0.5"},

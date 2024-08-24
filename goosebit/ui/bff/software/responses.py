@@ -3,11 +3,11 @@ import asyncio
 from fastapi.requests import Request
 from pydantic import BaseModel, Field
 
-from goosebit.schema.firmware import FirmwareSchema
+from goosebit.schema.software import SoftwareSchema
 
 
-class BFFFirmwareResponse(BaseModel):
-    data: list[FirmwareSchema]
+class BFFSoftwareResponse(BaseModel):
+    data: list[SoftwareSchema]
     draw: int
     records_total: int = Field(serialization_alias="recordsTotal")
     records_filtered: int = Field(serialization_alias="recordsFiltered")
@@ -32,6 +32,6 @@ class BFFFirmwareResponse(BaseModel):
 
         filtered_records = await query.count()
         devices = await query.offset(start).limit(length).all()
-        data = await asyncio.gather(*[FirmwareSchema.convert(d) for d in devices])
+        data = await asyncio.gather(*[SoftwareSchema.convert(d) for d in devices])
 
         return cls(data=data, draw=draw, records_total=total_records, records_filtered=filtered_records)

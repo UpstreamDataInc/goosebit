@@ -93,10 +93,10 @@ async function sendFileUrl(url) {
 
     if (response.ok) {
         alerts.innerHTML = `<div class="alert alert-success alert-dismissible fade show" role="alert">
-            Firmware creation (or replacement) successful
+            Software creation (or replacement) successful
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>`;
-        updateFirmwareList();
+        updateSoftwareList();
     } else {
         if (response.status >= 400 && response.status < 500) {
             const result = await response.json();
@@ -108,7 +108,7 @@ async function sendFileUrl(url) {
     }
 }
 
-function updateFirmwareList() {
+function updateSoftwareList() {
     dataTable.ajax.reload(null, false);
 }
 
@@ -122,7 +122,7 @@ function resetProgress() {
     uploadProgressBar.innerHTML = "0%";
     uploadProgressBar.parentElement.classList.add("d-none");
 
-    updateFirmwareList();
+    updateSoftwareList();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -130,28 +130,28 @@ document.addEventListener("DOMContentLoaded", () => {
         {
             text: '<i class="bi bi-cloud-download" ></i>',
             action: (e, dt) => {
-                const selectedFirmware = dt
+                const selectedSoftware = dt
                     .rows({ selected: true })
                     .data()
                     .toArray()
                     .map((d) => d.id);
-                downloadFirmware(selectedFirmware[0]);
+                downloadSoftware(selectedSoftware[0]);
             },
             className: "buttons-download",
-            titleAttr: "Download Firmware",
+            titleAttr: "Download Software",
         },
         {
             text: '<i class="bi bi-trash" ></i>',
             action: async (e, dt) => {
-                const selectedFirmware = dt
+                const selectedSoftware = dt
                     .rows({ selected: true })
                     .data()
                     .toArray()
                     .map((d) => d.id);
-                await deleteFirmware(selectedFirmware);
+                await deleteSoftware(selectedSoftware);
             },
             className: "buttons-delete",
-            titleAttr: "Delete Firmware",
+            titleAttr: "Delete Software",
         },
     ];
 
@@ -163,11 +163,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 new bootstrap.Modal("#upload-modal").show();
             },
             className: "buttons-create",
-            titleAttr: "Add Firmware",
+            titleAttr: "Add Software",
         });
     }
 
-    dataTable = new DataTable("#firmware-table", {
+    dataTable = new DataTable("#software-table", {
         responsive: true,
         paging: true,
         processing: false,
@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         },
         ajax: {
-            url: "/ui/bff/firmware",
+            url: "/ui/bff/software",
             contentType: "application/json",
         },
         initComplete: () => {
@@ -248,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
             updateBtnState();
         });
 
-    updateFirmwareList();
+    updateSoftwareList();
 });
 
 function updateBtnState() {
@@ -264,15 +264,15 @@ function updateBtnState() {
     }
 }
 
-async function deleteFirmware(files) {
+async function deleteSoftware(files) {
     try {
-        await delete_request("/api/v1/firmware", files);
-        updateFirmwareList();
+        await delete_request("/api/v1/software", files);
+        updateSoftwareList();
     } catch (error) {
-        console.error("Deleting firmwares failed:", error);
+        console.error("Deleting software list failed:", error);
     }
 }
 
-function downloadFirmware(file) {
+function downloadSoftware(file) {
     window.location.href = `/api/v1/download/${file}`;
 }

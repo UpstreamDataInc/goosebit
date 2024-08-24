@@ -4,7 +4,7 @@ import asyncio
 
 from pydantic import BaseModel
 
-from goosebit.models import Firmware, Hardware
+from goosebit.models import Hardware, Software
 
 
 class HardwareSchema(BaseModel):
@@ -17,7 +17,7 @@ class HardwareSchema(BaseModel):
         return cls(id=hardware.id, model=hardware.model, revision=hardware.revision)
 
 
-class FirmwareSchema(BaseModel):
+class SoftwareSchema(BaseModel):
     id: int
     name: str
     size: int
@@ -26,12 +26,12 @@ class FirmwareSchema(BaseModel):
     compatibility: list[HardwareSchema]
 
     @classmethod
-    async def convert(cls, firmware: Firmware):
+    async def convert(cls, software: Software):
         return cls(
-            id=firmware.id,
-            name=firmware.path_user,
-            size=firmware.size,
-            hash=firmware.hash,
-            version=firmware.version,
-            compatibility=await asyncio.gather(*[HardwareSchema.convert(h) for h in firmware.compatibility]),
+            id=software.id,
+            name=software.path_user,
+            size=software.size,
+            hash=software.hash,
+            version=software.version,
+            compatibility=await asyncio.gather(*[HardwareSchema.convert(h) for h in software.compatibility]),
         )

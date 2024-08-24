@@ -9,7 +9,7 @@ class DevicesDeleteRequest(BaseModel):
 
 class DevicesPatchRequest(BaseModel):
     devices: list[str]
-    firmware: str | None = None
+    software: str | None = None
     name: str | None = None
     pinned: bool | None = None
     feed: str | None = None

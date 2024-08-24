@@ -41,8 +41,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             { data: "created_at", orderable: true, render: (data) => new Date(data).toLocaleString() },
             { data: "name", searchable: true, orderable: true },
             { data: "feed", searchable: true, orderable: true },
-            { data: "fw_file" },
-            { data: "fw_version" },
+            { data: "sw_file" },
+            { data: "sw_version" },
             {
                 data: "paused",
                 render: (data, type) => {
@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     updateRolloutList();
 
-    await updateFirmwareSelection();
+    await updateSoftwareSelection();
 
     // Creation form submit
     const form = document.getElementById("rollout-form");
@@ -175,10 +175,10 @@ function updateBtnState() {
 async function createRollout() {
     const name = document.getElementById("rollout-selected-name").value;
     const feed = document.getElementById("rollout-selected-feed").value;
-    const firmware_id = document.getElementById("selected-fw").value;
+    const software_id = document.getElementById("selected-sw").value;
 
     try {
-        await post("/api/v1/rollouts", { name, feed, firmware_id });
+        await post("/api/v1/rollouts", { name, feed, software_id });
     } catch (error) {
         console.error("Rollout creation failed:", error);
     }

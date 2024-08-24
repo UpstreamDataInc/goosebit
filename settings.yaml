@@ -18,7 +18,7 @@ poll_time_updating: 00:00:05
 # secret_key: my_very_top_secret_key123
 
 # User account for the frontend. Available permissions:
-# "firmware.read", "firmware.write", "firmware.delete"
+# "software.read", "software.write", "software.delete"
 # "device.read", "device.write", "device.delete"
 # "rollout.read", "rollout.write", "rollout.delete"
 # "home.read"

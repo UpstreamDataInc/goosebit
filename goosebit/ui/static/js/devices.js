@@ -57,8 +57,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             { data: "hw_model" },
             { data: "hw_revision" },
             { data: "feed", searchable: true, orderable: true },
-            { data: "fw_version", searchable: true, orderable: true },
-            { data: "fw_target_version" },
+            { data: "sw_version", searchable: true, orderable: true },
+            { data: "sw_target_version" },
             { data: "update_mode", searchable: true, orderable: true },
             { data: "last_state", searchable: true, orderable: true },
             {
@@ -134,9 +134,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                             } else if (selectedDevice.update_mode === "Latest") {
                                 selectedValue = "latest";
                             } else {
-                                selectedValue = selectedDevice.fw_assigned;
+                                selectedValue = selectedDevice.sw_assigned;
                             }
-                            $("#selected-fw").val(selectedValue);
+                            $("#selected-sw").val(selectedValue);
 
                             new bootstrap.Modal("#device-config-modal").show();
                         },
@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         dataTable.ajax.reload(null, false);
     }, TABLE_UPDATE_TIME);
 
-    await updateFirmwareSelection(true);
+    await updateSoftwareSelection(true);
 
     // Config form submit
     const configForm = document.getElementById("device-config-form");
@@ -252,10 +252,10 @@ async function updateDeviceConfig() {
         .map((d) => d.uuid);
     const name = document.getElementById("device-selected-name").value;
     const feed = document.getElementById("device-selected-feed").value;
-    const firmware = document.getElementById("selected-fw").value;
+    const software = document.getElementById("selected-sw").value;
 
     try {
-        await patch_request("/api/v1/devices", { devices, name, feed, firmware });
+        await patch_request("/api/v1/devices", { devices, name, feed, software });
     } catch (error) {
         console.error("Update device config failed:", error);
     }

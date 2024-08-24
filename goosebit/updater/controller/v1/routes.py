@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
 from fastapi.responses import FileResponse, RedirectResponse, Response
 
-from goosebit.models import Firmware, UpdateStateEnum
+from goosebit.models import Software, UpdateStateEnum
 from goosebit.settings import config
 from goosebit.updater.manager import HandlingType, UpdateManager, get_update_manager
 from goosebit.updates import generate_chunk
@@ -48,14 +48,14 @@ async def polling(request: Request, dev_id: str, updater: UpdateManager = Depend
     else:
         # provide update if available. Note: this is also required while in state "running", otherwise swupdate
         # won't confirm a successful testing (might be a bug/problem in swupdate)
-        handling_type, firmware = await updater.get_update()
+        handling_type, software = await updater.get_update()
         if handling_type != HandlingType.SKIP:
             links["deploymentBase"] = {
                 "href": str(
                     request.url_for(
                         "deployment_base",
                         dev_id=dev_id,
-                        action_id=firmware.id,
+                        action_id=software.id,
                     )
                 )
             }
@@ -80,7 +80,7 @@ async def deployment_base(
     action_id: int,
     updater: UpdateManager = Depends(get_update_manager),
 ):
-    handling_type, firmware = await updater.get_update()
+    handling_type, software = await updater.get_update()
 
     logger.info(f"Request deployment base, device={updater.dev_id}")
 
@@ -106,7 +106,7 @@ async def deployment_feedback(
         await updater.update_force_update(False)
         await updater.update_log_complete(True)
 
-        reported_firmware = await Firmware.get_or_none(id=action_id)
+        reported_software = await Software.get_or_none(id=action_id)
 
         # From hawkBit docu: DDI defines also a status NONE which will not be interpreted by the update server
         # and handled like SUCCESS.
@@ -116,19 +116,19 @@ async def deployment_feedback(
             # not guaranteed to be the correct rollout - see next comment.
             rollout = await updater.get_rollout()
             if rollout:
-                if rollout.firmware == reported_firmware:
+                if rollout.software == reported_software:
                     rollout.success_count += 1
                     await rollout.save()
                 else:
                     logging.warning(
-                        f"Updating rollout success stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"  # noqa: E501
+                        f"Updating rollout success stats failed, software={reported_software.id}, device={updater.dev_id}"  # noqa: E501
                     )
 
-            # setting the currently installed version based on the current assigned firmware / existing rollouts
-            # is problematic. Better to assign custom action_id for each update (rollout id? firmware id? new id?).
+            # setting the currently installed version based on the current assigned software / existing rollouts
+            # is problematic. Better to assign custom action_id for each update (rollout id? software id? new id?).
             # Alternatively - but requires customization on the gateway side - use version reported by the gateway.
-            await updater.update_fw_version(reported_firmware.version)
-            logger.debug(f"Installation successful, firmware={reported_firmware.version}, device={updater.dev_id}")
+            await updater.update_sw_version(reported_software.version)
+            logger.debug(f"Installation successful, software={reported_software.version}, device={updater.dev_id}")
 
         elif data.status.result.finished == FeedbackStatusResultFinished.FAILURE:
             await updater.update_device_state(UpdateStateEnum.ERROR)
@@ -136,15 +136,15 @@ async def deployment_feedback(
             # not guaranteed to be the correct rollout - see comment above.
             rollout = await updater.get_rollout()
             if rollout:
-                if rollout.firmware == reported_firmware:
+                if rollout.software == reported_software:
                     rollout.failure_count += 1
                     await rollout.save()
                 else:
                     logging.warning(
-                        f"Updating rollout failure stats failed, firmware={reported_firmware.id}, device={updater.dev_id}"  # noqa: E501
+                        f"Updating rollout failure stats failed, software={reported_software.id}, device={updater.dev_id}"  # noqa: E501
                     )
 
-            logger.debug(f"Installation failed, firmware={reported_firmware.version}, device={updater.dev_id}")
+            logger.debug(f"Installation failed, software={reported_software.version}, device={updater.dev_id}")
     else:
         logging.warning(
             f"Device reported unhandled execution state, state={data.status.execution}, device={updater.dev_id}"
@@ -161,25 +161,25 @@ async def deployment_feedback(
 
 @router.head("/{dev_id}/download")
 async def download_artifact_head(_: Request, updater: UpdateManager = Depends(get_update_manager)):
-    _, firmware = await updater.get_update()
-    if firmware is None:
+    _, software = await updater.get_update()
+    if software is None:
         raise HTTPException(404)
 
     response = Response()
-    response.headers["Content-Length"] = str(firmware.size)
+    response.headers["Content-Length"] = str(software.size)
     return response
 
 
 @router.get("/{dev_id}/download")
 async def download_artifact(_: Request, updater: UpdateManager = Depends(get_update_manager)):
-    _, firmware = await updater.get_update()
-    if firmware is None:
+    _, software = await updater.get_update()
+    if software is None:
         raise HTTPException(404)
-    if firmware.local:
+    if software.local:
         return FileResponse(
-            firmware.path,
+            software.path,
             media_type="application/octet-stream",
-            filename=firmware.path.name,
+            filename=software.path.name,
         )
     else:
-        return RedirectResponse(url=firmware.uri)
+        return RedirectResponse(url=software.uri)

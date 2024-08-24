@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class RolloutsPutRequest(BaseModel):
     name: str
     feed: str
-    firmware_id: int
+    software_id: int
 
 
 class RolloutsPatchRequest(BaseModel):

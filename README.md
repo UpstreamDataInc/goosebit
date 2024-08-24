@@ -21,9 +21,9 @@ The default login credentials for testing are `admin@goosebit.local`, `admin`.
 
 ## Current Feature Set
 
-### Firmware repository
+### Software repository
 
-Uploading firmware images through frontend. All files should follow the format `{model}_{revision}_{version}`, where
+Uploading software images through frontend. All files should follow the format `{model}_{revision}_{version}`, where
 `version` is either a semantic version or a datetime version in the format `YYYYMMDD-HHmmSS`.
 
 ### Automatic device registration
@@ -32,17 +32,17 @@ First time a new device connects, its configuration data is requested. `hw_model
 the configuration data (both fall back to `default` if not provided) which allows to distinguish different device
 types and their revisions.
 
-### Automatically update device to newest firmware
+### Automatically update device to newest software
 
-Once a device is registered it will get the newest available firmware from the repository based on model and revision.
+Once a device is registered it will get the newest available software from the repository based on model and revision.
 
-### Manually update device to specific firmware
+### Manually update device to specific software
 
-Frontend allows to assign specific firmware to be rolled out.
+Frontend allows to assign specific software to be rolled out.
 
-### Firmware rollout
+### Software rollout
 
-Rollouts allow a fine-grained assignment of firmwares to devices. The reported device model and revision is combined
+Rollouts allow a fine-grained assignment of software to devices. The reported device model and revision is combined
 with the manually set feed value on a device to determine a matching rollout.
 
 The feed is meant to model either different environments (like: dev, qa, live) or update channels (like. candidate,
@@ -50,7 +50,7 @@ fast, stable).
 
 ### Pause updates
 
-Device can be pinned to its current firmware.
+Device can be pinned to its current software.
 
 ### Realtime update logs
 

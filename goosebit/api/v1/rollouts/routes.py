@@ -17,7 +17,7 @@ router = APIRouter(prefix="/rollouts", tags=["rollouts"])
     dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])],
 )
 async def rollouts_get(_: Request) -> RolloutsResponse:
-    return await RolloutsResponse.convert(await Rollout.all().prefetch_related("firmware"))
+    return await RolloutsResponse.convert(await Rollout.all().prefetch_related("software"))
 
 
 @router.post(
@@ -28,7 +28,7 @@ async def rollouts_put(_: Request, rollout: RolloutsPutRequest) -> RolloutsPutRe
     rollout = await Rollout.create(
         name=rollout.name,
         feed=rollout.feed,
-        firmware_id=rollout.firmware_id,
+        software_id=rollout.software_id,
     )
     return RolloutsPutResponse(success=True, id=rollout.id)
 

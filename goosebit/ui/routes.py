@@ -5,11 +5,11 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 
 from goosebit.auth import redirect_if_unauthenticated, validate_user_permissions
-from goosebit.models import Firmware, Rollout
+from goosebit.models import Rollout, Software
 from goosebit.permissions import Permissions
 from goosebit.settings import config
 from goosebit.ui.nav import nav
-from goosebit.updates import create_firmware_update
+from goosebit.updates import create_software_update
 
 from . import bff
 from .templates import templates
@@ -44,17 +44,17 @@ async def devices_ui(request: Request):
 
 
 @router.get(
-    "/firmware",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.READ])],
+    "/software",
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.SOFTWARE.READ])],
 )
-@nav.route("Firmware", permissions=Permissions.FIRMWARE.READ)
-async def firmware_ui(request: Request):
-    return templates.TemplateResponse(request, "firmware.html.jinja", context={"title": "Firmware"})
+@nav.route("Software", permissions=Permissions.SOFTWARE.READ)
+async def software_ui(request: Request):
+    return templates.TemplateResponse(request, "software.html.jinja", context={"title": "Software"})
 
 
 @router.post(
     "/upload/local",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.SOFTWARE.WRITE])],
 )
 async def upload_update_local(
     request: Request,
@@ -76,25 +76,25 @@ async def upload_update_local(
 
     if done:
         try:
-            await create_firmware_update(file.absolute().as_uri(), temp_file)
+            await create_software_update(file.absolute().as_uri(), temp_file)
         finally:
             temp_file.unlink(missing_ok=True)
 
 
 @router.post(
     "/upload/remote",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.FIRMWARE.WRITE])],
+    dependencies=[Security(validate_user_permissions, scopes=[Permissions.SOFTWARE.WRITE])],
 )
 async def upload_update_remote(request: Request, url: str = Form(...)):
-    firmware = await Firmware.get_or_none(uri=url)
-    if firmware is not None:
-        rollout_count = await Rollout.filter(firmware=firmware).count()
+    software = await Software.get_or_none(uri=url)
+    if software is not None:
+        rollout_count = await Rollout.filter(software=software).count()
         if rollout_count == 0:
-            await firmware.delete()
+            await software.delete()
         else:
-            raise HTTPException(409, "Firmware with same URL already exists and is referenced by rollout")
+            raise HTTPException(409, "Software with same URL already exists and is referenced by rollout")
 
-    await create_firmware_update(url, None)
+    await create_software_update(url, None)
 
 
 @router.get(
