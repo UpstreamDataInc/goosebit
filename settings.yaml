@@ -34,7 +34,6 @@ users:
 
 ## Internal settings that usually don't need to be modified
 poll_time_registration: 00:00:10
-tenant: DEFAULT
 metrics:
   prometheus:
     enable: false

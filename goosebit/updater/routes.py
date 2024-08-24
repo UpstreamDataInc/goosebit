@@ -1,18 +1,10 @@
 import time
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.requests import Request
-
-from goosebit.settings import config
 
 from . import controller
 from .manager import get_update_manager
-
-
-async def verify_tenant(tenant: str):
-    if not tenant == config.tenant:
-        raise HTTPException(404)
-    return tenant
 
 
 async def log_last_connection(request: Request, dev_id: str):
@@ -22,8 +14,8 @@ async def log_last_connection(request: Request, dev_id: str):
 
 
 router = APIRouter(
-    prefix="/{tenant}",
-    dependencies=[Depends(verify_tenant), Depends(log_last_connection)],
+    prefix="/ddi",
+    dependencies=[Depends(log_last_connection)],
     tags=["ddi"],
 )
 router.include_router(controller.router)

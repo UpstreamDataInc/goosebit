@@ -45,8 +45,6 @@ class GooseBitSettings(BaseSettings):
 
     artifacts_dir: Path = BASE_DIR.joinpath("artifacts")
 
-    tenant: str = "DEFAULT"
-
     poll_time_default: str = "00:01:00"
     poll_time_updating: str = "00:00:05"
     poll_time_registration: str = "00:00:10"
