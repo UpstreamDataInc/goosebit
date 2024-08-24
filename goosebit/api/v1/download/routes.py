@@ -2,21 +2,21 @@ from fastapi import APIRouter, HTTPException
 from fastapi.requests import Request
 from fastapi.responses import FileResponse, RedirectResponse
 
-from goosebit.models import Firmware
+from goosebit.models import Software
 
 router = APIRouter(prefix="/download", tags=["download"])
 
 
 @router.get("/{file_id}")
 async def download_file(_: Request, file_id: int):
-    firmware = await Firmware.get_or_none(id=file_id)
-    if firmware is None:
+    software = await Software.get_or_none(id=file_id)
+    if software is None:
         raise HTTPException(404)
-    if firmware.local:
+    if software.local:
         return FileResponse(
-            firmware.path,
+            software.path,
             media_type="application/octet-stream",
-            filename=firmware.path.name,
+            filename=software.path.name,
         )
     else:
-        return RedirectResponse(url=firmware.uri)
+        return RedirectResponse(url=software.uri)

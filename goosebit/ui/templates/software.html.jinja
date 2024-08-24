@@ -3,7 +3,7 @@
     <div class="container-fluid">
         <div class="row p-2 pt-4 g-4 d-flex justify-content-center">
             <div class="col">
-                <table id="firmware-table" class="table table-hover">
+                <table id="software-table" class="table table-hover">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -13,13 +13,13 @@
                             <th>Size</th>
                         </tr>
                     </thead>
-                    <tbody id="firmware-list">
+                    <tbody id="software-list">
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-    {% if "firmware.write" in request.user.permissions %}
+    {% if "software.write" in request.user.permissions %}
         <div class="modal modal-lg fade" id="upload-modal">
             <div class="modal-dialog modal-dialog-centered modal-xl">
                 <div class="modal-content">
@@ -114,5 +114,5 @@
         </div>
     {% endif %}
     <script src="{{ url_for('static', path='js/util.js') }}"></script>
-    <script src="{{ url_for('static', path='js/firmware.js') }}"></script>
+    <script src="{{ url_for('static', path='js/software.js') }}"></script>
 {% endblock content %}

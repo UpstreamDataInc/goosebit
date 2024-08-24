@@ -23,12 +23,12 @@ async def devices_get(request: Request) -> BFFDeviceResponse:
             Q(uuid__icontains=search_value)
             | Q(name__icontains=search_value)
             | Q(feed__icontains=search_value)
-            | Q(fw_version__icontains=search_value)
+            | Q(sw_version__icontains=search_value)
             | Q(update_mode=int(UpdateModeEnum.from_str(search_value)))
             | Q(last_state=int(UpdateStateEnum.from_str(search_value)))
         )
 
-    query = Device.all().prefetch_related("assigned_firmware", "hardware")
+    query = Device.all().prefetch_related("assigned_software", "hardware")
     total_records = await Device.all().count()
 
     return await BFFDeviceResponse.convert(request, query, search_filter, total_records)

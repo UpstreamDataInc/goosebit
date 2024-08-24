@@ -66,7 +66,7 @@ async def db():
 
 @pytest_asyncio.fixture(scope="function")
 async def test_data(db):
-    from goosebit.models import Device, Firmware, Hardware, Rollout
+    from goosebit.models import Device, Hardware, Rollout, Software
 
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -79,41 +79,41 @@ async def test_data(db):
             hardware=compatibility,
         )
 
-        temp_file_path = os.path.join(temp_dir, "firmware")
+        temp_file_path = os.path.join(temp_dir, "software")
         with open(temp_file_path, "w") as temp_file:
             temp_file.write("Fake SWUpdate image")
         uri = Path(temp_file_path).as_uri()
 
-        firmware_beta = await Firmware.create(
+        software_beta = await Software.create(
             version="1.0.0-beta2+build20",
             hash="dummy2",
             size=800,
             uri=uri,
         )
-        await firmware_beta.compatibility.add(compatibility)
+        await software_beta.compatibility.add(compatibility)
 
-        firmware_release = await Firmware.create(
+        software_release = await Software.create(
             version="1.0.0",
             hash="dummy",
             size=1200,
             uri=uri,
         )
-        await firmware_release.compatibility.add(compatibility)
+        await software_release.compatibility.add(compatibility)
 
-        firmware_rc = await Firmware.create(
+        software_rc = await Software.create(
             version="1.0.0-rc2+build77",
             hash="dummy2",
             size=800,
             uri=uri,
         )
-        await firmware_rc.compatibility.add(compatibility)
+        await software_rc.compatibility.add(compatibility)
 
-        rollout_default = await Rollout.create(firmware_id=firmware_release.id)
+        rollout_default = await Rollout.create(software_id=software_release.id)
 
         yield dict(
             device_rollout=device_rollout,
-            firmware_release=firmware_release,
-            firmware_rc=firmware_rc,
-            firmware_beta=firmware_beta,
+            software_release=software_release,
+            software_rc=software_rc,
+            software_beta=software_beta,
             rollout_default=rollout_default,
         )

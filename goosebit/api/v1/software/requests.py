@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class FirmwareDeleteRequest(BaseModel):
+class SoftwareDeleteRequest(BaseModel):
     files: list[int]

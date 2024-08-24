@@ -20,15 +20,15 @@ function secondsToRecentDate(t) {
     return s + (s === 1 ? " second" : " seconds");
 }
 
-async function updateFirmwareSelection(addSpecialMode = false) {
+async function updateSoftwareSelection(addSpecialMode = false) {
     try {
-        const response = await fetch("/api/v1/firmware");
+        const response = await fetch("/api/v1/software");
         if (!response.ok) {
-            console.error("Retrieving firmwares failed.");
+            console.error("Retrieving software list failed.");
             return;
         }
-        const data = (await response.json()).firmware;
-        const selectElem = document.getElementById("selected-fw");
+        const data = (await response.json()).software;
+        const selectElem = document.getElementById("selected-sw");
 
         if (addSpecialMode) {
             let optionElem = document.createElement("option");

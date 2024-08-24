@@ -55,11 +55,11 @@ class Tag(Model):
 class Device(Model):
     uuid = fields.CharField(max_length=255, primary_key=True)
     name = fields.CharField(max_length=255, null=True)
-    assigned_firmware = fields.ForeignKeyField(
-        "models.Firmware", related_name="assigned_devices", null=True, on_delete=fields.SET_NULL
+    assigned_software = fields.ForeignKeyField(
+        "models.Software", related_name="assigned_devices", null=True, on_delete=fields.SET_NULL
     )
     force_update = fields.BooleanField(default=False)
-    fw_version = fields.CharField(max_length=255, null=True)
+    sw_version = fields.CharField(max_length=255, null=True)
     hardware = fields.ForeignKeyField("models.Hardware", related_name="devices")
     feed = fields.CharField(max_length=255, default="default")
     update_mode = fields.IntEnumField(UpdateModeEnum, default=UpdateModeEnum.ROLLOUT)
@@ -96,7 +96,7 @@ class Rollout(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     name = fields.CharField(max_length=255, null=True)
     feed = fields.CharField(max_length=255, default="default")
-    firmware = fields.ForeignKeyField("models.Firmware", related_name="rollouts")
+    software = fields.ForeignKeyField("models.Software", related_name="rollouts")
     paused = fields.BooleanField(default=False)
     success_count = fields.IntField(default=0)
     failure_count = fields.IntField(default=0)
@@ -108,7 +108,7 @@ class Hardware(Model):
     revision = fields.CharField(max_length=255)
 
 
-class Firmware(Model):
+class Software(Model):
     id = fields.IntField(primary_key=True)
     uri = fields.CharField(max_length=255)
     size = fields.BigIntField()
@@ -116,8 +116,8 @@ class Firmware(Model):
     version = fields.CharField(max_length=255)
     compatibility = fields.ManyToManyField(
         "models.Hardware",
-        related_name="firmwares",
-        through="firmware_compatibility",
+        related_name="softwares",
+        through="software_compatibility",
     )
 
     @classmethod

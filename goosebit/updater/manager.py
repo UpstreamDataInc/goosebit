@@ -12,9 +12,9 @@ from aiocache import cached, caches
 
 from goosebit.models import (
     Device,
-    Firmware,
     Hardware,
     Rollout,
+    Software,
     UpdateModeEnum,
     UpdateStateEnum,
 )
@@ -50,7 +50,7 @@ class UpdateManager(ABC):
     async def update_force_update(self, force_update: bool) -> None:
         return
 
-    async def update_fw_version(self, version: str) -> None:
+    async def update_sw_version(self, version: str) -> None:
         return
 
     async def update_hardware(self, hardware: Hardware) -> None:
@@ -62,7 +62,7 @@ class UpdateManager(ABC):
     async def update_last_connection(self, last_seen: int, last_ip: str) -> None:
         return
 
-    async def update_update(self, update_mode: UpdateModeEnum, firmware: Firmware | None):
+    async def update_update(self, update_mode: UpdateModeEnum, software: Software | None):
         return
 
     async def update_name(self, name: str):
@@ -126,7 +126,7 @@ class UpdateManager(ABC):
             await cb(log_data)
 
     @abstractmethod
-    async def get_update(self) -> tuple[HandlingType, Firmware]: ...
+    async def get_update(self) -> tuple[HandlingType, Software]: ...
 
     @abstractmethod
     async def update_log(self, log_data: str) -> None: ...
@@ -137,12 +137,12 @@ class UnknownUpdateManager(UpdateManager):
         super().__init__(dev_id)
         self.poll_time = config.poll_time_updating
 
-    async def _get_firmware(self) -> Firmware:
-        return await Firmware.latest(await self.get_device())
+    async def _get_software(self) -> Software:
+        return await Software.latest(await self.get_device())
 
-    async def get_update(self) -> tuple[HandlingType, Firmware]:
-        firmware = await self._get_firmware()
-        return HandlingType.FORCED, firmware
+    async def get_update(self) -> tuple[HandlingType, Software]:
+        software = await self._get_software()
+        return HandlingType.FORCED, software
 
     async def update_log(self, log_data: str) -> None:
         return
@@ -170,10 +170,10 @@ class DeviceUpdateManager(UpdateManager):
         device.force_update = force_update
         await self.save_device(device, update_fields=["force_update"])
 
-    async def update_fw_version(self, version: str) -> None:
+    async def update_sw_version(self, version: str) -> None:
         device = await self.get_device()
-        device.fw_version = version
-        await self.save_device(device, update_fields=["fw_version"])
+        device.sw_version = version
+        await self.save_device(device, update_fields=["sw_version"])
 
     async def update_hardware(self, hardware: Hardware) -> None:
         device = await self.get_device()
@@ -195,11 +195,11 @@ class DeviceUpdateManager(UpdateManager):
             device.last_ip = last_ip
             await self.save_device(device, update_fields=["last_seen", "last_ip"])
 
-    async def update_update(self, update_mode: UpdateModeEnum, firmware: Firmware | None):
+    async def update_update(self, update_mode: UpdateModeEnum, software: Software | None):
         device = await self.get_device()
-        device.assigned_firmware = firmware
+        device.assigned_software = software
         device.update_mode = update_mode
-        await self.save_device(device, update_fields=["assigned_firmware_id", "update_mode"])
+        await self.save_device(device, update_fields=["assigned_software_id", "update_mode"])
 
     async def update_name(self, name: str):
         device = await self.get_device()
@@ -214,7 +214,7 @@ class DeviceUpdateManager(UpdateManager):
     async def update_config_data(self, **kwargs):
         model = kwargs.get("hw_boardname") or "default"
         revision = kwargs.get("hw_revision") or "default"
-        fw_version = kwargs.get("sw_version")
+        sw_version = kwargs.get("sw_version")
 
         hardware = (await Hardware.get_or_create(model=model, revision=revision))[0]
         device = await self.get_device()
@@ -228,12 +228,12 @@ class DeviceUpdateManager(UpdateManager):
             device.last_state = UpdateStateEnum.REGISTERED
             modified = True
 
-        if device.fw_version != fw_version:
-            device.fw_version = fw_version
+        if device.sw_version != sw_version:
+            device.sw_version = sw_version
             modified = True
 
         if modified:
-            await self.save_device(device, update_fields=["hardware_id", "last_state", "fw_version"])
+            await self.save_device(device, update_fields=["hardware_id", "last_state", "sw_version"])
 
     async def update_log_complete(self, log_complete: bool):
         device = await self.get_device()
@@ -248,43 +248,43 @@ class DeviceUpdateManager(UpdateManager):
                 await Rollout.filter(
                     feed=device.feed,
                     paused=False,
-                    firmware__compatibility__devices__uuid=device.uuid,
+                    software__compatibility__devices__uuid=device.uuid,
                 )
                 .order_by("-created_at")
                 .first()
-                .prefetch_related("firmware")
+                .prefetch_related("software")
             )
 
         return None
 
-    async def _get_firmware(self) -> Firmware | None:
+    async def _get_software(self) -> Software | None:
         device = await self.get_device()
 
         if device.update_mode == UpdateModeEnum.ROLLOUT:
             rollout = await self.get_rollout()
             if not rollout or rollout.paused:
                 return None
-            await rollout.fetch_related("firmware")
-            return rollout.firmware
+            await rollout.fetch_related("software")
+            return rollout.software
         if device.update_mode == UpdateModeEnum.ASSIGNED:
-            await device.fetch_related("assigned_firmware")
-            return device.assigned_firmware
+            await device.fetch_related("assigned_software")
+            return device.assigned_software
 
         if device.update_mode == UpdateModeEnum.LATEST:
-            return await Firmware.latest(device)
+            return await Software.latest(device)
 
         assert device.update_mode == UpdateModeEnum.PINNED
         return None
 
-    async def get_update(self) -> tuple[HandlingType, Firmware]:
+    async def get_update(self) -> tuple[HandlingType, Software]:
         device = await self.get_device()
-        firmware = await self._get_firmware()
+        software = await self._get_software()
 
-        if firmware is None:
+        if software is None:
             handling_type = HandlingType.SKIP
             self.poll_time = config.poll_time_default
 
-        elif firmware.version == device.fw_version and not device.force_update:
+        elif software.version == device.sw_version and not device.force_update:
             handling_type = HandlingType.SKIP
             self.poll_time = config.poll_time_default
 
@@ -300,7 +300,7 @@ class DeviceUpdateManager(UpdateManager):
                 await self.update_log_complete(False)
                 await self.clear_log()
 
-        return handling_type, firmware
+        return handling_type, software
 
     async def update_log(self, log_data: str) -> None:
         if log_data is None:

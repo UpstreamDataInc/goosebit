@@ -1,7 +1,7 @@
 from aerich import Command
 from tortoise import Tortoise, run_async
 
-from goosebit.models import Firmware
+from goosebit.models import Software
 from goosebit.settings import DB_MIGRATIONS_LOC, config
 
 TORTOISE_CONF = {
@@ -23,10 +23,10 @@ async def init():
     await command.migrate()
     await command.upgrade(run_in_transaction=True)
     await Tortoise.generate_schemas(safe=True)
-    for firmware in await Firmware.all():
-        if firmware.local and not firmware.path.exists():
+    for software in await Software.all():
+        if software.local and not software.path.exists():
             # delete it
-            await firmware.delete()
+            await software.delete()
 
 
 async def close():

@@ -18,10 +18,10 @@ class PermissionsBase(str, Enum):
         return self.value
 
 
-class FirmwarePermissions(PermissionsBase):
-    READ = "firmware.read"
-    WRITE = "firmware.write"
-    DELETE = "firmware.delete"
+class SoftwarePermissions(PermissionsBase):
+    READ = "software.read"
+    WRITE = "software.write"
+    DELETE = "software.delete"
 
 
 class DevicePermissions(PermissionsBase):
@@ -42,14 +42,14 @@ class HomePermissions(PermissionsBase):
 
 class Permissions(BaseModel):
     HOME: ClassVar = HomePermissions
-    FIRMWARE: ClassVar = FirmwarePermissions
+    SOFTWARE: ClassVar = SoftwarePermissions
     DEVICE: ClassVar = DevicePermissions
     ROLLOUT: ClassVar = RolloutPermissions
 
     @classmethod
     def full(cls) -> set[T]:
         all_items = set()
-        for item in [cls.HOME, cls.FIRMWARE, cls.DEVICE, cls.ROLLOUT]:
+        for item in [cls.HOME, cls.SOFTWARE, cls.DEVICE, cls.ROLLOUT]:
             all_items.update(item.full())
         return all_items
 
@@ -58,8 +58,8 @@ class Permissions(BaseModel):
         if permission == "*":
             return cls.full()
         area, action = permission.upper().split(".")
-        if area == "FIRMWARE":
-            return {FirmwarePermissions[action]}
+        if area == "SOFTWARE":
+            return {SoftwarePermissions[action]}
         if area == "DEVICE":
             return {DevicePermissions[action]}
         if area == "ROLLOUT":
@@ -71,7 +71,7 @@ class Permissions(BaseModel):
 ADMIN = Permissions.full()
 MONITORING = [
     *Permissions.HOME.full(),
-    *Permissions.FIRMWARE.full(),
+    *Permissions.SOFTWARE.full(),
     *Permissions.DEVICE.full(),
 ]
 READONLY = [Permissions.HOME.READ]
