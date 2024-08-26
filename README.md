@@ -6,55 +6,68 @@
 
 A simplistic, opinionated remote update server implementing hawkBit™'s [DDI API](https://eclipse.dev/hawkbit/apis/ddi_api/).
 
-## Setup
+## Quick Start
 
-To set up, install the dependencies in `pyproject.toml` with `poetry install`. Then you can run gooseBit by running `main.py`.
+### Installation
 
-## Initial Startup
+1. Install dependencies using [Poetry](https://python-poetry.org/):
+    ```bash
+    poetry install
+    ```
+2. Launch gooseBit:
+    ```bash
+    python main.py
+    ```
 
-The first time you start gooseBit, you should change the default username and password inside `settings.yaml`.
-The default login credentials for testing are `admin@goosebit.local`, `admin`.
+### Initial Configuration
+
+Before running gooseBit for the first time, update the default credentials in `settings.yaml`. The default login for testing purposes is:
+
+-   **Username:** `admin@goosebit.local`
+-   **Password:** `admin`
 
 ## Assumptions
 
--   [SWUpdate](https://swupdate.org) used on device side.
+-   Devices use [SWUpdate](https://swupdate.org) for managing software updates.
 
-## Current Feature Set
+## Features
 
-### Software repository
+### Device Registry
 
-Uploading software images through frontend. All files should follow the format `{model}_{revision}_{version}`, where
-`version` is either a semantic version or a datetime version in the format `YYYYMMDD-HHmmSS`.
+When a device connects to gooseBit for the first time, it is automatically added to the device registry. The server will then request the device's configuration data, including:
 
-### Automatic device registration
+-   `hw_model` and `hw_revision`: Used to match compatible software.
+-   `sw_version`: Indicates the currently installed software version.
 
-First time a new device connects, its configuration data is requested. `hw_model` and `hw_revision` are captured from
-the configuration data (both fall back to `default` if not provided) which allows to distinguish different device
-types and their revisions.
+The registry tracks each device's status, including the last online timestamp, installed software version, update state, and more.
 
-### Automatically update device to newest software
+### Software Repository
 
-Once a device is registered it will get the newest available software from the repository based on model and revision.
+Software packages (`*.swu` files) can be hosted directly on the gooseBit server or on an external server. gooseBit parses the software metadata to determine compatibility with specific hardware models and revisions.
 
-### Manually update device to specific software
+### Device Update Modes
 
-Frontend allows to assign specific software to be rolled out.
+Devices can be configured with different update modes. The default mode is `Rollout`.
 
-### Software rollout
+#### 1. Manual Update to Specified Software
 
-Rollouts allow a fine-grained assignment of software to devices. The reported device model and revision is combined
-with the manually set feed value on a device to determine a matching rollout.
+Assign specific software to a device manually. Once installed, no further updates will be triggered.
 
-The feed is meant to model either different environments (like: dev, qa, live) or update channels (like. candidate,
-fast, stable).
+#### 2. Automatic Update to Latest Software
 
-### Pause updates
+Automatically updates the device to the latest compatible software, based on the reported `hw_model` and `hw_revision`. Note: versions are interpreted as [SemVer](https://semver.org) versions.
 
-Device can be pinned to its current software.
+#### 3. Software Rollout
 
-### Realtime update logs
+Rollouts target all devices with a specified "feed" value, ensuring that the assigned software is installed on all matching devices. Rollouts also track success and error rates, with future plans for automatic aborts. If multiple rollouts exist for the same feed, the most recent rollout takes precedence.
 
-While an update is running, the update logs are captured and visualized in the frontend.
+### Pause Updates
+
+Devices can be pinned to their current software version, preventing any updates from being applied.
+
+### Real-time Update Logs
+
+While updates are in progress, gooseBit captures real-time logs, which are accessible through the device repository.
 
 ## Development
 
