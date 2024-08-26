@@ -106,13 +106,30 @@ def validate_user_permissions(
     security: SecurityScopes,
     user: User = Depends(get_current_user),
 ) -> HTTPConnection:
-    if security.scopes is None:
-        return connection
-    for scope in security.scopes:
-        if scope not in user.permissions:
-            logger.warning(f"User {user.username} does not have permission {scope}")
-            raise HTTPException(
-                status_code=403,
-                detail="Not enough permissions",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+    if not compare_permissions(security.scopes, user.permissions):
+        logger.warning(f"{user.username} does not have sufficient permissions")
+        raise HTTPException(
+            status_code=403,
+            detail="Not enough permissions",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return connection
+
+
+def compare_permissions(scopes: list[str] | None, permissions: set[str]) -> bool:
+    if scopes is None:
+        return True
+    for scope in scopes:
+        if not any([compare_permission(scope, permission) for permission in permissions]):
+            return False
+    return True
+
+
+def compare_permission(scope: str, permission: str):
+    split_scope = scope.split(".")
+    for idx, permission in enumerate(permission.split(".")):
+        if permission == "*":
+            continue
+        if not split_scope[idx] == permission:
+            return False
+    return True

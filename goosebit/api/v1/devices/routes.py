@@ -6,7 +6,6 @@ from fastapi.requests import Request
 from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.models import Device, Software, UpdateModeEnum
-from goosebit.permissions import Permissions
 from goosebit.updater.manager import delete_devices, get_update_manager
 
 from . import device
@@ -18,7 +17,7 @@ router = APIRouter(prefix="/devices", tags=["devices"])
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
+    dependencies=[Security(validate_user_permissions, scopes=["home.read"])],
 )
 async def devices_get(_: Request) -> DevicesResponse:
     return await DevicesResponse.convert(await Device.all().prefetch_related("assigned_software", "hardware"))
@@ -26,7 +25,7 @@ async def devices_get(_: Request) -> DevicesResponse:
 
 @router.patch(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.WRITE])],
+    dependencies=[Security(validate_user_permissions, scopes=["device.write"])],
 )
 async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusResponse:
     for uuid in config.devices:
@@ -52,7 +51,7 @@ async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusRespon
 
 @router.delete(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.DEVICE.DELETE])],
+    dependencies=[Security(validate_user_permissions, scopes=["device.delete"])],
 )
 async def devices_delete(_: Request, config: DevicesDeleteRequest) -> StatusResponse:
     await delete_devices(config.devices)

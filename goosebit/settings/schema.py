@@ -1,6 +1,6 @@
 import secrets
 from pathlib import Path
-from typing import Annotated, Iterable
+from typing import Annotated
 
 from joserfc.rfc7518.oct_key import OctKey
 from pydantic import BaseModel, BeforeValidator, Field
@@ -11,22 +11,13 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 
-from goosebit.permissions import Permissions, PermissionsBase
-
 from .const import BASE_DIR, LOGGING_DEFAULT, PWD_CXT
-
-
-def parse_permissions(items: Iterable[str]):
-    permissions = set()
-    for p in items:
-        permissions.update(Permissions.from_str(p))
-    return permissions
 
 
 class User(BaseModel):
     username: str
     hashed_pwd: Annotated[str, BeforeValidator(PWD_CXT.hash)] = Field(validation_alias="password")
-    permissions: Annotated[set[PermissionsBase], BeforeValidator(parse_permissions)]
+    permissions: set[str]
 
     def get_json_permissions(self):
         return [str(p) for p in self.permissions]

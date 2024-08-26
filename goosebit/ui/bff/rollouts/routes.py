@@ -4,7 +4,6 @@ from tortoise.expressions import Q
 
 from goosebit.auth import validate_user_permissions
 from goosebit.models import Rollout
-from goosebit.permissions import Permissions
 
 from .responses import BFFRolloutsResponse
 
@@ -13,7 +12,7 @@ router = APIRouter(prefix="/rollouts")
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])],
+    dependencies=[Security(validate_user_permissions, scopes=["rollout.read"])],
 )
 async def rollouts_get(request: Request) -> BFFRolloutsResponse:
     def search_filter(search_value):

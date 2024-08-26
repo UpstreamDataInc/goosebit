@@ -4,7 +4,6 @@ from fastapi.requests import Request
 from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.models import Rollout, Software
-from goosebit.permissions import Permissions
 
 from .requests import SoftwareDeleteRequest
 from .responses import SoftwareResponse
@@ -14,7 +13,7 @@ router = APIRouter(prefix="/software", tags=["software"])
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.SOFTWARE.READ])],
+    dependencies=[Security(validate_user_permissions, scopes=["software.read"])],
 )
 async def software_get(_: Request) -> SoftwareResponse:
     return await SoftwareResponse.convert(await Software.all().prefetch_related("compatibility"))
@@ -22,7 +21,7 @@ async def software_get(_: Request) -> SoftwareResponse:
 
 @router.delete(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.SOFTWARE.DELETE])],
+    dependencies=[Security(validate_user_permissions, scopes=["software.delete"])],
 )
 async def software_delete(_: Request, config: SoftwareDeleteRequest) -> StatusResponse:
     success = False

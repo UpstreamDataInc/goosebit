@@ -6,7 +6,6 @@ from tortoise.expressions import Q
 
 from goosebit.auth import validate_user_permissions
 from goosebit.models import Software
-from goosebit.permissions import Permissions
 from goosebit.ui.bff.software.responses import BFFSoftwareResponse
 
 router = APIRouter(prefix="/software")
@@ -14,7 +13,7 @@ router = APIRouter(prefix="/software")
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.SOFTWARE.READ])],
+    dependencies=[Security(validate_user_permissions, scopes=["software.read"])],
 )
 async def software_get(request: Request) -> BFFSoftwareResponse:
     def search_filter(search_value):

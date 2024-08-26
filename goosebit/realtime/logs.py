@@ -6,7 +6,6 @@ from pydantic import BaseModel
 from websockets.exceptions import ConnectionClosed
 
 from goosebit.auth import validate_user_permissions
-from goosebit.permissions import Permissions
 from goosebit.updater.manager import get_update_manager
 
 router = APIRouter(prefix="/logs")
@@ -20,7 +19,7 @@ class RealtimeLogModel(BaseModel):
 
 @router.websocket(
     "/{dev_id}",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
+    dependencies=[Security(validate_user_permissions, scopes=["home.read"])],
 )
 async def device_logs(websocket: WebSocket, dev_id: str):
     await websocket.accept()

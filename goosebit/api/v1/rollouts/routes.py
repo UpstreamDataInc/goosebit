@@ -4,7 +4,6 @@ from fastapi.requests import Request
 from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.models import Rollout
-from goosebit.permissions import Permissions
 
 from .requests import RolloutsDeleteRequest, RolloutsPatchRequest, RolloutsPutRequest
 from .responses import RolloutsPutResponse, RolloutsResponse
@@ -14,7 +13,7 @@ router = APIRouter(prefix="/rollouts", tags=["rollouts"])
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.READ])],
+    dependencies=[Security(validate_user_permissions, scopes=["rollout.read"])],
 )
 async def rollouts_get(_: Request) -> RolloutsResponse:
     return await RolloutsResponse.convert(await Rollout.all().prefetch_related("software"))
@@ -22,7 +21,7 @@ async def rollouts_get(_: Request) -> RolloutsResponse:
 
 @router.post(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.WRITE])],
+    dependencies=[Security(validate_user_permissions, scopes=["rollout.write"])],
 )
 async def rollouts_put(_: Request, rollout: RolloutsPutRequest) -> RolloutsPutResponse:
     rollout = await Rollout.create(
@@ -35,7 +34,7 @@ async def rollouts_put(_: Request, rollout: RolloutsPutRequest) -> RolloutsPutRe
 
 @router.patch(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.WRITE])],
+    dependencies=[Security(validate_user_permissions, scopes=["rollout.write"])],
 )
 async def rollouts_patch(_: Request, rollouts: RolloutsPatchRequest) -> StatusResponse:
     await Rollout.filter(id__in=rollouts.ids).update(paused=rollouts.paused)
@@ -44,7 +43,7 @@ async def rollouts_patch(_: Request, rollouts: RolloutsPatchRequest) -> StatusRe
 
 @router.delete(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.DELETE])],
+    dependencies=[Security(validate_user_permissions, scopes=["rollout.delete"])],
 )
 async def rollouts_delete(_: Request, rollouts: RolloutsDeleteRequest) -> StatusResponse:
     await Rollout.filter(id__in=rollouts.ids).delete()
