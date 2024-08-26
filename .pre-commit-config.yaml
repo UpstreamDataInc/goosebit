@@ -9,7 +9,7 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
   - repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
       - id: black
   - repo: https://github.com/pycqa/isort
@@ -27,7 +27,7 @@ repos:
         pass_filenames: false
         always_run: true
   - repo: https://github.com/pycqa/flake8
-    rev: 7.1.0 # You can specify the version of Flake8 you want to use
+    rev: 7.1.1 # You can specify the version of Flake8 you want to use
     hooks:
       - id: flake8
         additional_dependencies: []
