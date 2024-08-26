@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
@@ -33,7 +34,8 @@ app = FastAPI(
         "name": "Apache 2.0",
         "identifier": "Apache-2.0",
     },
-    swagger_ui_parameters={"operationsSorter": "alpha"},
+    redoc_url=None,
+    docs_url=None,
     openapi_tags=[
         {
             "name": "login",
@@ -82,3 +84,13 @@ async def logout(request: Request):
     resp = RedirectResponse(request.url_for("login_get"), status_code=302)
     resp.delete_cookie(key="session_id")
     return resp
+
+
+@app.get("/docs")
+async def swagger_docs(request: Request):
+    return get_swagger_ui_html(
+        title="gooseBit docs",
+        openapi_url="/openapi.json",
+        swagger_favicon_url=str(request.url_for("static", path="/favicon.svg")),
+        swagger_ui_parameters={"operationsSorter": "alpha"},
+    )
