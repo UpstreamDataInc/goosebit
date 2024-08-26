@@ -63,6 +63,7 @@ async def upload_update_local(
     filename: str = Form(...),
 ):
     file = config.artifacts_dir.joinpath(filename)
+    config.artifacts_dir.mkdir(parents=True, exist_ok=True)
 
     temp_file = file.with_suffix(".tmp")
     if init:
