@@ -19,7 +19,7 @@
             </div>
         </div>
     </div>
-    {% if "software.write" in request.user.permissions %}
+    {% if compare_permissions(["software.write"], request.user.permissions) %}
         <div class="modal modal-lg fade" id="upload-modal">
             <div class="modal-dialog modal-dialog-centered modal-xl">
                 <div class="modal-content">
@@ -108,6 +108,27 @@
                                 </form>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="modal modal-lg fade" id="upload-modal">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        Unavailable
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning m-0" role="alert">You do not have permission to add software files.</div>
+                        <form id="upload-form">
+                        </form>
+                        <form id="url-form">
+                        </form>
                     </div>
                 </div>
             </div>
