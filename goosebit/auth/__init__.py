@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Annotated
+from typing import Annotated, Iterable
 
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends, HTTPException
@@ -116,16 +116,20 @@ def validate_user_permissions(
     return connection
 
 
-def compare_permissions(scopes: list[str] | None, permissions: set[str]) -> bool:
+def compare_permissions(scopes: Iterable[str] | None, permissions: Iterable[str]) -> bool:
+    deny_permissions = [p.lstrip("!") for p in permissions if p.startswith("!")]
+    allow_permissions = [p for p in permissions if not p.startswith("!")]
     if scopes is None:
         return True
     for scope in scopes:
-        if not any([compare_permission(scope, permission) for permission in permissions]):
+        if any([compare_permission(scope, permission) for permission in deny_permissions]):
+            return False
+        if not any([compare_permission(scope, permission) for permission in allow_permissions]):
             return False
     return True
 
 
-def compare_permission(scope: str, permission: str):
+def compare_permission(scope: str, permission: str) -> bool:
     split_scope = scope.split(".")
     for idx, permission in enumerate(permission.split(".")):
         if permission == "*":
