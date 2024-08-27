@@ -42,7 +42,7 @@ async function sendFileChunks(file) {
             formData.append("done", "false");
         }
 
-        const response = await fetch("/ui/upload/local", {
+        const response = await fetch("/ui/bff/software", {
             method: "POST",
             body: formData,
         });
@@ -86,7 +86,7 @@ async function sendFileUrl(url) {
     const formData = new FormData();
     formData.append("url", url);
 
-    const response = await fetch("/ui/upload/remote", {
+    const response = await fetch("/ui/bff/software", {
         method: "POST",
         body: formData,
     });
@@ -264,9 +264,9 @@ function updateBtnState() {
     }
 }
 
-async function deleteSoftware(files) {
+async function deleteSoftware(software_ids) {
     try {
-        await delete_request("/api/v1/software", files);
+        await delete_request("/ui/bff/software", { software_ids });
         updateSoftwareList();
     } catch (error) {
         console.error("Deleting software list failed:", error);
@@ -274,5 +274,5 @@ async function deleteSoftware(files) {
 }
 
 function downloadSoftware(file) {
-    window.location.href = `/api/v1/download/${file}`;
+    window.location.href = `/ui/bff/download/${file}`;
 }

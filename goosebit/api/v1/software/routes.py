@@ -1,9 +1,13 @@
-from fastapi import APIRouter, HTTPException, Security
+import aiofiles
+from fastapi import APIRouter, HTTPException, Security, UploadFile
+from fastapi.params import File, Form
 from fastapi.requests import Request
 
 from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Rollout, Software
+from goosebit.settings import config
+from goosebit.updates import create_software_update
 
 from .requests import SoftwareDeleteRequest
 from .responses import SoftwareResponse
@@ -23,10 +27,10 @@ async def software_get(_: Request) -> SoftwareResponse:
     "",
     dependencies=[Security(validate_user_permissions, scopes=["software.delete"])],
 )
-async def software_delete(_: Request, config: SoftwareDeleteRequest) -> StatusResponse:
+async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> StatusResponse:
     success = False
-    for f_id in config.root:
-        software = await Software.get_or_none(id=f_id)
+    for software_id in delete_req.software_ids:
+        software = await Software.get_or_none(id=software_id)
 
         if software is None:
             continue
@@ -43,3 +47,27 @@ async def software_delete(_: Request, config: SoftwareDeleteRequest) -> StatusRe
         await software.delete()
         success = True
     return StatusResponse(success=success)
+
+
+@router.post(
+    "",
+    dependencies=[Security(validate_user_permissions, scopes=["software.write"])],
+)
+async def post_update(_: Request, file: UploadFile = File(None), url: str = Form(None)):
+    if url is not None:
+        # remote file
+        software = await Software.get_or_none(uri=url)
+        if software is not None:
+            rollout_count = await Rollout.filter(software=software).count()
+            if rollout_count == 0:
+                await software.delete()
+            else:
+                raise HTTPException(409, "Software with same URL already exists and is referenced by rollout")
+
+        await create_software_update(url, None)
+    else:
+        # local file
+        software_file = config.artifacts_dir.joinpath(file.filename)
+
+        async with aiofiles.open(software_file, mode="ab") as f:
+            await f.write(await file.read())
