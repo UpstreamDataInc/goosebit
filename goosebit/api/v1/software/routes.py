@@ -1,6 +1,5 @@
 import aiofiles
-from fastapi import APIRouter, HTTPException, Security, UploadFile
-from fastapi.params import File, Form
+from fastapi import APIRouter, File, Form, HTTPException, Security, UploadFile
 from fastapi.requests import Request
 
 from goosebit.api.responses import StatusResponse
