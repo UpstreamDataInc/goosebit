@@ -178,7 +178,7 @@ async function createRollout() {
     const software_id = document.getElementById("selected-sw").value;
 
     try {
-        await post("/ui/bff/rollouts", { name, feed, software_id });
+        await post_request("/ui/bff/rollouts", { name, feed, software_id });
     } catch (error) {
         console.error("Rollout creation failed:", error);
     }
