@@ -30,7 +30,7 @@ class DeviceSchema(BaseModel):
     name: str | None
     sw_version: str | None
     sw_target_version: str | None
-    sw_assigned: str | None
+    sw_assigned: int | None
     hw_model: str
     hw_revision: str
     feed: str
