@@ -5,3 +5,22 @@ theme:
   name: material
   logo: img/goosebit-logo.svg
   favicon: img/goosebit-logo.svg
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to auto mode
+nav:
+  - Home: index.md
+  - Quick Start: quick_start.md
+  - Development: development.md
