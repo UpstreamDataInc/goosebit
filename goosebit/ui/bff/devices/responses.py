@@ -30,7 +30,7 @@ class BFFDeviceResponse(BaseModel):
             query = query.filter(search_filter(search_value))
 
         if order_column:
-            query = query.order_by(f"{"-" if order_dir == "desc" else ""}{order_column}")
+            query = query.order_by(f"{'-' if order_dir == 'desc' else ''}{order_column}")
 
         filtered_records = await query.count()
         devices = await query.offset(start).limit(length).all()
