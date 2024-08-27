@@ -43,6 +43,8 @@ class MetricsSettings(BaseModel):
 class GooseBitSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="GOOSEBIT_")
 
+    port: int = 60053  # GOOSE
+
     artifacts_dir: Path = BASE_DIR.joinpath("artifacts")
 
     poll_time_default: str = "00:01:00"
