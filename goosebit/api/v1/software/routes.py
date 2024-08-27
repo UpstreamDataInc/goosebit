@@ -26,7 +26,7 @@ async def software_get(_: Request) -> SoftwareResponse:
 )
 async def software_delete(_: Request, config: SoftwareDeleteRequest) -> StatusResponse:
     success = False
-    for f_id in config.files:
+    for f_id in config.root:
         software = await Software.get_or_none(id=f_id)
 
         if software is None:
