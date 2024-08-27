@@ -1,5 +1,8 @@
 ## Settings to adjust for each installation
 
+# Port to host the server on, default:
+# port: 60053 # GOOSE ;)
+
 # Database to be used, default:
 # db_uri: sqlite:///<project root>/db.sqlite3
 
