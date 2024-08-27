@@ -4,6 +4,7 @@ from fastapi.requests import Request
 from pydantic import BaseModel, Field
 
 from goosebit.schema.rollouts import RolloutSchema
+from goosebit.ui.bff.responses import StatusResponse
 
 
 class BFFRolloutsResponse(BaseModel):
@@ -35,3 +36,7 @@ class BFFRolloutsResponse(BaseModel):
         data = await asyncio.gather(*[RolloutSchema.convert(r) for r in rollouts])
 
         return cls(data=data, draw=draw, records_total=total_records, records_filtered=filtered_records)
+
+
+class RolloutsPutResponse(StatusResponse):
+    id: int

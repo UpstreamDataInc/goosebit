@@ -27,7 +27,7 @@ async function updateSoftwareSelection(addSpecialMode = false) {
             console.error("Retrieving software list failed.");
             return;
         }
-        const data = (await response.json()).software;
+        const data = (await response.json()).data;
         const selectElem = document.getElementById("selected-sw");
 
         if (addSpecialMode) {
