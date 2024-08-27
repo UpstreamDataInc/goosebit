@@ -11,6 +11,9 @@ on:
       - "pyproject.toml"
       - "docs/**"
 
+env:
+  SITE_URL: https://upstreamdatainc.github.io/goosebit
+
 jobs:
   publish:
     runs-on: ubuntu-latest

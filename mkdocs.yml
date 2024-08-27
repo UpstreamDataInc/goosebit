@@ -1,6 +1,7 @@
 repo_url: https://github.com/UpstreamDataInc/goosebit
 repo_name: gooseBit
 site_name: gooseBit
+site_url: !ENV SITE_URL
 theme:
   name: material
   logo: img/goosebit-logo.svg
