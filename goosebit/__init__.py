@@ -9,9 +9,10 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrumentor
 
-from goosebit import api, db, realtime, ui, updater
+from goosebit import api, realtime, ui, updater
 from goosebit.api.telemetry import metrics
 from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
+from goosebit.db import db
 from goosebit.ui.nav import nav
 from goosebit.ui.static import static
 from goosebit.ui.templates import templates

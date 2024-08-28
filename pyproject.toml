@@ -56,9 +56,9 @@ profile = "black"
 line-length = 120
 
 [tool.aerich]
-tortoise_orm = "goosebit.db.TORTOISE_CONF"
-location = "./migrations"
-src_folder = "./."
+tortoise_orm = "goosebit.db.config.TORTOISE_CONF"
+location = "goosebit/db/migrations"
+src_folder = "./goosebit"
 
 [build-system]
 requires = ["poetry-core"]

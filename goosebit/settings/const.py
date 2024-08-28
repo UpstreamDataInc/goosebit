@@ -3,7 +3,6 @@ from pathlib import Path
 from argon2 import PasswordHasher
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-DB_MIGRATIONS_LOC = BASE_DIR.joinpath("migrations")
 
 PWD_CXT = PasswordHasher()
 
