@@ -71,6 +71,20 @@ While updates are in progress, gooseBit captures real-time logs, which are acces
 
 ## Development
 
+### Database
+
+Create or upgrade database
+
+```bash
+poetry run aerich upgrade
+```
+
+After a model change create the migration
+
+```bash
+poetry run aerich migrate
+```
+
 ### Code formatting and linting
 
 Code is formatted using different tools
