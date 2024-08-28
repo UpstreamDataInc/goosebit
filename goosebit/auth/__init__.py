@@ -106,7 +106,7 @@ def validate_user_permissions(
     security: SecurityScopes,
     user: User = Depends(get_current_user),
 ) -> HTTPConnection:
-    if not compare_permissions(security.scopes, user.permissions):
+    if not check_permissions(security.scopes, user.permissions):
         logger.warning(f"{user.username} does not have sufficient permissions")
         raise HTTPException(
             status_code=403,
@@ -116,20 +116,20 @@ def validate_user_permissions(
     return connection
 
 
-def compare_permissions(scopes: Iterable[str] | None, permissions: Iterable[str]) -> bool:
+def check_permissions(scopes: Iterable[str] | None, permissions: Iterable[str]) -> bool:
     deny_permissions = [p.lstrip("!") for p in permissions if p.startswith("!")]
     allow_permissions = [p for p in permissions if not p.startswith("!")]
     if scopes is None:
         return True
     for scope in scopes:
-        if any([compare_permission(scope, permission) for permission in deny_permissions]):
+        if any([_check_permission(scope, permission) for permission in deny_permissions]):
             return False
-        if not any([compare_permission(scope, permission) for permission in allow_permissions]):
+        if not any([_check_permission(scope, permission) for permission in allow_permissions]):
             return False
     return True
 
 
-def compare_permission(scope: str, permission: str) -> bool:
+def _check_permission(scope: str, permission: str) -> bool:
     split_scope = scope.split(".")
     for idx, permission in enumerate(permission.split(".")):
         if permission == "*":
