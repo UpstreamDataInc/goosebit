@@ -6,7 +6,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, BeforeValidator, computed_field
 
-from goosebit.models import Device, UpdateModeEnum, UpdateStateEnum
+from goosebit.db.models import Device, UpdateModeEnum, UpdateStateEnum
 from goosebit.updater.manager import get_update_manager
 
 

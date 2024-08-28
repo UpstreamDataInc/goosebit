@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
 from fastapi.responses import FileResponse, RedirectResponse, Response
 
-from goosebit.models import Software, UpdateStateEnum
+from goosebit.db.models import Software, UpdateStateEnum
 from goosebit.settings import config
 from goosebit.updater.manager import HandlingType, UpdateManager, get_update_manager
 from goosebit.updates import generate_chunk

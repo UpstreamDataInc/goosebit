@@ -5,7 +5,7 @@ from fastapi.requests import Request
 from tortoise.expressions import Q
 
 from goosebit.auth import validate_user_permissions
-from goosebit.models import Software
+from goosebit.db.models import Software
 from goosebit.ui.bff.software.responses import BFFSoftwareResponse
 
 router = APIRouter(prefix="/software")

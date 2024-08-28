@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from fastapi.requests import Request
 from tortoise.expressions import Q
 
-from goosebit.models import Hardware, Software
+from goosebit.db.models import Hardware, Software
 from goosebit.updater.manager import UpdateManager
 
 from . import swdesc

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from goosebit.models import Rollout
+from goosebit.db.models import Rollout
 
 
 class RolloutSchema(BaseModel):

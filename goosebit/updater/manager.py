@@ -10,7 +10,7 @@ from typing import Callable, Optional
 
 from aiocache import cached, caches
 
-from goosebit.models import (
+from goosebit.db.models import (
     Device,
     Hardware,
     Rollout,

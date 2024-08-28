@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 
 from goosebit.auth import redirect_if_unauthenticated, validate_user_permissions
-from goosebit.models import Rollout, Software
+from goosebit.db.models import Rollout, Software
 from goosebit.settings import config
 from goosebit.ui.nav import nav
 from goosebit.updates import create_software_update
