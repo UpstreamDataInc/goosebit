@@ -36,4 +36,4 @@ jobs:
         run: poetry install --no-root --with docs
 
       - name: Deploy website
-        run: poetry run mkdocs gh-deploy --theme material
+        run: poetry run mkdocs gh-deploy --theme material --force --no-history
