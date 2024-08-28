@@ -63,7 +63,7 @@ class GooseBitSettings(BaseSettings):
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         return (
             init_settings,
-            YamlConfigSettingsSource(settings_cls, BASE_DIR.parent.joinpath("settings.yaml")),
+            YamlConfigSettingsSource(settings_cls, BASE_DIR.joinpath("settings.yaml")),
             env_settings,
             file_secret_settings,
         )
