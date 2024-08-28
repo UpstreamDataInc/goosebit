@@ -11,6 +11,9 @@ on:
       - "pyproject.toml"
       - "docs/**"
 
+env:
+  SITE_URL: https://upstreamdatainc.github.io/goosebit
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -33,4 +36,4 @@ jobs:
         run: poetry install --no-root --with docs
 
       - name: Deploy website
-        run: poetry run mkdocs gh-deploy
+        run: poetry run mkdocs gh-deploy --theme material

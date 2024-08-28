@@ -1,30 +1,11 @@
-# gooseBit
-
-<img src="docs/img/goosebit-logo.png" style="width: 100px; height: 100px; display: block;">
+# Home
 
 ---
 
-A simplistic, opinionated remote update server implementing hawkBit™'s [DDI API](https://eclipse.dev/hawkbit/apis/ddi_api/).
+### What is gooseBit?
 
-## Quick Start
-
-### Installation
-
-1. Install dependencies using [Poetry](https://python-poetry.org/):
-    ```bash
-    poetry install
-    ```
-2. Launch gooseBit:
-    ```bash
-    python main.py
-    ```
-
-### Initial Configuration
-
-Before running gooseBit for the first time, update the default credentials in `settings.yaml`. The default login for testing purposes is:
-
--   **Username:** `admin@goosebit.local`
--   **Password:** `admin`
+A simplistic, opinionated remote update server implementing hawkBit™'s [DDI API](https://eclipse.dev/hawkbit/apis/ddi_api/),
+designed to make remote updates of embedded devices easier.
 
 ## Assumptions
 
@@ -68,60 +49,3 @@ Devices can be pinned to their current software version, preventing any updates 
 ### Real-time Update Logs
 
 While updates are in progress, gooseBit captures real-time logs, which are accessible through the device repository.
-
-## Development
-
-### Code formatting and linting
-
-Code is formatted using different tools
-
--   black and isort for `*.py`
--   biomejs for `*.js`, `*.json`
--   prettier for `*.html`, `*.md`, `*.yml`, `*.yaml`
-
-Code is linted using different tools as well
-
--   flake8 for `*.py`
--   biomejs for `*.js`
-
-Best to have pre-commit install git hooks that run all those tools before a commit:
-
-```bash
-poetry run pre-commit install
-```
-
-To manually apply the hooks to all files use:
-
-```bash
-pre-commit run --all-files
-```
-
-### Testing
-
-Tests are implemented using pytest. To run all tests
-
-```bash
-poetry run pytest
-```
-
-### Structure
-
-The structure of gooseBit is as follows:
-
--   `api`: Files for the API.
--   `ui`: Files for the UI.
-    -   `bff`: Backend for frontend API.
-    -   `static`: Static files.
-    -   `templates`: Jinja2 formatted templates.
-    -   `nav`: Navbar handler.
--   `updater`: DDI API handler and device update manager.
--   `updates`: SWUpdate file parsing.
--   `realtime`: Realtime API functionality with websockets.
--   `auth`: Authentication functions.
--   `models`: Database models.
--   `db`: Database config and initialization.
--   `schema`: Pydantic models used for API type hinting.
--   `permissions`: Permission handling and permission enums.
--   `settings`: Settings loader and handler.
--   `telemetry`: Telemetry data handlers.
--   `routes`: Routes for a giving endpoint, including the router.
