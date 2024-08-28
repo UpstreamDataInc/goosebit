@@ -4,7 +4,7 @@ import asyncio
 
 from pydantic import BaseModel
 
-from goosebit.models import Software
+from goosebit.db.models import Software
 from goosebit.schema.software import SoftwareSchema
 
 

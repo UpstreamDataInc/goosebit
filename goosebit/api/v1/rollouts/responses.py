@@ -3,7 +3,7 @@ import asyncio
 from pydantic import BaseModel
 
 from goosebit.api.responses import StatusResponse
-from goosebit.models import Rollout
+from goosebit.db.models import Rollout
 from goosebit.schema.rollouts import RolloutSchema
 
 

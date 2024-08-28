@@ -3,7 +3,7 @@ from fastapi.requests import Request
 
 from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
-from goosebit.models import Rollout
+from goosebit.db.models import Rollout
 
 from .requests import RolloutsDeleteRequest, RolloutsPatchRequest, RolloutsPutRequest
 from .responses import RolloutsPutResponse, RolloutsResponse

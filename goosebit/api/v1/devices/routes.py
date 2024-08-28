@@ -5,7 +5,7 @@ from fastapi.requests import Request
 
 from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
-from goosebit.models import Device, Software, UpdateModeEnum
+from goosebit.db.models import Device, Software, UpdateModeEnum
 from goosebit.updater.manager import delete_devices, get_update_manager
 
 from . import device

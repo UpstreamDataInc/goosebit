@@ -4,7 +4,7 @@ import asyncio
 
 from pydantic import BaseModel
 
-from goosebit.models import Hardware, Software
+from goosebit.db.models import Hardware, Software
 
 
 class HardwareSchema(BaseModel):

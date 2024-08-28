@@ -10,7 +10,7 @@ from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
 
 from goosebit import app
-from goosebit.models import UpdateModeEnum, UpdateStateEnum
+from goosebit.db.models import UpdateModeEnum, UpdateStateEnum
 
 # Configure logging
 logging.basicConfig(level=logging.WARN)
@@ -19,7 +19,7 @@ TORTOISE_CONF = {
     "connections": {"default": "sqlite://:memory:"},
     "apps": {
         "models": {
-            "models": ["goosebit.models", "aerich.models"],
+            "models": ["goosebit.db.models", "aerich.models"],
         },
     },
 }
@@ -66,7 +66,7 @@ async def db():
 
 @pytest_asyncio.fixture(scope="function")
 async def test_data(db):
-    from goosebit.models import Device, Hardware, Rollout, Software
+    from goosebit.db.models import Device, Hardware, Rollout, Software
 
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:

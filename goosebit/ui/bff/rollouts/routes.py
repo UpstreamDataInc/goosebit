@@ -3,7 +3,7 @@ from fastapi.requests import Request
 from tortoise.expressions import Q
 
 from goosebit.auth import validate_user_permissions
-from goosebit.models import Rollout
+from goosebit.db.models import Rollout
 
 from .responses import BFFRolloutsResponse
 

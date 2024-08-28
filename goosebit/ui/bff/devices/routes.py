@@ -5,7 +5,7 @@ from fastapi.requests import Request
 from tortoise.expressions import Q
 
 from goosebit.auth import validate_user_permissions
-from goosebit.models import Device, UpdateModeEnum, UpdateStateEnum
+from goosebit.db.models import Device, UpdateModeEnum, UpdateStateEnum
 
 from .responses import BFFDeviceResponse
 
