@@ -28,7 +28,7 @@ async def rollouts_get(request: Request) -> BFFRolloutsResponse:
 
 @router.post(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.WRITE])],
+    dependencies=[Security(validate_user_permissions, scopes=["rollout.write"])],
 )
 async def rollouts_put(_: Request, rollout: RolloutsPutRequest) -> RolloutsPutResponse:
     rollout = await Rollout.create(
@@ -41,7 +41,7 @@ async def rollouts_put(_: Request, rollout: RolloutsPutRequest) -> RolloutsPutRe
 
 @router.patch(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.WRITE])],
+    dependencies=[Security(validate_user_permissions, scopes=["rollout.write"])],
 )
 async def rollouts_patch(_: Request, rollouts: RolloutsPatchRequest) -> StatusResponse:
     await Rollout.filter(id__in=rollouts.ids).update(paused=rollouts.paused)
@@ -50,7 +50,7 @@ async def rollouts_patch(_: Request, rollouts: RolloutsPatchRequest) -> StatusRe
 
 @router.delete(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.ROLLOUT.DELETE])],
+    dependencies=[Security(validate_user_permissions, scopes=["rollout.delete"])],
 )
 async def rollouts_delete(_: Request, rollouts: RolloutsDeleteRequest) -> StatusResponse:
     await Rollout.filter(id__in=rollouts.ids).delete()

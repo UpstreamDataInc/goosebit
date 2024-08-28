@@ -8,8 +8,6 @@ from fastapi.requests import Request
 from tortoise.expressions import Q
 
 from goosebit.auth import validate_user_permissions
-from goosebit.db.models import Software
-from goosebit.ui.bff.software.responses import BFFSoftwareResponse
 from goosebit.models import Rollout, Software
 from goosebit.settings import config
 from goosebit.updates import create_software_update
@@ -63,7 +61,7 @@ async def software_delete(_: Request, files: SoftwareDeleteRequest) -> StatusRes
 
 @router.post(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.SOFTWARE.WRITE])],
+    dependencies=[Security(validate_user_permissions, scopes=["software.write"])],
 )
 async def post_update(
     request: Request,
@@ -87,6 +85,7 @@ async def post_update(
     else:
         # local file
         file = config.artifacts_dir.joinpath(filename)
+        config.artifacts_dir.mkdir(parents=True, exist_ok=True)
 
         temp_file = file.with_suffix(".tmp")
         if init:
