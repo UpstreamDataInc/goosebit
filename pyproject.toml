@@ -43,8 +43,11 @@ mkdocs-material = "^9.5.29"
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^8.3.1"
-pytest-asyncio = "^0.23.8"
+pytest-asyncio = "^0.24.0"
 pytest-md-report = "^0.6.2"
+
+[tool.pytest]
+asyncio_mode = "auto"
 
 [tool.isort]
 profile = "black"

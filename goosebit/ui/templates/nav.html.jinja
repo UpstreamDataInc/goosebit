@@ -66,9 +66,7 @@
                 <div class="collapse navbar-collapse" id="navbar">
                     <div class="navbar-nav">
                         {% for nav_item in request.nav %}
-                            {% if
-                                nav_item.permissions == None or nav_item.permissions in
-                                request.user.permissions %}
+                            {% if compare_permissions(nav_item.permissions, request.user.permissions) %}
                                 <a class="nav-link{% if request.url == request.url_for(nav_item.function) %} active{% endif %}"
                                    href="{{ request.url_for(nav_item.function) }}">{{ nav_item.text }}</a>
                             {% endif %}

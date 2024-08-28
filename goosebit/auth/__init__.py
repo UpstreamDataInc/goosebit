@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Annotated
+from typing import Annotated, Iterable
 
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends, HTTPException
@@ -106,13 +106,34 @@ def validate_user_permissions(
     security: SecurityScopes,
     user: User = Depends(get_current_user),
 ) -> HTTPConnection:
-    if security.scopes is None:
-        return connection
-    for scope in security.scopes:
-        if scope not in user.permissions:
-            logger.warning(f"User {user.username} does not have permission {scope}")
-            raise HTTPException(
-                status_code=403,
-                detail="Not enough permissions",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+    if not check_permissions(security.scopes, user.permissions):
+        logger.warning(f"{user.username} does not have sufficient permissions")
+        raise HTTPException(
+            status_code=403,
+            detail="Not enough permissions",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return connection
+
+
+def check_permissions(scopes: Iterable[str] | None, permissions: Iterable[str]) -> bool:
+    deny_permissions = [p.lstrip("!") for p in permissions if p.startswith("!")]
+    allow_permissions = [p for p in permissions if not p.startswith("!")]
+    if scopes is None:
+        return True
+    for scope in scopes:
+        if any([_check_permission(scope, permission) for permission in deny_permissions]):
+            return False
+        if not any([_check_permission(scope, permission) for permission in allow_permissions]):
+            return False
+    return True
+
+
+def _check_permission(scope: str, permission: str) -> bool:
+    split_scope = scope.split(".")
+    for idx, permission in enumerate(permission.split(".")):
+        if permission == "*":
+            continue
+        if not split_scope[idx] == permission:
+            return False
+    return True

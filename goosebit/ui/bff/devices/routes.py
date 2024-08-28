@@ -6,7 +6,6 @@ from tortoise.expressions import Q
 
 from goosebit.auth import validate_user_permissions
 from goosebit.models import Device, UpdateModeEnum, UpdateStateEnum
-from goosebit.permissions import Permissions
 
 from .responses import BFFDeviceResponse
 
@@ -15,7 +14,7 @@ router = APIRouter(prefix="/devices")
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[Permissions.HOME.READ])],
+    dependencies=[Security(validate_user_permissions, scopes=["home.read"])],
 )
 async def devices_get(request: Request) -> BFFDeviceResponse:
     def search_filter(search_value):
