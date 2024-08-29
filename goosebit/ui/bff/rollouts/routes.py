@@ -2,12 +2,11 @@ from fastapi import APIRouter, Security
 from fastapi.requests import Request
 from tortoise.expressions import Q
 
+from goosebit.api.v1.rollouts import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Rollout
 
-from ..responses import StatusResponse
-from .requests import RolloutsDeleteRequest, RolloutsPatchRequest, RolloutsPutRequest
-from .responses import BFFRolloutsResponse, RolloutsPutResponse
+from .responses import BFFRolloutsResponse
 
 router = APIRouter(prefix="/rollouts")
 
@@ -26,32 +25,28 @@ async def rollouts_get(request: Request) -> BFFRolloutsResponse:
     return await BFFRolloutsResponse.convert(request, query, search_filter, total_records)
 
 
-@router.post(
+router.add_api_route(
     "",
+    routes.rollouts_put,
+    methods=["POST"],
     dependencies=[Security(validate_user_permissions, scopes=["rollout.write"])],
+    name="bff_rollouts_post",
 )
-async def rollouts_put(_: Request, rollout: RolloutsPutRequest) -> RolloutsPutResponse:
-    rollout = await Rollout.create(
-        name=rollout.name,
-        feed=rollout.feed,
-        software_id=rollout.software_id,
-    )
-    return RolloutsPutResponse(success=True, id=rollout.id)
 
 
-@router.patch(
+router.add_api_route(
     "",
+    routes.rollouts_patch,
+    methods=["PATCH"],
     dependencies=[Security(validate_user_permissions, scopes=["rollout.write"])],
+    name="bff_rollouts_patch",
 )
-async def rollouts_patch(_: Request, rollouts: RolloutsPatchRequest) -> StatusResponse:
-    await Rollout.filter(id__in=rollouts.ids).update(paused=rollouts.paused)
-    return StatusResponse(success=True)
 
 
-@router.delete(
+router.add_api_route(
     "",
+    routes.rollouts_delete,
+    methods=["DELETE"],
     dependencies=[Security(validate_user_permissions, scopes=["rollout.delete"])],
+    name="bff_rollouts_delete",
 )
-async def rollouts_delete(_: Request, rollouts: RolloutsDeleteRequest) -> StatusResponse:
-    await Rollout.filter(id__in=rollouts.ids).delete()
-    return StatusResponse(success=True)

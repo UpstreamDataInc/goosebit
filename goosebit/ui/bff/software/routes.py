@@ -1,19 +1,16 @@
 from __future__ import annotations
 
 import aiofiles
-from fastapi import APIRouter, Security, UploadFile
-from fastapi.exceptions import HTTPException
-from fastapi.params import Form
+from fastapi import APIRouter, Form, HTTPException, Security, UploadFile
 from fastapi.requests import Request
 from tortoise.expressions import Q
 
+from goosebit.api.v1.software import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.models import Rollout, Software
 from goosebit.settings import config
 from goosebit.updates import create_software_update
 
-from ..responses import StatusResponse
-from .requests import SoftwareDeleteRequest
 from .responses import BFFSoftwareResponse
 
 router = APIRouter(prefix="/software")
@@ -33,30 +30,13 @@ async def software_get(request: Request) -> BFFSoftwareResponse:
     return await BFFSoftwareResponse.convert(request, query, search_filter, total_records)
 
 
-@router.delete(
+router.add_api_route(
     "",
+    routes.software_delete,
+    methods=["DELETE"],
     dependencies=[Security(validate_user_permissions, scopes=["software.delete"])],
+    name="bff_software_delete",
 )
-async def software_delete(_: Request, files: SoftwareDeleteRequest) -> StatusResponse:
-    success = False
-    for f_id in files.files:
-        software = await Software.get_or_none(id=f_id)
-
-        if software is None:
-            continue
-
-        rollout_count = await Rollout.filter(software=software).count()
-        if rollout_count > 0:
-            raise HTTPException(409, "Software is referenced by rollout")
-
-        if software.local:
-            path = software.path
-            if path.exists():
-                path.unlink()
-
-        await software.delete()
-        success = True
-    return StatusResponse(success=success)
 
 
 @router.post(

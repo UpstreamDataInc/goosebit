@@ -4,12 +4,13 @@ from fastapi import APIRouter, Security
 from fastapi.requests import Request
 from tortoise.expressions import Q
 
+from goosebit.api.responses import StatusResponse
+from goosebit.api.v1.devices import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Device, Software, UpdateModeEnum, UpdateStateEnum
-from goosebit.updater.manager import delete_devices, get_update_manager
+from goosebit.updater.manager import get_update_manager
 
-from ..responses import StatusResponse
-from .requests import DevicesDeleteRequest, DevicesPatchRequest
+from .requests import DevicesPatchRequest
 from .responses import BFFDeviceResponse
 
 router = APIRouter(prefix="/devices")
@@ -62,10 +63,10 @@ async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusRespon
     return StatusResponse(success=True)
 
 
-@router.delete(
+router.add_api_route(
     "",
+    routes.devices_delete,
+    methods=["DELETE"],
     dependencies=[Security(validate_user_permissions, scopes=["device.delete"])],
+    name="bff_devices_delete",
 )
-async def devices_delete(_: Request, config: DevicesDeleteRequest) -> StatusResponse:
-    await delete_devices(config.devices)
-    return StatusResponse(success=True)

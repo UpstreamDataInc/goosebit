@@ -3,10 +3,6 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 
-class DevicesDeleteRequest(BaseModel):
-    devices: list[str]
-
-
 class DevicesPatchRequest(BaseModel):
     devices: list[str]
     software: str | None = None
