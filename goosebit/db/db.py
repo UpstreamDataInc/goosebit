@@ -1,4 +1,4 @@
-from tortoise import Tortoise, run_async
+from tortoise import Tortoise
 
 from goosebit.db.config import TORTOISE_CONF
 
@@ -9,7 +9,3 @@ async def init():
 
 async def close():
     await Tortoise.close_connections()
-
-
-if __name__ == "__main__":
-    run_async(init())
