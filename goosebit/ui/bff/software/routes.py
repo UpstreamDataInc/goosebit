@@ -7,7 +7,7 @@ from tortoise.expressions import Q
 
 from goosebit.api.v1.software import routes
 from goosebit.auth import validate_user_permissions
-from goosebit.models import Rollout, Software
+from goosebit.db.models import Rollout, Software
 from goosebit.settings import config
 from goosebit.updates import create_software_update
 

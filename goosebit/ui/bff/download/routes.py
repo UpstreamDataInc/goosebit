@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.requests import Request
 from fastapi.responses import FileResponse, RedirectResponse
 
-from goosebit.models import Software
+from goosebit.db.models import Software
 
 router = APIRouter(prefix="/download", tags=["download"])
 
