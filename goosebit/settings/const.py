@@ -1,8 +1,10 @@
+import os
 from pathlib import Path
 
 from argon2 import PasswordHasher
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+GOOSEBIT_ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+CURRENT_DIR = Path(os.getcwd())
 
 PWD_CXT = PasswordHasher()
 

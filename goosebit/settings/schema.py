@@ -1,3 +1,4 @@
+import os
 import secrets
 from pathlib import Path
 from typing import Annotated
@@ -11,7 +12,7 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 
-from .const import BASE_DIR, LOGGING_DEFAULT, PWD_CXT
+from .const import CURRENT_DIR, GOOSEBIT_ROOT_DIR, LOGGING_DEFAULT, PWD_CXT
 
 
 class User(BaseModel):
@@ -36,8 +37,6 @@ class GooseBitSettings(BaseSettings):
 
     port: int = 60053  # GOOSE
 
-    artifacts_dir: Path = BASE_DIR.joinpath("artifacts")
-
     poll_time_default: str = "00:01:00"
     poll_time_updating: str = "00:00:05"
     poll_time_registration: str = "00:00:10"
@@ -46,7 +45,8 @@ class GooseBitSettings(BaseSettings):
 
     users: list[User] = []
 
-    db_uri: str = f"sqlite:///{BASE_DIR.joinpath('db.sqlite3')}"
+    db_uri: str = f"sqlite:///{GOOSEBIT_ROOT_DIR.joinpath('db.sqlite3')}"
+    artifacts_dir: Path = GOOSEBIT_ROOT_DIR.joinpath("artifacts")
 
     metrics: MetricsSettings = MetricsSettings()
 
@@ -61,9 +61,26 @@ class GooseBitSettings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
-        return (
-            init_settings,
-            YamlConfigSettingsSource(settings_cls, BASE_DIR.joinpath("settings.yaml")),
-            env_settings,
-            file_secret_settings,
+        settings_sources = [env_settings]
+        config_files = []
+
+        if (path := os.getenv("GOOSEBIT_SETTINGS")) is not None:
+            config_files.append(Path(path))
+
+        config_files.extend(
+            [
+                CURRENT_DIR.joinpath("goosebit.yaml"),
+                GOOSEBIT_ROOT_DIR.joinpath("goosebit.yaml"),
+                Path("/etc/goosebit.yaml"),
+            ]
         )
+
+        cls.config_file = None
+        for config_file in config_files:
+            if config_file.exists():
+                settings_sources.append(
+                    YamlConfigSettingsSource(settings_cls, config_file),
+                )
+                cls.config_file = config_file
+                break
+        return tuple(settings_sources)
