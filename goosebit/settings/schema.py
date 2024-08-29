@@ -1,4 +1,5 @@
 import secrets
+import sys
 from pathlib import Path
 from typing import Annotated
 
@@ -11,6 +12,7 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 
+from .args import parser
 from .const import BASE_DIR, LOGGING_DEFAULT, PWD_CXT
 
 
@@ -36,17 +38,17 @@ class GooseBitSettings(BaseSettings):
 
     port: int = 60053  # GOOSE
 
-    artifacts_dir: Path = BASE_DIR.joinpath("artifacts")
-
     poll_time_default: str = "00:01:00"
     poll_time_updating: str = "00:00:05"
     poll_time_registration: str = "00:00:10"
 
     secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
 
-    users: list[User] = []
+    users: list[User] = [User(username="admin@goosebit.local", password="admin", permissions=["*"])]
 
     db_uri: str = f"sqlite:///{BASE_DIR.joinpath('db.sqlite3')}"
+    migrations_dir: Path = BASE_DIR.joinpath("migrations")
+    artifacts_dir: Path = BASE_DIR.joinpath("artifacts")
 
     metrics: MetricsSettings = MetricsSettings()
 
@@ -61,9 +63,17 @@ class GooseBitSettings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
+        # skip arg parsing if running pytest
+        if "pytest" not in sys.modules:
+            cli_args = parser.parse_args()
+            return (
+                init_settings,
+                YamlConfigSettingsSource(settings_cls, cli_args.settings_file),
+                env_settings,
+                file_secret_settings,
+            )
         return (
             init_settings,
-            YamlConfigSettingsSource(settings_cls, BASE_DIR.joinpath("settings.yaml")),
             env_settings,
             file_secret_settings,
         )

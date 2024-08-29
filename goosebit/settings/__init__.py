@@ -1,4 +1,4 @@
-from .const import BASE_DIR, PWD_CXT  # noqa: F401
+from .const import PWD_CXT  # noqa: F401
 from .schema import GooseBitSettings
 
 config = GooseBitSettings()
