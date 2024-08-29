@@ -1,5 +1,5 @@
-from pydantic import RootModel
+from pydantic import BaseModel
 
 
-class SoftwareDeleteRequest(RootModel[list[int]]):
-    pass
+class SoftwareDeleteRequest(BaseModel):
+    software_ids: list[int]

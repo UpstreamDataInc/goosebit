@@ -178,7 +178,7 @@ async function createRollout() {
     const software_id = document.getElementById("selected-sw").value;
 
     try {
-        await post("/api/v1/rollouts", { name, feed, software_id });
+        await post_request("/ui/bff/rollouts", { name, feed, software_id });
     } catch (error) {
         console.error("Rollout creation failed:", error);
     }
@@ -192,7 +192,7 @@ function updateRolloutList() {
 
 async function deleteRollouts(ids) {
     try {
-        await delete_request("/api/v1/rollouts", { ids });
+        await delete_request("/ui/bff/rollouts", { ids });
     } catch (error) {
         console.error("Rollouts deletion failed:", error);
     }
@@ -203,7 +203,7 @@ async function deleteRollouts(ids) {
 
 async function pauseRollouts(ids, paused) {
     try {
-        await patch_request("/api/v1/rollouts", { ids, paused });
+        await patch_request("/ui/bff/rollouts", { ids, paused });
     } catch (error) {
         console.error(`Rollouts ${paused ? "pausing" : "unpausing"} failed:`, error);
     }

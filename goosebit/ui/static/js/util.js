@@ -22,12 +22,12 @@ function secondsToRecentDate(t) {
 
 async function updateSoftwareSelection(addSpecialMode = false) {
     try {
-        const response = await fetch("/api/v1/software");
+        const response = await fetch("/ui/bff/software");
         if (!response.ok) {
             console.error("Retrieving software list failed.");
             return;
         }
-        const data = (await response.json()).software;
+        const data = (await response.json()).data;
         const selectElem = document.getElementById("selected-sw");
 
         if (addSpecialMode) {
@@ -55,8 +55,7 @@ async function updateSoftwareSelection(addSpecialMode = false) {
     }
 }
 
-// TODO: rename this function
-async function post(url, object) {
+async function post_request(url, object) {
     const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
