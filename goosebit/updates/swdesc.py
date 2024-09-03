@@ -69,9 +69,7 @@ async def parse_remote(url: str):
         file = await c.get(url)
         async with aiofiles.tempfile.NamedTemporaryFile("w+b") as f:
             await f.write(file.content)
-            f.close()
-            swdesc_attrs = await parse_file(Path(f.name))
-    return swdesc_attrs
+            return await parse_file(Path(f.name))
 
 
 def _sha1_hash_file(file_path: Path):
