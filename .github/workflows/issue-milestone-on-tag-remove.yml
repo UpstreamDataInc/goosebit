@@ -1,0 +1,22 @@
+on:
+  issues:
+    types: [unlabeled]
+
+jobs:
+  remove-milestone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check if tag is a valid version
+        uses: actions-ecosystem/action-regex-match@v2
+        id: regex-match
+        with:
+          text: ${{ github.event.label.name }}
+          regex: 'v[0-9]+?\.[0-9]+?\.[0-9]+?'
+          description: "${{ steps.regex-match.outputs.match }} release milestone."
+
+      - name: Remove a milestone from a PR
+        run: gh issue edit ${{ github.event.number }} --milestone "" --repo $GITHUB_REPOSITORY
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

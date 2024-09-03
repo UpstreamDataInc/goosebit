@@ -1,0 +1,30 @@
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  add-milestone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check if tag is a valid version
+        uses: actions-ecosystem/action-regex-match@v2
+        id: regex-match
+        with:
+          text: ${{ github.event.label.name }}
+          regex: 'v[0-9]+?\.[0-9]+?\.[0-9]+?'
+
+      - name: Create a milestone
+        uses: WyriHaximus/github-action-create-milestone@v1.1.1
+        if: ${{ steps.regex-match.outputs.match != '' }}
+        with:
+          title: "${{ steps.regex-match.outputs.match }}"
+          description: "${{ steps.regex-match.outputs.match }} release milestone."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add a milestone to a PR
+        run: gh pr edit ${{ github.event.number }} --milestone "${{ steps.regex-match.outputs.match }}" --repo $GITHUB_REPOSITORY
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
