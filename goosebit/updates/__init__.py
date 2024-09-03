@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
@@ -42,7 +43,8 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
     # for local file: rename temp file to final name
     if parsed_uri.scheme == "file":
         path = _unique_path(parsed_uri)
-        temp_file.replace(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(temp_file, path)
         uri = path.absolute().as_uri()
 
     # create software
