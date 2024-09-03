@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Optional
+
 import aiofiles
 from fastapi import APIRouter, File, Form, HTTPException, Security, UploadFile
 from fastapi.requests import Request
@@ -52,7 +55,7 @@ async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> Stat
     "",
     dependencies=[Security(validate_user_permissions, scopes=["software.write"])],
 )
-async def post_update(_: Request, file: UploadFile = File(None), url: str = Form(None)):
+async def post_update(_: Request, file: Optional[UploadFile] = File(None), url: Optional[str] = Form(None)):
     if url is not None:
         # remote file
         software = await Software.get_or_none(uri=url)
@@ -63,10 +66,13 @@ async def post_update(_: Request, file: UploadFile = File(None), url: str = Form
             else:
                 raise HTTPException(409, "Software with same URL already exists and is referenced by rollout")
 
-        await create_software_update(url, None)
+        software = await create_software_update(url, None)
     else:
         # local file
-        software_file = config.artifacts_dir.joinpath(file.filename)
+        file_path = config.artifacts_dir.joinpath(file.filename)
 
-        async with aiofiles.open(software_file, mode="ab") as f:
+        async with aiofiles.tempfile.NamedTemporaryFile("w+b") as f:
             await f.write(await file.read())
+            software = await create_software_update(file_path.absolute().as_uri(), Path(f.name))
+
+    return {"id": software.id}
