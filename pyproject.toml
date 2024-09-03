@@ -45,6 +45,7 @@ mkdocs-material = "^9.5.29"
 pytest = "^8.3.1"
 pytest-asyncio = "^0.24.0"
 pytest-md-report = "^0.6.2"
+pytest_httpserver = "^1.1.0"
 
 [tool.pytest]
 asyncio_mode = "auto"
