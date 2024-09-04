@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 import aiofiles
 from fastapi import APIRouter, File, Form, HTTPException, Security, UploadFile
@@ -55,7 +54,7 @@ async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> Stat
     "",
     dependencies=[Security(validate_user_permissions, scopes=["software.write"])],
 )
-async def post_update(_: Request, file: Optional[UploadFile] = File(None), url: Optional[str] = Form(None)):
+async def post_update(_: Request, file: UploadFile | None = File(None), url: str | None = Form(None)):
     if url is not None:
         # remote file
         software = await Software.get_or_none(uri=url)
