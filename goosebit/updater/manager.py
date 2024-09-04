@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from datetime import datetime
 from enum import StrEnum
-from typing import Callable, Optional
+from typing import Callable
 
 from aiocache import cached, caches
 
@@ -77,7 +77,7 @@ class UpdateManager(ABC):
     async def update_log_complete(self, log_complete: bool):
         return
 
-    async def get_rollout(self) -> Optional[Rollout]:
+    async def get_rollout(self) -> Rollout | None:
         return None
 
     @asynccontextmanager
@@ -240,7 +240,7 @@ class DeviceUpdateManager(UpdateManager):
         device.log_complete = log_complete
         await self.save_device(device, update_fields=["log_complete"])
 
-    async def get_rollout(self) -> Optional[Rollout]:
+    async def get_rollout(self) -> Rollout | None:
         device = await self.get_device()
 
         if device.update_mode == UpdateModeEnum.ROLLOUT:
