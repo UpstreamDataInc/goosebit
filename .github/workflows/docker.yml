@@ -17,12 +17,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set GOOSEBIT_VERSION env var
         run: |
-          tag=$(git describe --tags --abbrev=0)
+          if [ $GITHUB_REF_TYPE = tag ]; then
+            tag=$GITHUB_REF_NAME
+          else
+            echo "This job is only supposed to be run for Git tags"
+            exit 1
+          fi
           echo "GOOSEBIT_VERSION=${tag#v}" >> $GITHUB_ENV
 
       - name: Log in to Docker Hub
