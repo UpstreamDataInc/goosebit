@@ -1,5 +1,6 @@
 import importlib.metadata
 from contextlib import asynccontextmanager
+from logging import getLogger
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
@@ -16,12 +17,17 @@ from goosebit.ui.nav import nav
 from goosebit.ui.static import static
 from goosebit.ui.templates import templates
 
+logger = getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    await db.init()
+    db_ready = await db.init()
+    if not db_ready:
+        logger.exception("DB does not exist, try running `poetry run aerich upgrade`.")
     await metrics.init()
-    yield
+    if db_ready:
+        yield
     await db.close()
 
 

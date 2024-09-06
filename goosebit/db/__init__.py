@@ -1,11 +1,21 @@
+from logging import getLogger
+
 from tortoise import Tortoise
+from tortoise.exceptions import OperationalError
 
 from goosebit.db.config import TORTOISE_CONF
+from goosebit.db.models import Device
+
+logger = getLogger(__name__)
 
 
-async def init():
+async def init() -> bool:
     await Tortoise.init(config=TORTOISE_CONF)
-    await Tortoise.generate_schemas()
+    try:
+        await Device.first()
+    except OperationalError:
+        return False
+    return True
 
 
 async def close():
