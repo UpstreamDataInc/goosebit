@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
+import aiofiles
 from fastapi import HTTPException
 from fastapi.requests import Request
 from tortoise.expressions import Q
@@ -47,8 +47,9 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
     if parsed_uri.scheme == "file":
         filename = Path(url2pathname(unquote(parsed_uri.path))).name
         path = config.artifacts_dir.joinpath(update_info["hash"], filename)
+        # left as synchronous call, aiofiles workaround too cumbersome
         path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(temp_file, path)
+        await _async_copy_file(temp_file, path)
         uri = path.absolute().as_uri()
 
     # create software
@@ -66,6 +67,16 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
         await software.compatibility.add((await Hardware.get_or_create(model=model, revision=revision))[0])
     await software.save()
     return software
+
+
+async def _async_copy_file(src, dst):
+    # Avoid using blocking call shutil.copy
+    async with aiofiles.open(src, "rb") as src_file, aiofiles.open(dst, "wb") as dest_file:
+        while True:
+            chunk = await src_file.read(5 * 1024 * 1024)  # Read 5MB at a time
+            if not chunk:
+                break
+            await dest_file.write(chunk)
 
 
 async def _is_software_colliding(update_info):

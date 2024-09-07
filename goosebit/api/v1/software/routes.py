@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import aiofiles
+from aiofiles import os
 from fastapi import APIRouter, File, Form, HTTPException, Security, UploadFile
 from fastapi.requests import Request
 
@@ -41,12 +42,14 @@ async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> Stat
             raise HTTPException(409, "Software is referenced by rollout")
 
         if software.local:
-            path = software.path
-            if path.exists():
-                path.unlink()
+            try:
+                await os.unlink(software.path)
+            except OSError:
+                pass
 
         await software.delete()
         success = True
+
     return StatusResponse(success=success)
 
 

@@ -7,6 +7,7 @@ import aiofiles
 import httpx
 import libconf
 import semver
+from aiofiles import os
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +60,9 @@ async def parse_file(file: Path):
         swdesc = libconf.loads((await f.read(size)).decode("utf-8"))
 
         swdesc_attrs = parse_descriptor(swdesc)
-        swdesc_attrs["size"] = file.stat().st_size
-        swdesc_attrs["hash"] = _sha1_hash_file(file)
+        stat = await os.stat(file)
+        swdesc_attrs["size"] = stat.st_size
+        swdesc_attrs["hash"] = await _sha1_hash_file(file)
         return swdesc_attrs
 
 
@@ -72,7 +74,14 @@ async def parse_remote(url: str):
             return await parse_file(Path(f.name))
 
 
-def _sha1_hash_file(file_path: Path):
-    with file_path.open("rb") as f:
-        sha1_hash = hashlib.file_digest(f, "sha1")
+async def _sha1_hash_file(file_path: Path):
+    sha1_hash = hashlib.sha1()
+
+    async with aiofiles.open(file_path, "rb") as f:
+        while True:
+            chunk = await f.read(5 * 1024 * 1024)  # Read in 5MB chunks
+            if not chunk:
+                break
+            sha1_hash.update(chunk)
+
     return sha1_hash.hexdigest()
