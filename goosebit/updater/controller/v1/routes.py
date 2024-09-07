@@ -23,10 +23,13 @@ router = APIRouter(prefix="/v1")
 
 @router.get("/{dev_id}")
 async def polling(request: Request, dev_id: str, updater: UpdateManager = Depends(get_update_manager)):
-    links = {}
+    links: dict[str, dict[str, str]] = {}
 
     sleep = updater.poll_time
     device = await updater.get_device()
+
+    if device is None:
+        raise HTTPException(404)
 
     if device.last_state == UpdateStateEnum.UNKNOWN:
         # device registration
@@ -49,7 +52,7 @@ async def polling(request: Request, dev_id: str, updater: UpdateManager = Depend
         # provide update if available. Note: this is also required while in state "running", otherwise swupdate
         # won't confirm a successful testing (might be a bug/problem in swupdate)
         handling_type, software = await updater.get_update()
-        if handling_type != HandlingType.SKIP:
+        if handling_type != HandlingType.SKIP and software is not None:
             links["deploymentBase"] = {
                 "href": str(
                     request.url_for(
@@ -152,7 +155,8 @@ async def deployment_feedback(
 
     try:
         log = data.status.details
-        await updater.update_log("\n".join(log))
+        if log is not None:
+            await updater.update_log("\n".join(log))
     except AttributeError:
         logging.warning(f"No details to update device update log, device={updater.dev_id}")
 

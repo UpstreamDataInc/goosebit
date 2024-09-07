@@ -35,8 +35,8 @@ class DeviceSchema(BaseModel):
     hw_revision: str
     feed: str
     progress: int | None
-    last_state: Annotated[UpdateStateSchema, BeforeValidator(UpdateStateSchema.convert)]
-    update_mode: Annotated[UpdateModeSchema, BeforeValidator(UpdateModeSchema.convert)]
+    last_state: Annotated[UpdateStateSchema, BeforeValidator(UpdateStateSchema.convert)]  # type: ignore[valid-type]
+    update_mode: Annotated[UpdateModeSchema, BeforeValidator(UpdateModeSchema.convert)]  # type: ignore[valid-type]
     force_update: bool
     last_ip: str | None
     last_seen: int | None

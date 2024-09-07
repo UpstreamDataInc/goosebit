@@ -84,6 +84,7 @@ async def _poll(async_client, device_uuid, software: Software | None, expect_upd
     if expect_update:
         assert "deploymentBase" in data["_links"], "expected update, but none available"
         deployment_base = data["_links"]["deploymentBase"]["href"]
+        assert software is not None
         assert deployment_base == f"http://test/ddi/controller/v1/{device_uuid}/deploymentBase/{software.id}"
         return deployment_base
     else:

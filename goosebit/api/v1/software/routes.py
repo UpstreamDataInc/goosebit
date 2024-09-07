@@ -66,12 +66,14 @@ async def post_update(_: Request, file: UploadFile | None = File(None), url: str
                 raise HTTPException(409, "Software with same URL already exists and is referenced by rollout")
 
         software = await create_software_update(url, None)
-    else:
+    elif file is not None:
         # local file
         file_path = config.artifacts_dir.joinpath(file.filename)
 
         async with aiofiles.tempfile.NamedTemporaryFile("w+b") as f:
             await f.write(await file.read())
-            software = await create_software_update(file_path.absolute().as_uri(), Path(f.name))
+            software = await create_software_update(file_path.absolute().as_uri(), Path(str(f.name)))
+    else:
+        raise HTTPException(422)
 
     return {"id": software.id}
