@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import aiofiles
+from anyio import Path, open_file
 from fastapi import APIRouter, Form, HTTPException, Security, UploadFile
 from fastapi.requests import Request
 from tortoise.expressions import Q
@@ -64,20 +64,20 @@ async def post_update(
         await create_software_update(url, None)
     else:
         # local file
-        file = config.artifacts_dir.joinpath(filename)
-        config.artifacts_dir.mkdir(parents=True, exist_ok=True)
+        artifacts_dir = Path(config.artifacts_dir)
+        file = artifacts_dir.joinpath(filename)
+        await artifacts_dir.mkdir(parents=True, exist_ok=True)
 
         temp_file = file.with_suffix(".tmp")
         if init:
-            temp_file.unlink(missing_ok=True)
+            await temp_file.unlink(missing_ok=True)
 
-        contents = await chunk.read()
-
-        async with aiofiles.open(temp_file, mode="ab") as f:
-            await f.write(contents)
+        async with await open_file(temp_file, "ab") as f:
+            await f.write(await chunk.read())
 
         if done:
             try:
-                await create_software_update(file.absolute().as_uri(), temp_file)
+                absolute = await file.absolute()
+                await create_software_update(absolute.as_uri(), temp_file)
             finally:
-                temp_file.unlink(missing_ok=True)
+                await temp_file.unlink(missing_ok=True)

@@ -1,12 +1,12 @@
 import hashlib
 import logging
-from pathlib import Path
 from typing import Any
 
 import aiofiles
 import httpx
 import libconf
 import semver
+from anyio import AsyncFile, Path, open_file
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ def parse_descriptor(swdesc: libconf.AttrDict[Any, Any | None]):
 
 
 async def parse_file(file: Path):
-    async with aiofiles.open(file, "r+b") as f:
+    async with await open_file(file, "r+b") as f:
         # get file size
         size = int((await f.read(110))[54:62], 16)
         filename = b""
@@ -59,8 +59,9 @@ async def parse_file(file: Path):
         swdesc = libconf.loads((await f.read(size)).decode("utf-8"))
 
         swdesc_attrs = parse_descriptor(swdesc)
-        swdesc_attrs["size"] = file.stat().st_size
-        swdesc_attrs["hash"] = _sha1_hash_file(file)
+        stat = await file.stat()
+        swdesc_attrs["size"] = stat.st_size
+        swdesc_attrs["hash"] = await _sha1_hash_file(f)
         return swdesc_attrs
 
 
@@ -72,7 +73,17 @@ async def parse_remote(url: str):
             return await parse_file(Path(str(f.name)))
 
 
-def _sha1_hash_file(file_path: Path):
-    with file_path.open("rb") as f:
-        sha1_hash = hashlib.file_digest(f, "sha1")
+async def _sha1_hash_file(fileobj: AsyncFile):
+    last = await fileobj.tell()
+    await fileobj.seek(0)
+    sha1_hash = hashlib.sha1()
+    buf = bytearray(2**18)
+    view = memoryview(buf)
+    while True:
+        size = await fileobj.readinto(buf)
+        if size == 0:
+            break
+        sha1_hash.update(view[:size])
+
+    await fileobj.seek(last)
     return sha1_hash.hexdigest()
