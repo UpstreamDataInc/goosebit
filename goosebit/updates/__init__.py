@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import shutil
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -10,6 +12,7 @@ from tortoise.expressions import Q
 from goosebit.db.models import Hardware, Software
 from goosebit.updater.manager import UpdateManager
 
+from ..settings import config
 from . import swdesc
 
 
@@ -42,7 +45,8 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
 
     # for local file: rename temp file to final name
     if parsed_uri.scheme == "file":
-        path = _unique_path(parsed_uri)
+        filename = Path(url2pathname(unquote(parsed_uri.path))).name
+        path = config.artifacts_dir.joinpath(update_info["hash"], filename)
         path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(temp_file, path)
         uri = path.absolute().as_uri()
@@ -83,20 +87,6 @@ async def _is_software_colliding(update_info):
     is_colliding = await Software.filter(version=version, compatibility__in=hardware_ids).exists()
 
     return is_colliding
-
-
-def _unique_path(uri):
-    path = Path(url2pathname(unquote(uri.path)))
-    if not path.exists():
-        return path
-
-    counter = 1
-    new_path = path.with_name(f"{path.stem}-{counter}{path.suffix}")
-    while new_path.exists():
-        counter += 1
-        new_path = path.with_name(f"{path.stem}-{counter}{path.suffix}")
-
-    return new_path
 
 
 async def generate_chunk(request: Request, updater: UpdateManager) -> list:

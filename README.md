@@ -11,10 +11,18 @@ A simplistic, opinionated remote update server implementing hawkBit™'s [DDI AP
 ### Installation
 
 1. Install dependencies using [Poetry](https://python-poetry.org/):
+
     ```bash
     poetry install
     ```
-2. Launch gooseBit:
+
+2. Create the database:
+
+    ```bash
+    poetry run aerich upgrade
+    ```
+
+3. Launch gooseBit:
     ```bash
     python main.py
     ```
