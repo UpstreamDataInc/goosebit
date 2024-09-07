@@ -44,6 +44,7 @@ async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> Stat
         if software.local:
             try:
                 await os.unlink(software.path)
+                await os.rmdir(software.path.parent)
             except OSError:
                 pass
 
