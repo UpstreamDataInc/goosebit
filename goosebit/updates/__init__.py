@@ -20,7 +20,7 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
     parsed_uri = urlparse(uri)
 
     # parse swu header into update_info
-    if parsed_uri.scheme == "file":
+    if parsed_uri.scheme == "file" and temp_file is not None:
         try:
             update_info = await swdesc.parse_file(temp_file)
         except Exception:
@@ -44,7 +44,7 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
         raise HTTPException(409, "Software with same version and overlapping compatibility already exists")
 
     # for local file: rename temp file to final name
-    if parsed_uri.scheme == "file":
+    if parsed_uri.scheme == "file" and temp_file is not None:
         filename = Path(url2pathname(unquote(parsed_uri.path))).name
         path = config.artifacts_dir.joinpath(update_info["hash"], filename)
         path.parent.mkdir(parents=True, exist_ok=True)

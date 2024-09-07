@@ -21,7 +21,7 @@ def parse_descriptor(swdesc: libconf.AttrDict[Any, Any | None]):
     swdesc_attrs = {}
     try:
         swdesc_attrs["version"] = semver.Version.parse(swdesc["software"]["version"])
-        compatibility = []
+        compatibility: list[dict[str, str]] = []
         _append_compatibility("default", swdesc["software"], compatibility)
 
         for key in swdesc["software"]:
@@ -69,7 +69,7 @@ async def parse_remote(url: str):
         file = await c.get(url)
         async with aiofiles.tempfile.NamedTemporaryFile("w+b") as f:
             await f.write(file.content)
-            return await parse_file(Path(f.name))
+            return await parse_file(Path(str(f.name)))
 
 
 def _sha1_hash_file(file_path: Path):

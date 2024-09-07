@@ -45,7 +45,7 @@ class UpdateManager(ABC):
         self.dev_id = dev_id
 
     async def get_device(self) -> Device | None:
-        return
+        return None
 
     async def update_force_update(self, force_update: bool) -> None:
         return
@@ -86,7 +86,8 @@ class UpdateManager(ABC):
         subscribers = self.log_subscribers
         subscribers.append(callback)
         self.log_subscribers = subscribers
-        await callback(device.last_log)
+        if device is not None:
+            await callback(device.last_log)
         try:
             yield
         except asyncio.CancelledError:
@@ -126,7 +127,7 @@ class UpdateManager(ABC):
             await cb(log_data)
 
     @abstractmethod
-    async def get_update(self) -> tuple[HandlingType, Software]: ...
+    async def get_update(self) -> tuple[HandlingType, Software | None]: ...
 
     @abstractmethod
     async def update_log(self, log_data: str) -> None: ...
@@ -137,11 +138,16 @@ class UnknownUpdateManager(UpdateManager):
         super().__init__(dev_id)
         self.poll_time = config.poll_time_updating
 
-    async def _get_software(self) -> Software:
-        return await Software.latest(await self.get_device())
+    async def _get_software(self) -> Software | None:
+        device = await self.get_device()
+        if device is None:
+            return None
+        return await Software.latest(device)
 
-    async def get_update(self) -> tuple[HandlingType, Software]:
+    async def get_update(self) -> tuple[HandlingType, Software | None]:
         software = await self._get_software()
+        if software is None:
+            return HandlingType.SKIP, None
         return HandlingType.FORCED, software
 
     async def update_log(self, log_data: str) -> None:
@@ -276,7 +282,7 @@ class DeviceUpdateManager(UpdateManager):
         assert device.update_mode == UpdateModeEnum.PINNED
         return None
 
-    async def get_update(self) -> tuple[HandlingType, Software]:
+    async def get_update(self) -> tuple[HandlingType, Software | None]:
         device = await self.get_device()
         software = await self._get_software()
 

@@ -41,16 +41,16 @@ class FeedbackStatusResultFinished(StrEnum):
 
 class FeedbackStatusResultSchema(BaseModel):
     finished: FeedbackStatusResultFinished
-    progress: FeedbackStatusProgressSchema = None
+    progress: FeedbackStatusProgressSchema | None = None
 
 
 class FeedbackStatusSchema(BaseModel):
     execution: FeedbackStatusExecutionState
     result: FeedbackStatusResultSchema
-    code: int = None
-    details: list[str] = None
+    code: int | None = None
+    details: list[str] | None = None
 
 
 class FeedbackSchema(BaseModel):
-    time: str = None
+    time: str | None = None
     status: FeedbackStatusSchema

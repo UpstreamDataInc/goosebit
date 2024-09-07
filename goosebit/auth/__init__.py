@@ -27,15 +27,15 @@ def create_token(username: str) -> str:
     return jwt.encode(header={"alg": "HS256"}, claims={"username": username}, key=config.secret_key)
 
 
-def get_user_from_token(token: str) -> User | None:
+def get_user_from_token(token: str | None) -> User | None:
     if token is None:
-        return
+        return None
     try:
         token_data = jwt.decode(token, config.secret_key)
         username = token_data.claims["username"]
         return USERS.get(username)
     except (BadSignatureError, LookupError, ValueError):
-        pass
+        return None
 
 
 def login_user(username: str, password: str) -> str:
@@ -58,9 +58,9 @@ def login_user(username: str, password: str) -> str:
 
 
 def get_current_user(
-    session_token: Annotated[str, Depends(session_auth)] = None,
-    oauth2_token: Annotated[str, Depends(oauth2_auth)] = None,
-) -> User:
+    session_token: Annotated[str | None, Depends(session_auth)] = None,
+    oauth2_token: Annotated[str | None, Depends(oauth2_auth)] = None,
+) -> User | None:
     session_user = get_user_from_token(session_token)
     oauth2_user = get_user_from_token(oauth2_token)
     user = session_user or oauth2_user
@@ -68,7 +68,7 @@ def get_current_user(
 
 
 # using | Request because oauth2_auth.__call__ expects is
-async def get_user_from_request(connection: HTTPConnection | Request) -> User:
+async def get_user_from_request(connection: HTTPConnection | Request) -> User | None:
     token = await session_auth(connection) or await oauth2_auth(connection)
     return get_user_from_token(token)
 
