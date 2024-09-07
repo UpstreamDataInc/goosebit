@@ -1,6 +1,5 @@
-from pathlib import Path
-
 import pytest
+from anyio import Path
 from libconf import AttrDict
 
 from goosebit.updates.swdesc import parse_descriptor, parse_file
@@ -102,7 +101,8 @@ def test_parse_descriptor_several_boardname():
 
 @pytest.mark.asyncio
 async def test_parse_software_header():
-    swdesc_attrs = await parse_file(Path(__file__).resolve().parent / "software-header.swu")
+    resolved = await Path(__file__).resolve()
+    swdesc_attrs = await parse_file(resolved.parent / "software-header.swu")
     assert str(swdesc_attrs["version"]) == "8.8.1-11-g8c926e5+188370"
     assert swdesc_attrs["compatibility"] == [
         {"hw_model": "smart-gateway-mt7688", "hw_revision": "0.5"},

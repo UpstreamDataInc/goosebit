@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import shutil
-from pathlib import Path
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
+from anyio import Path
 from fastapi import HTTPException
 from fastapi.requests import Request
 from tortoise.expressions import Q
@@ -46,10 +45,11 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
     # for local file: rename temp file to final name
     if parsed_uri.scheme == "file" and temp_file is not None:
         filename = Path(url2pathname(unquote(parsed_uri.path))).name
-        path = config.artifacts_dir.joinpath(update_info["hash"], filename)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(temp_file, path)
-        uri = path.absolute().as_uri()
+        path = Path(config.artifacts_dir).joinpath(update_info["hash"], filename)
+        await path.parent.mkdir(parents=True, exist_ok=True)
+        await temp_file.rename(path)
+        absolute = await path.absolute()
+        uri = absolute.as_uri()
 
     # create software
     software = await Software.create(

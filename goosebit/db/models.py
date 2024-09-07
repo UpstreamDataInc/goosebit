@@ -1,10 +1,10 @@
 from enum import IntEnum
-from pathlib import Path
 from typing import Self
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
 import semver
+from anyio import Path
 from tortoise import Model, fields
 
 from goosebit.api.telemetry.metrics import devices_count
@@ -132,7 +132,7 @@ class Software(Model):
         )[0]
 
     @property
-    def path(self):
+    def path(self) -> Path:
         return Path(url2pathname(unquote(urlparse(self.uri).path)))
 
     @property

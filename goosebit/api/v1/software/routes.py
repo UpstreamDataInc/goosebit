@@ -1,6 +1,5 @@
-from pathlib import Path
-
 import aiofiles
+from anyio import Path
 from fastapi import APIRouter, File, Form, HTTPException, Security, UploadFile
 from fastapi.requests import Request
 
@@ -42,8 +41,8 @@ async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> Stat
 
         if software.local:
             path = software.path
-            if path.exists():
-                path.unlink()
+            if await path.exists():
+                await path.unlink()
 
         await software.delete()
         success = True
@@ -68,11 +67,13 @@ async def post_update(_: Request, file: UploadFile | None = File(None), url: str
         software = await create_software_update(url, None)
     elif file is not None:
         # local file
-        file_path = config.artifacts_dir.joinpath(file.filename)
+        artifacts_dir = Path(config.artifacts_dir)
+        file_path = artifacts_dir.joinpath(file.filename)
 
         async with aiofiles.tempfile.NamedTemporaryFile("w+b") as f:
             await f.write(await file.read())
-            software = await create_software_update(file_path.absolute().as_uri(), Path(str(f.name)))
+            absolute = await file_path.absolute()
+            software = await create_software_update(absolute.as_uri(), Path(f.name))
     else:
         raise HTTPException(422)
 
