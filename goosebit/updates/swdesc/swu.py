@@ -1,17 +1,16 @@
-import hashlib
 import logging
-import random
-import string
 from typing import Any
 
-import httpx
 import libconf
-from anyio import AsyncFile, Path, open_file
+from anyio import Path, open_file
 
-from goosebit.storage import storage
 from goosebit.util.version import Version
 
+from .func import sha1_hash_file
+
 logger = logging.getLogger(__name__)
+
+MAGIC = b"0707"
 
 
 def _append_compatibility(boardname, value, compatibility):
@@ -43,7 +42,7 @@ def parse_descriptor(swdesc: libconf.AttrDict[Any, Any | None]):
 
         swdesc_attrs["compatibility"] = compatibility
     except KeyError as e:
-        logging.warning(f"Parsing swu descriptor failed, error={e}")
+        logger.warning(f"Parsing swu descriptor failed, error={e}")
         raise ValueError("Parsing swu descriptor failed", e)
 
     return swdesc_attrs
@@ -70,37 +69,6 @@ async def parse_file(file: Path):
         swdesc_attrs = parse_descriptor(swdesc)
         stat = await file.stat()
         swdesc_attrs["size"] = stat.st_size
-        swdesc_attrs["hash"] = await _sha1_hash_file(f)
+        swdesc_attrs["hash"] = await sha1_hash_file(f)
+
         return swdesc_attrs
-
-
-async def parse_remote(url: str):
-    async with httpx.AsyncClient() as c:
-        file = await c.get(url)
-        temp_dir = Path(storage.get_temp_dir())
-        tmp_file_path = temp_dir.joinpath("".join(random.choices(string.ascii_lowercase, k=12)) + ".tmp")
-        try:
-            async with await open_file(tmp_file_path, "w+b") as f:
-                await f.write(file.content)
-            file_data = await parse_file(tmp_file_path)  # Use anyio.Path for parse_file
-        except Exception:
-            raise
-        finally:
-            await tmp_file_path.unlink(missing_ok=True)
-        return file_data
-
-
-async def _sha1_hash_file(fileobj: AsyncFile):
-    last = await fileobj.tell()
-    await fileobj.seek(0)
-    sha1_hash = hashlib.sha1()
-    buf = bytearray(2**18)
-    view = memoryview(buf)
-    while True:
-        size = await fileobj.readinto(buf)
-        if size == 0:
-            break
-        sha1_hash.update(view[:size])
-
-    await fileobj.seek(last)
-    return sha1_hash.hexdigest()

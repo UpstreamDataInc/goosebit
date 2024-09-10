@@ -59,6 +59,7 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
         version=str(update_info["version"]),
         size=update_info["size"],
         hash=update_info["hash"],
+        image_format=update_info["image_format"],
     )
 
     # create compatibility information

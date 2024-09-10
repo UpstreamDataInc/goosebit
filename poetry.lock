@@ -1911,6 +1911,18 @@ files = [
 ]
 
 [[package]]
+name = "pysquashfsimage"
+version = "0.9.0"
+description = "Squashfs image parser"
+optional = false
+python-versions = ">=2.7, !=3.0.*"
+groups = ["main"]
+files = [
+    {file = "PySquashfsImage-0.9.0-py2.py3-none-any.whl", hash = "sha256:a8ea154bf946f985c65fab7d8c08dc73da7ad47a0aebf0d13ae50ae56e369f90"},
+    {file = "PySquashfsImage-0.9.0.tar.gz", hash = "sha256:d3330ccd111ac2ef2cebf0c392077fe8608e2760862531d960ec9cb6c6d3655f"},
+]
+
+[[package]]
 name = "pytablewriter"
 version = "1.2.1"
 description = "pytablewriter is a Python library to write a table in various formats: AsciiDoc / CSV / Elasticsearch / HTML / JavaScript / JSON / LaTeX / LDJSON / LTSV / Markdown / MediaWiki / NumPy / Excel / Pandas / Python / reStructuredText / SQLite / TOML / TSV / YAML."
@@ -2638,4 +2650,4 @@ postgresql = ["asyncpg"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "be3c4c5ca23dfd07cb2bff48bfaf76789ea0ac824d377e7e84f647feb204b790"
+content-hash = "8322ed1a9838e58ea8ec9f28393b10cf97d2aa5c4a62553c617c0ce67323b274"
