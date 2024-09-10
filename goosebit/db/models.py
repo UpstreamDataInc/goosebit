@@ -123,12 +123,28 @@ class Hardware(Model):
     revision = fields.CharField(max_length=255)
 
 
+class SoftwareImageFormat(IntEnum):
+    SWU = 0
+    RAUC = 1
+
+    def __str__(self):
+        return self.name.upper()
+
+    @classmethod
+    def from_str(cls, name):
+        try:
+            return cls[name.upper()]
+        except KeyError:
+            return cls.SWU
+
+
 class Software(Model):
     id = fields.IntField(primary_key=True)
     uri = fields.CharField(max_length=255)
     size = fields.BigIntField()
     hash = fields.CharField(max_length=255)
     version = fields.CharField(max_length=255)
+    image_format = fields.IntEnumField(SoftwareImageFormat, default=SoftwareImageFormat.SWU)
     compatibility = fields.ManyToManyField(
         "models.Hardware",
         related_name="softwares",

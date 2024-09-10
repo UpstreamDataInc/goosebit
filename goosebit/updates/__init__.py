@@ -19,25 +19,25 @@ from . import swdesc
 async def create_software_update(uri: str, temp_file: Path | None) -> Software:
     parsed_uri = urlparse(uri)
 
-    # parse swu header into update_info
+    # parse image header into update_info
     if parsed_uri.scheme == "file":
         if temp_file is None:
             raise HTTPException(500, "Temporary file missing, cannot parse file information")
         try:
             update_info = await swdesc.parse_file(temp_file)
         except Exception:
-            raise HTTPException(422, "Software swu header cannot be parsed")
+            raise HTTPException(422, "Software image header cannot be parsed")
 
     elif parsed_uri.scheme.startswith("http"):
         try:
             update_info = await swdesc.parse_remote(uri)
         except Exception:
-            raise HTTPException(422, "Software swu header cannot be parsed")
+            raise HTTPException(422, "Software image header cannot be parsed")
     else:
         raise HTTPException(422, "Software URI protocol unknown")
 
     if update_info is None:
-        raise HTTPException(422, "Software swu header contains invalid data")
+        raise HTTPException(422, "Software image header contains invalid data")
 
     # check for collisions
     is_colliding = await _is_software_colliding(update_info)
@@ -59,6 +59,7 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
         version=str(update_info["version"]),
         size=update_info["size"],
         hash=update_info["hash"],
+        image_format=update_info["image_format"],
     )
 
     # create compatibility information
