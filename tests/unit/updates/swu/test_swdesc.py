@@ -2,7 +2,7 @@ import pytest
 from anyio import Path
 from libconf import AttrDict
 
-from goosebit.updates.swdesc import parse_descriptor, parse_file
+from goosebit.updates.swdesc.swu import parse_descriptor, parse_file
 
 
 def test_parse_descriptor_no_compatibility_defined():
