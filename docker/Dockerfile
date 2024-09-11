@@ -16,7 +16,9 @@ EXPOSE 60053
 
 USER goosebit
 
-ENV GUNICORN_CMD_ARGS="--workers 2 --enable-stdio-inheritance"
+# We currently do not fully support multiple workers. For more information, see:
+# https://github.com/UpstreamDataInc/goosebit/issues/125
+ENV GUNICORN_CMD_ARGS="--workers 1 --enable-stdio-inheritance"
 
 CMD aerich --config /aerich.toml upgrade && \
     gunicorn --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:60053 goosebit:app </dev/null
