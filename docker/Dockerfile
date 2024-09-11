@@ -4,6 +4,8 @@ ARG GOOSEBIT_VERSION
 
 RUN addgroup -g 1000 goosebit && \
     adduser -u 1000 -G goosebit -s /bin/sh -D goosebit && \
+    mkdir /artifacts && \
+    chown goosebit:goosebit /artifacts && \
     pip install --no-cache-dir \
         gunicorn \
         goosebit[postgresql]==$GOOSEBIT_VERSION
