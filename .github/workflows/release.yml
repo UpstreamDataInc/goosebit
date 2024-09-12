@@ -49,6 +49,14 @@ jobs:
           fi
           echo "GOOSEBIT_VERSION=${tag#v}" >> $GITHUB_ENV
 
+      - name: Wait for PyPI package to become available
+        run: |
+          while [ "$(curl -Ss https://pypi.org/pypi/goosebit/json |
+            jq ".releases | has(\"$GOOSEBIT_VERSION\")")" != "true" ]
+          do
+            sleep 1
+          done
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3.3.0
         with:
