@@ -27,6 +27,7 @@ httpx = "^0.27.0"
 pydantic-settings = "^2.4.0"
 
 asyncpg = { version = "^0.29.0", optional = true }
+pysquashfsimage = "^0.9.0"
 
 [tool.poetry.extras]
 postgresql = ["asyncpg"]

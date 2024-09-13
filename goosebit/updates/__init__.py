@@ -3,7 +3,7 @@ from __future__ import annotations
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
-from anyio import Path
+from anyio import Path, open_file
 from fastapi import HTTPException
 from fastapi.requests import Request
 from tortoise.expressions import Q
@@ -47,7 +47,16 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
         filename = Path(url2pathname(unquote(parsed_uri.path))).name
         path = Path(config.artifacts_dir).joinpath(update_info["hash"], filename)
         await path.parent.mkdir(parents=True, exist_ok=True)
-        await temp_file.rename(path)
+
+        # basically os.rename, but sync and async versions of that break across filesystems
+        async with await open_file(temp_file, "rb") as temp_file:
+            async with await open_file(path, "wb") as file:
+                while True:
+                    chunk = await temp_file.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    await file.write(chunk)
+
         absolute = await path.absolute()
         uri = absolute.as_uri()
 
@@ -57,6 +66,7 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
         version=str(update_info["version"]),
         size=update_info["size"],
         hash=update_info["hash"],
+        image_format=update_info["image_format"],
     )
 
     # create compatibility information

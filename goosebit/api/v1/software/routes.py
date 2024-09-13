@@ -70,7 +70,7 @@ async def post_update(_: Request, file: UploadFile | None = File(None), url: str
         artifacts_dir = Path(config.artifacts_dir)
         file_path = artifacts_dir.joinpath(file.filename)
 
-        async with aiofiles.tempfile.NamedTemporaryFile("w+b") as f:
+        async with aiofiles.tempfile.NamedTemporaryFile("w+b", delete_on_close=True) as f:
             await f.write(await file.read())
             absolute = await file_path.absolute()
             software = await create_software_update(absolute.as_uri(), Path(f.name))
