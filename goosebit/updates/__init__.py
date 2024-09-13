@@ -19,7 +19,9 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
     parsed_uri = urlparse(uri)
 
     # parse swu header into update_info
-    if parsed_uri.scheme == "file" and temp_file is not None:
+    if parsed_uri.scheme == "file":
+        if temp_file is None:
+            raise HTTPException(500, "Temporary file missing, cannot parse file information")
         try:
             update_info = await swdesc.parse_file(temp_file)
         except Exception:
@@ -30,7 +32,6 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
             update_info = await swdesc.parse_remote(uri)
         except Exception:
             raise HTTPException(422, "Software swu header cannot be parsed")
-
     else:
         raise HTTPException(422, "Software URI protocol unknown")
 
@@ -43,11 +44,13 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
         raise HTTPException(409, "Software with same version and overlapping compatibility already exists")
 
     # for local file: rename temp file to final name
-    if parsed_uri.scheme == "file" and temp_file is not None:
+    if parsed_uri.scheme == "file":
+        if temp_file is None:
+            raise HTTPException(500, "Temporary file missing, cannot parse file information")
         filename = Path(url2pathname(unquote(parsed_uri.path))).name
         path = Path(config.artifacts_dir).joinpath(update_info["hash"], filename)
         await path.parent.mkdir(parents=True, exist_ok=True)
-        await temp_file.rename(path)
+        await temp_file.replace(path)
         absolute = await path.absolute()
         uri = absolute.as_uri()
 

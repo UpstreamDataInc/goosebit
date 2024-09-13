@@ -1,12 +1,15 @@
 import hashlib
 import logging
+import random
+import string
 from typing import Any
 
-import aiofiles
 import httpx
 import libconf
 import semver
 from anyio import AsyncFile, Path, open_file
+
+from goosebit.settings import config
 
 logger = logging.getLogger(__name__)
 
@@ -68,9 +71,16 @@ async def parse_file(file: Path):
 async def parse_remote(url: str):
     async with httpx.AsyncClient() as c:
         file = await c.get(url)
-        async with aiofiles.tempfile.NamedTemporaryFile("w+b") as f:
-            await f.write(file.content)
-            return await parse_file(Path(str(f.name)))
+        artifacts_dir = Path(config.artifacts_dir)
+        tmp_file_path = artifacts_dir.joinpath("tmp", ("".join(random.choices(string.ascii_lowercase, k=12)) + ".tmp"))
+        await tmp_file_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            async with await open_file(tmp_file_path, "w+b") as f:
+                await f.write(file.content)
+            file_data = await parse_file(Path(str(f.name)))
+        finally:
+            await tmp_file_path.unlink()
+        return file_data
 
 
 async def _sha1_hash_file(fileobj: AsyncFile):
