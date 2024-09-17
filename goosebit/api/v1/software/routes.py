@@ -1,5 +1,7 @@
-import aiofiles
-from anyio import Path
+import random
+import string
+
+from anyio import Path, open_file
 from fastapi import APIRouter, File, Form, HTTPException, Security, UploadFile
 from fastapi.requests import Request
 
@@ -69,11 +71,16 @@ async def post_update(_: Request, file: UploadFile | None = File(None), url: str
         # local file
         artifacts_dir = Path(config.artifacts_dir)
         file_path = artifacts_dir.joinpath(file.filename)
-
-        async with aiofiles.tempfile.NamedTemporaryFile("w+b") as f:
-            await f.write(await file.read())
-            absolute = await file_path.absolute()
-            software = await create_software_update(absolute.as_uri(), Path(f.name))
+        tmp_file_path = artifacts_dir.joinpath("tmp", ("".join(random.choices(string.ascii_lowercase, k=12)) + ".tmp"))
+        await tmp_file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_absolute_path = await file_path.absolute()
+        tmp_file_absolute_path = await tmp_file_path.absolute()
+        try:
+            async with await open_file(tmp_file_path, "w+b") as f:
+                await f.write(await file.read())
+            software = await create_software_update(file_absolute_path.as_uri(), tmp_file_absolute_path)
+        finally:
+            await tmp_file_path.unlink(missing_ok=True)
     else:
         raise HTTPException(422)
 

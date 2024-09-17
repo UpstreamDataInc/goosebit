@@ -27,8 +27,7 @@ repos:
     rev: v1.11.2
     hooks:
       - id: mypy
-        additional_dependencies:
-          [types-pyyaml==6.0.12.20240808, types-aiofiles==24.1.0.20240626]
+        additional_dependencies: [types-pyyaml==6.0.12.20240808]
   - repo: local
     hooks:
       - id: pytest
