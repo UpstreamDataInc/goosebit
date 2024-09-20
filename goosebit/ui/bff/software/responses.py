@@ -1,5 +1,3 @@
-import asyncio
-
 from fastapi.requests import Request
 from pydantic import BaseModel, Field
 
@@ -32,6 +30,6 @@ class BFFSoftwareResponse(BaseModel):
 
         filtered_records = await query.count()
         devices = await query.offset(start).limit(length).all()
-        data = await asyncio.gather(*[SoftwareSchema.convert(d) for d in devices])
+        data = [SoftwareSchema.model_validate(d) for d in devices]
 
         return cls(data=data, draw=draw, records_total=total_records, records_filtered=filtered_records)

@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Security
+from fastapi import APIRouter, HTTPException, Security
 from fastapi.requests import Request
 
 from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
-from goosebit.db.models import Rollout
+from goosebit.db.models import Rollout, Software
 
 from .requests import RolloutsDeleteRequest, RolloutsPatchRequest, RolloutsPutRequest
 from .responses import RolloutsPutResponse, RolloutsResponse
@@ -16,7 +16,8 @@ router = APIRouter(prefix="/rollouts", tags=["rollouts"])
     dependencies=[Security(validate_user_permissions, scopes=["rollout.read"])],
 )
 async def rollouts_get(_: Request) -> RolloutsResponse:
-    return await RolloutsResponse.convert(await Rollout.all().prefetch_related("software"))
+    rollouts = await Rollout.all().prefetch_related("software", "software__compatibility")
+    return RolloutsResponse(rollouts=rollouts)
 
 
 @router.post(
@@ -24,6 +25,9 @@ async def rollouts_get(_: Request) -> RolloutsResponse:
     dependencies=[Security(validate_user_permissions, scopes=["rollout.write"])],
 )
 async def rollouts_put(_: Request, rollout: RolloutsPutRequest) -> RolloutsPutResponse:
+    software = await Software.filter(id=rollout.software_id)
+    if len(software) == 0:
+        raise HTTPException(404, f"No software with ID {rollout.software_id} found")
     rollout = await Rollout.create(
         name=rollout.name,
         feed=rollout.feed,

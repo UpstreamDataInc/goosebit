@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 import string
 
@@ -22,7 +24,8 @@ router = APIRouter(prefix="/software", tags=["software"])
     dependencies=[Security(validate_user_permissions, scopes=["software.read"])],
 )
 async def software_get(_: Request) -> SoftwareResponse:
-    return await SoftwareResponse.convert(await Software.all().prefetch_related("compatibility"))
+    software = await Software.all().prefetch_related("compatibility")
+    return SoftwareResponse(software=software)
 
 
 @router.delete(

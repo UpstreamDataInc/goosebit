@@ -19,7 +19,7 @@ async def rollouts_get(request: Request) -> BFFRolloutsResponse:
     def search_filter(search_value):
         return Q(name__icontains=search_value) | Q(feed__icontains=search_value)
 
-    query = Rollout.all().prefetch_related("software")
+    query = Rollout.all().prefetch_related("software", "software__compatibility")
     total_records = await Rollout.all().count()
 
     return await BFFRolloutsResponse.convert(request, query, search_filter, total_records)

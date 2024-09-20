@@ -20,7 +20,8 @@ router = APIRouter(prefix="/devices", tags=["devices"])
     dependencies=[Security(validate_user_permissions, scopes=["home.read"])],
 )
 async def devices_get(_: Request) -> DevicesResponse:
-    return await DevicesResponse.convert(await Device.all().prefetch_related("assigned_software", "hardware"))
+    devices = await Device.all().prefetch_related("assigned_software", "hardware")
+    return DevicesResponse(devices=devices)
 
 
 @router.delete(
