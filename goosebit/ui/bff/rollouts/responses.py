@@ -1,5 +1,3 @@
-import asyncio
-
 from fastapi.requests import Request
 from pydantic import BaseModel, Field
 
@@ -32,6 +30,6 @@ class BFFRolloutsResponse(BaseModel):
 
         filtered_records = await query.count()
         rollouts = await query.offset(start).limit(length).all()
-        data = await asyncio.gather(*[RolloutSchema.convert(r) for r in rollouts])
+        data = [RolloutSchema.model_validate(r) for r in rollouts]
 
         return cls(data=data, draw=draw, records_total=total_records, records_filtered=filtered_records)

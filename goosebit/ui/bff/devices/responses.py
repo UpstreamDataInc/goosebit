@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import asyncio
-
 from fastapi.requests import Request
 from pydantic import BaseModel, Field
 
@@ -33,7 +31,7 @@ class BFFDeviceResponse(BaseModel):
             query = query.order_by(f"{'-' if order_dir == 'desc' else ''}{order_column}")
 
         filtered_records = await query.count()
-        devices = await query.offset(start).limit(length).all()
-        data = await asyncio.gather(*[DeviceSchema.convert(d) for d in devices])
+        devices = await query.offset(start).limit(length).all().prefetch_related("assigned_software", "hardware")
+        data = [DeviceSchema.model_validate(d) for d in devices]
 
         return cls(data=data, draw=draw, records_total=total_records, records_filtered=filtered_records)

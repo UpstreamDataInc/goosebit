@@ -1,37 +1,42 @@
 from __future__ import annotations
 
-import asyncio
+from urllib.parse import unquote, urlparse
+from urllib.request import url2pathname
 
-from pydantic import BaseModel
-
-from goosebit.db.models import Hardware, Software
+from anyio import Path
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 
 class HardwareSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     model: str
     revision: str
 
-    @classmethod
-    async def convert(cls, hardware: Hardware):
-        return cls(id=hardware.id, model=hardware.model, revision=hardware.revision)
-
 
 class SoftwareSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
-    name: str
+    uri: str = Field(exclude=True)
     size: int
     hash: str
     version: str
     compatibility: list[HardwareSchema]
 
-    @classmethod
-    async def convert(cls, software: Software):
-        return cls(
-            id=software.id,
-            name=software.path_user,
-            size=software.size,
-            hash=software.hash,
-            version=software.version,
-            compatibility=await asyncio.gather(*[HardwareSchema.convert(h) for h in software.compatibility]),
-        )
+    @property
+    def path(self) -> Path:
+        return Path(url2pathname(unquote(urlparse(self.uri).path)))
+
+    @property
+    def local(self) -> bool:
+        return urlparse(self.uri).scheme == "file"
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def name(self) -> str:
+        if self.local:
+            return self.path.name
+        else:
+            return self.uri

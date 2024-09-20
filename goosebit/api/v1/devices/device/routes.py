@@ -18,7 +18,8 @@ async def device_get(_: Request, updater: UpdateManager = Depends(get_update_man
     device = await updater.get_device()
     if device is None:
         raise HTTPException(404)
-    return await DeviceResponse.convert(device)
+    await device.fetch_related("assigned_software", "hardware")
+    return DeviceResponse.model_validate(device)
 
 
 @router.get(

@@ -16,7 +16,8 @@ router = APIRouter(prefix="/rollouts", tags=["rollouts"])
     dependencies=[Security(validate_user_permissions, scopes=["rollout.read"])],
 )
 async def rollouts_get(_: Request) -> RolloutsResponse:
-    return await RolloutsResponse.convert(await Rollout.all().prefetch_related("software"))
+    rollouts = await Rollout.all().prefetch_related("software", "software__compatibility")
+    return RolloutsResponse(rollouts=rollouts)
 
 
 @router.post(

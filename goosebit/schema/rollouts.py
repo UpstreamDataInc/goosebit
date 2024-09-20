@@ -1,31 +1,34 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
+from datetime import datetime
 
-from goosebit.db.models import Rollout
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_serializer
+
+from goosebit.schema.software import SoftwareSchema
 
 
 class RolloutSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
-    created_at: int
+    created_at: datetime
     name: str | None
     feed: str
-    sw_file: str
-    sw_version: str
+    software: SoftwareSchema = Field(exclude=True)
     paused: bool
     success_count: int
     failure_count: int
 
-    @classmethod
-    async def convert(cls, rollout: Rollout):
-        return cls(
-            id=rollout.id,
-            created_at=int(rollout.created_at.timestamp() * 1000),
-            name=rollout.name,
-            feed=rollout.feed,
-            sw_file=rollout.software.path.name,
-            sw_version=rollout.software.version,
-            paused=rollout.paused,
-            success_count=rollout.success_count,
-            failure_count=rollout.failure_count,
-        )
+    @computed_field  # type: ignore[misc]
+    @property
+    def sw_version(self) -> str:
+        return self.software.version
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def sw_file(self) -> str:
+        return self.software.path.name
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, created_at: datetime, _info):
+        return int(created_at.timestamp() * 1000)
