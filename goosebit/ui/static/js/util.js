@@ -20,7 +20,7 @@ function secondsToRecentDate(t) {
     return s + (s === 1 ? " second" : " seconds");
 }
 
-async function updateSoftwareSelection(addSpecialMode = false) {
+async function updateSoftwareSelection() {
     try {
         const response = await fetch("/ui/bff/software");
         if (!response.ok) {
@@ -30,18 +30,6 @@ async function updateSoftwareSelection(addSpecialMode = false) {
         const data = (await response.json()).data;
         const selectElem = document.getElementById("selected-sw");
 
-        if (addSpecialMode) {
-            let optionElem = document.createElement("option");
-            optionElem.value = "rollout";
-            optionElem.textContent = "Rollout";
-            selectElem.appendChild(optionElem);
-
-            optionElem = document.createElement("option");
-            optionElem.value = "latest";
-            optionElem.textContent = "Latest";
-            selectElem.appendChild(optionElem);
-        }
-
         for (const item of data) {
             const optionElem = document.createElement("option");
             optionElem.value = item.id;
@@ -50,6 +38,7 @@ async function updateSoftwareSelection(addSpecialMode = false) {
             optionElem.textContent = `${item.version} (${models})`;
             selectElem.appendChild(optionElem);
         }
+        $("#selected-sw").selectpicker();
     } catch (error) {
         console.error("Failed to fetch device data:", error);
     }

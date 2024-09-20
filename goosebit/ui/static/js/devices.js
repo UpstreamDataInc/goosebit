@@ -127,17 +127,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                             const selectedDevice = dataTable.rows({ selected: true }).data().toArray()[0];
                             $("#device-selected-name").val(selectedDevice.name);
                             $("#device-selected-feed").val(selectedDevice.feed);
-
-                            let selectedValue;
-                            if (selectedDevice.update_mode === "Rollout") {
-                                selectedValue = "rollout";
-                            } else if (selectedDevice.update_mode === "Latest") {
-                                selectedValue = "latest";
-                            } else {
-                                selectedValue = selectedDevice.sw_assigned;
-                            }
-                            $("#selected-sw").val(selectedValue);
-
                             new bootstrap.Modal("#device-config-modal").show();
                         },
                         className: "buttons-config",
@@ -252,10 +241,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 event.preventDefault();
                 event.stopPropagation();
                 manualSoftwareForm.classList.add("was-validated");
+                if (document.getElementById("selected-sw").value === "") {
+                    document.getElementById("selected-sw").parentElement.classList.add("is-invalid");
+                }
             } else {
                 event.preventDefault();
                 await updateDeviceManualSoftware();
                 manualSoftwareForm.classList.remove("was-validated");
+                document.getElementById("selected-sw").parentElement.classList.remove("is-invalid");
                 manualSoftwareForm.reset();
                 const modal = bootstrap.Modal.getInstance(document.getElementById("device-config-modal"));
                 modal.hide();

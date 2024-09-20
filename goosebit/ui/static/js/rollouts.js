@@ -136,6 +136,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         "submit",
         (event) => {
             if (form.checkValidity() === false) {
+                if (document.getElementById("selected-sw").value === "") {
+                    document.getElementById("selected-sw").parentElement.classList.add("is-invalid");
+                }
                 event.preventDefault();
                 event.stopPropagation();
                 form.classList.add("was-validated");
@@ -143,6 +146,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 event.preventDefault();
                 createRollout();
                 form.classList.remove("was-validated");
+                document.getElementById("selected-sw").parentElement.classList.remove("is-invalid");
                 form.reset();
                 const modal = bootstrap.Modal.getInstance(document.getElementById("rollout-create-modal"));
                 modal.hide();
