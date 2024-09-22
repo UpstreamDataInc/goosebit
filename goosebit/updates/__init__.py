@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import logging
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
+import semver
 from anyio import Path
 from fastapi import HTTPException
 from fastapi.requests import Request
@@ -13,10 +15,9 @@ from goosebit.updater.manager import UpdateManager
 
 from ..settings import config
 from . import swdesc
-import semver
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 async def create_software_update(uri: str, temp_file: Path | None) -> Software:
     parsed_uri = urlparse(uri)
