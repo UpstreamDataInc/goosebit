@@ -23,7 +23,7 @@ def _append_compatibility(boardname, value, compatibility):
 def parse_descriptor(swdesc: libconf.AttrDict[Any, Any | None]):
     swdesc_attrs = {}
     try:
-        swdesc_attrs["version"] = semver.Version.parse(swdesc["software"]["version"])
+        swdesc_attrs["version"] = swdesc["software"]["version"]
         compatibility: list[dict[str, str]] = []
         _append_compatibility("default", swdesc["software"], compatibility)
 

@@ -13,7 +13,10 @@ from goosebit.updater.manager import UpdateManager
 
 from ..settings import config
 from . import swdesc
+import semver
+import logging
 
+logger = logging.getLogger(__name__)
 
 async def create_software_update(uri: str, temp_file: Path | None) -> Software:
     parsed_uri = urlparse(uri)
@@ -26,6 +29,10 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
             update_info = await swdesc.parse_file(temp_file)
         except Exception:
             raise HTTPException(422, "Software swu header cannot be parsed")
+        try:
+            update_info["version"] = semver.Version.parse(update_info["version"])
+        except ValueError as e:
+            logging.warning(f"fallback to legacy version {e}")
 
     elif parsed_uri.scheme.startswith("http"):
         try:
