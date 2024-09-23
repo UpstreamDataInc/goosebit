@@ -124,8 +124,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                     {
                         text: '<i class="bi bi-pen" ></i>',
                         action: () => {
-                            const selectedDevice = dataTable.rows({ selected: true }).data().toArray()[0];
-                            $("#device-selected-name").val(selectedDevice.name);
+                            const selectedDevices = dataTable.rows({ selected: true }).data().toArray();
+                            const selectedDevice = selectedDevices[0];
+                            updateSoftwareSelection(selectedDevices);
+                            $("#device-name").val(selectedDevice.name);
                             $("#device-selected-feed").val(selectedDevice.feed);
                             new bootstrap.Modal("#device-config-modal").show();
                         },
