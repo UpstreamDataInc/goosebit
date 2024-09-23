@@ -1,6 +1,7 @@
 from typing import Callable
 
 from pydantic import BaseModel, Field
+from tortoise.expressions import Q
 from tortoise.queryset import QuerySet
 
 from goosebit.schema.software import SoftwareSchema
@@ -14,8 +15,9 @@ class BFFSoftwareResponse(BaseModel):
     records_filtered: int = Field(serialization_alias="recordsFiltered")
 
     @classmethod
-    async def convert(cls, dt_query: DataTableRequest, query: QuerySet, search_filter: Callable):
+    async def convert(cls, dt_query: DataTableRequest, query: QuerySet, search_filter: Callable, alt_filter: Q):
         total_records = await query.count()
+        query = query.filter(alt_filter)
         if dt_query.search.value:
             query = query.filter(search_filter(dt_query.search.value))
 

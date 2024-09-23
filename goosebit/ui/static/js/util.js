@@ -20,15 +20,23 @@ function secondsToRecentDate(t) {
     return s + (s === 1 ? " second" : " seconds");
 }
 
-async function updateSoftwareSelection() {
+async function updateSoftwareSelection(devices = null) {
     try {
-        const response = await fetch("/ui/bff/software");
+        const url = ((devices) => {
+            if (devices != null) {
+                const query = devices.map((x) => x.uuid).join(",");
+                return `/ui/bff/software?uuids=${query}`;
+            }
+            return "/ui/bff/software";
+        })(devices);
+        const response = await fetch(url);
         if (!response.ok) {
             console.error("Retrieving software list failed.");
             return;
         }
         const data = (await response.json()).data;
         const selectElem = document.getElementById("selected-sw");
+        selectElem.innerHTML = "";
 
         for (const item of data) {
             const optionElem = document.createElement("option");
@@ -37,6 +45,14 @@ async function updateSoftwareSelection() {
             const models = [...new Set(item.compatibility.map((item) => item.model))];
             optionElem.textContent = `${item.version} (${models})`;
             selectElem.appendChild(optionElem);
+        }
+        $("#selected-sw").selectpicker("destroy");
+        if (data.length === 0) {
+            selectElem.title = "No valid software found for selected device(s)";
+            selectElem.disabled = true;
+        } else {
+            selectElem.disabled = false;
+            selectElem.title = "Select Software";
         }
         $("#selected-sw").selectpicker();
     } catch (error) {
