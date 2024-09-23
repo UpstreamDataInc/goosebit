@@ -3,12 +3,13 @@ from contextlib import asynccontextmanager
 from logging import getLogger
 from typing import Annotated
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrumentor
+from tortoise.exceptions import ValidationError
 
 from goosebit import api, db, realtime, ui, updater
 from goosebit.api.telemetry import metrics
@@ -56,6 +57,12 @@ app.include_router(api.router)
 app.include_router(realtime.router)
 app.mount("/static", static, name="static")
 Instrumentor.instrument_app(app)
+
+
+# Custom exception handler for Tortoise ValidationError
+@app.exception_handler(ValidationError)
+async def tortoise_validation_exception_handler(request: Request, exc: ValidationError):
+    raise HTTPException(422, str(exc))
 
 
 @app.middleware("http")
