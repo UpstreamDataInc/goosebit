@@ -167,9 +167,11 @@ class DeviceUpdateManager(UpdateManager):
         return (await Device.get_or_create(uuid=self.dev_id, defaults={"hardware": hardware}))[0]
 
     async def save_device(self, device: Device, update_fields: list[str]):
+        await device.save(update_fields=update_fields)
+
+        # only update cache after a successful database save
         result = await caches.get("default").set(self.dev_id, device, ttl=600)
         assert result, "device being cached"
-        await device.save(update_fields=update_fields)
 
     async def update_force_update(self, force_update: bool) -> None:
         device = await self.get_device()
