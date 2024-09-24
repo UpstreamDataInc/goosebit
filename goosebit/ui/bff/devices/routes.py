@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Security
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Security
 from fastapi.requests import Request
 from tortoise.expressions import Q
 
@@ -8,6 +10,8 @@ from goosebit.api.responses import StatusResponse
 from goosebit.api.v1.devices import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Device, Software, UpdateModeEnum, UpdateStateEnum
+from goosebit.ui.bff.common.requests import DataTableRequest
+from goosebit.ui.bff.common.util import parse_datatables_query
 from goosebit.updater.manager import get_update_manager
 
 from .requests import DevicesPatchRequest
@@ -20,8 +24,8 @@ router = APIRouter(prefix="/devices")
     "",
     dependencies=[Security(validate_user_permissions, scopes=["home.read"])],
 )
-async def devices_get(request: Request) -> BFFDeviceResponse:
-    def search_filter(search_value):
+async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)]) -> BFFDeviceResponse:
+    def search_filter(search_value: str):
         return (
             Q(uuid__icontains=search_value)
             | Q(name__icontains=search_value)
@@ -32,9 +36,8 @@ async def devices_get(request: Request) -> BFFDeviceResponse:
         )
 
     query = Device.all().prefetch_related("assigned_software", "hardware")
-    total_records = await Device.all().count()
 
-    return await BFFDeviceResponse.convert(request, query, search_filter, total_records)
+    return await BFFDeviceResponse.convert(dt_query, query, search_filter)
 
 
 @router.patch(

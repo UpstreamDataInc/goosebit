@@ -1,7 +1,10 @@
-from fastapi.requests import Request
+from typing import Callable
+
 from pydantic import BaseModel, Field
+from tortoise.queryset import QuerySet
 
 from goosebit.schema.software import SoftwareSchema
+from goosebit.ui.bff.common.requests import DataTableRequest
 
 
 class BFFSoftwareResponse(BaseModel):
@@ -11,25 +14,16 @@ class BFFSoftwareResponse(BaseModel):
     records_filtered: int = Field(serialization_alias="recordsFiltered")
 
     @classmethod
-    async def convert(cls, request: Request, query, search_filter, total_records):
-        params = request.query_params
+    async def convert(cls, dt_query: DataTableRequest, query: QuerySet, search_filter: Callable):
+        total_records = await query.count()
+        if dt_query.search.value:
+            query = query.filter(search_filter(dt_query.search.value))
 
-        draw = int(params.get("draw", 1))
-        start = int(params.get("start", 0))
-        length = int(params.get("length", 10))
-        search_value = params.get("search[value]", None)
-        order_column_index = params.get("order[0][column]", None)
-        order_column = params.get(f"columns[{order_column_index}][data]", None)
-        order_dir = params.get("order[0][dir]", None)
-
-        if search_value:
-            query = query.filter(search_filter(search_value))
-
-        if order_column:
-            query = query.order_by(f"{'-' if order_dir == 'desc' else ''}{order_column}")
+        if dt_query.order_query:
+            query = query.order_by(dt_query.order_query)
 
         filtered_records = await query.count()
-        devices = await query.offset(start).limit(length).all()
+        devices = await query.offset(dt_query.start).limit(dt_query.length).all()
         data = [SoftwareSchema.model_validate(d) for d in devices]
 
-        return cls(data=data, draw=draw, records_total=total_records, records_filtered=filtered_records)
+        return cls(data=data, draw=dt_query.draw, records_total=total_records, records_filtered=filtered_records)
