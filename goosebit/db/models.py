@@ -79,7 +79,8 @@ class Device(Model):
         # Check if the software is compatible with the hardware before saving
         if self.assigned_software and self.hardware:
             # Check if the assigned software is compatible with the hardware
-            is_compatible = await self.assigned_software.compatibility.filter(id=self.hardware_id).exists()
+            await self.fetch_related("assigned_software", "hardware")
+            is_compatible = await self.assigned_software.compatibility.filter(id=self.hardware.id).exists()
             if not is_compatible:
                 raise ValidationError("The assigned software is not compatible with the device's hardware.")
 
