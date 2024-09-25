@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from anyio import Path, open_file
-from fastapi import APIRouter, Depends, Form, HTTPException, Security, UploadFile
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Security, UploadFile
 from fastapi.requests import Request
 from tortoise.expressions import Q
 
@@ -25,7 +25,8 @@ router = APIRouter(prefix="/software")
     dependencies=[Security(validate_user_permissions, scopes=["software.read"])],
 )
 async def software_get(
-    request: Request, dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)]
+    dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)],
+    uuids: list[str] = Query(default=None),
 ) -> BFFSoftwareResponse:
     filters: list[Q] = []
 
@@ -35,9 +36,8 @@ async def software_get(
 
     query = Software.all().prefetch_related("compatibility")
 
-    uuids = request.query_params.get("uuids")
     if uuids:
-        hardware = await Hardware.filter(devices__uuid__in=uuids.split(",")).distinct()
+        hardware = await Hardware.filter(devices__uuid__in=uuids).distinct()
         filters.append(Q(*[Q(compatibility__id=c.id) for c in hardware], join_type="AND"))
 
     return await BFFSoftwareResponse.convert(dt_query, query, search_filter, Q(*filters))

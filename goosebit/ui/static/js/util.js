@@ -22,14 +22,13 @@ function secondsToRecentDate(t) {
 
 async function updateSoftwareSelection(devices = null) {
     try {
-        const url = ((devices) => {
-            if (devices != null) {
-                const query = devices.map((x) => x.uuid).join(",");
-                return `/ui/bff/software?uuids=${query}`;
+        const url = new URL("/ui/bff/software", window.location.origin);
+        if (devices != null) {
+            for (const device of devices) {
+                url.searchParams.append("uuids", device.uuid);
             }
-            return "/ui/bff/software";
-        })(devices);
-        const response = await fetch(url);
+        }
+        const response = await fetch(url.toString());
         if (!response.ok) {
             console.error("Retrieving software list failed.");
             return;
@@ -48,7 +47,12 @@ async function updateSoftwareSelection(devices = null) {
         }
         $("#selected-sw").selectpicker("destroy");
         if (data.length === 0) {
-            selectElem.title = "No valid software found for selected device(s)";
+            selectElem.title = "No valid software found for selected device";
+            if (devices != null) {
+                if (devices.length > 1) {
+                    selectElem.title += "s";
+                }
+            }
             selectElem.disabled = true;
         } else {
             selectElem.disabled = false;
