@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import Annotated
 
 from anyio import Path, open_file
-from fastapi import APIRouter, Depends, Form, HTTPException, Security, UploadFile
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Security, UploadFile
 from fastapi.requests import Request
 from tortoise.expressions import Q
 
 from goosebit.api.v1.software import routes
 from goosebit.auth import validate_user_permissions
-from goosebit.db.models import Rollout, Software
+from goosebit.db.models import Hardware, Rollout, Software
 from goosebit.settings import config
 from goosebit.ui.bff.common.requests import DataTableRequest
 from goosebit.ui.bff.common.util import parse_datatables_query
@@ -24,13 +24,23 @@ router = APIRouter(prefix="/software")
     "",
     dependencies=[Security(validate_user_permissions, scopes=["software.read"])],
 )
-async def software_get(dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)]) -> BFFSoftwareResponse:
-    def search_filter(search_value: str):
-        return Q(uri__icontains=search_value) | Q(version__icontains=search_value)
+async def software_get(
+    dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)],
+    uuids: list[str] = Query(default=None),
+) -> BFFSoftwareResponse:
+    filters: list[Q] = []
+
+    def search_filter(search_value):
+        base_filter = Q(Q(uri__icontains=search_value), Q(version__icontains=search_value), join_type="OR")
+        return Q(base_filter, *filters, join_type="AND")
 
     query = Software.all().prefetch_related("compatibility")
 
-    return await BFFSoftwareResponse.convert(dt_query, query, search_filter)
+    if uuids:
+        hardware = await Hardware.filter(devices__uuid__in=uuids).distinct()
+        filters.append(Q(*[Q(compatibility__id=c.id) for c in hardware], join_type="AND"))
+
+    return await BFFSoftwareResponse.convert(dt_query, query, search_filter, Q(*filters))
 
 
 router.add_api_route(

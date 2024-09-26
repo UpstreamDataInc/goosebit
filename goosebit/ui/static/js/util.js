@@ -20,27 +20,22 @@ function secondsToRecentDate(t) {
     return s + (s === 1 ? " second" : " seconds");
 }
 
-async function updateSoftwareSelection(addSpecialMode = false) {
+async function updateSoftwareSelection(devices = null) {
     try {
-        const response = await fetch("/ui/bff/software");
+        const url = new URL("/ui/bff/software", window.location.origin);
+        if (devices != null) {
+            for (const device of devices) {
+                url.searchParams.append("uuids", device.uuid);
+            }
+        }
+        const response = await fetch(url.toString());
         if (!response.ok) {
             console.error("Retrieving software list failed.");
             return;
         }
         const data = (await response.json()).data;
         const selectElem = document.getElementById("selected-sw");
-
-        if (addSpecialMode) {
-            let optionElem = document.createElement("option");
-            optionElem.value = "rollout";
-            optionElem.textContent = "Rollout";
-            selectElem.appendChild(optionElem);
-
-            optionElem = document.createElement("option");
-            optionElem.value = "latest";
-            optionElem.textContent = "Latest";
-            selectElem.appendChild(optionElem);
-        }
+        selectElem.innerHTML = "";
 
         for (const item of data) {
             const optionElem = document.createElement("option");
@@ -50,6 +45,20 @@ async function updateSoftwareSelection(addSpecialMode = false) {
             optionElem.textContent = `${item.version} (${models})`;
             selectElem.appendChild(optionElem);
         }
+        $("#selected-sw").selectpicker("destroy");
+        if (data.length === 0) {
+            selectElem.title = "No valid software found for selected device";
+            if (devices != null) {
+                if (devices.length > 1) {
+                    selectElem.title += "s";
+                }
+            }
+            selectElem.disabled = true;
+        } else {
+            selectElem.disabled = false;
+            selectElem.title = "Select Software";
+        }
+        $("#selected-sw").selectpicker();
     } catch (error) {
         console.error("Failed to fetch device data:", error);
     }

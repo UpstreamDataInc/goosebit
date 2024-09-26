@@ -35,7 +35,7 @@ async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datata
             | Q(last_state=int(UpdateStateEnum.from_str(search_value)))
         )
 
-    query = Device.all().prefetch_related("assigned_software", "hardware")
+    query = Device.all().prefetch_related("assigned_software", "hardware", "assigned_software__compatibility")
 
     return await BFFDeviceResponse.convert(dt_query, query, search_filter)
 

@@ -8,6 +8,7 @@ from urllib.request import url2pathname
 import semver
 from anyio import Path
 from tortoise import Model, fields
+from tortoise.exceptions import ValidationError
 
 from goosebit.api.telemetry.metrics import devices_count
 
@@ -75,6 +76,14 @@ class Device(Model):
     tags = fields.ManyToManyField("models.Tag", related_name="devices", through="device_tags")
 
     async def save(self, *args, **kwargs):
+        # Check if the software is compatible with the hardware before saving
+        if self.assigned_software and self.hardware:
+            # Check if the assigned software is compatible with the hardware
+            await self.fetch_related("assigned_software", "hardware")
+            is_compatible = await self.assigned_software.compatibility.filter(id=self.hardware.id).exists()
+            if not is_compatible:
+                raise ValidationError("The assigned software is not compatible with the device's hardware.")
+
         is_new = self._saved_in_db is False
         await super().save(*args, **kwargs)
         if is_new:

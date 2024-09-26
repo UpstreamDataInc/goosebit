@@ -36,34 +36,34 @@
                     </div>
                     <form id="rollout-form" class="needs-validation" novalidate>
                         <div class="modal-body">
-                            <div class="form-group mb-3">
-                                <label for="rollout-selected-name">Name</label>
-                                <input id="rollout-selected-name"
-                                       class="form-control"
-                                       placeholder="Release 1" />
+                            <div class="input-group mb-3 has-validation">
+                                <span class="input-group-text">Name</span>
+                                <input class="form-control" id="rollout-selected-name" required />
+                                <div class="invalid-feedback">Name missing.</div>
+                            </div>
+                            <div class="input-group mb-3 has-validation">
+                                <span class="input-group-text">Feed</span>
+                                <input class="form-control" id="rollout-selected-feed" required />
+                                <div class="invalid-feedback">Feed missing. Use "default" if working with a single feed.</div>
                             </div>
                             <div class="form-group mb-3">
-                                <label for="rollout-selected-feed">Feed</label>
-                                <input id="rollout-selected-feed"
-                                       class="form-control"
-                                       placeholder="qa"
-                                       required />
-                                <div class="invalid-feedback">
-                                    Feed missing. Use "default" if working with a single
-                                    feed.
+                                <div class="input-group mb-3 has-validation">
+                                    <span class="input-group-text">Software</span>
+                                    <select class="form-control"
+                                            id="selected-sw"
+                                            data-size="5"
+                                            data-style-base="form-control"
+                                            title="Select software"
+                                            data-live-search="true"
+                                            data-live-search-normalize="true"
+                                            required></select>
+                                    <div class="invalid-feedback">Software missing.</div>
                                 </div>
                             </div>
-                            <div class="form-group mb-3">
-                                <label for="selected-sw">Software</label>
-                                <select class="form-select" id="selected-sw" required>
-                                    <option value="" disabled selected>Select software</option>
-                                </select>
-                                <div class="invalid-feedback">Select software for the rollout.</div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-outline-light">Save changes</button>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-outline-light">Save changes</button>
                         </div>
                     </form>
                 </div>
