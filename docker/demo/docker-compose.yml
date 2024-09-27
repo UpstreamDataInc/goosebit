@@ -1,0 +1,50 @@
+volumes:
+  db:
+  artifacts:
+
+services:
+  postgres:
+    image: postgres:16.3
+    environment:
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: db_pw
+      POSTGRES_DB: goosebit
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U db_user -d goosebit
+      interval: 4s
+      timeout: 2s
+
+  goosebit:
+    image: upstreamdata/goosebit
+    environment:
+      GOOSEBIT_DB_URI: postgres://db_user:db_pw@postgres:5432/goosebit
+      GOOSEBIT_USERS: |-
+        [
+          {"username": "admin@goosebit.local", "password": "admin", "permissions": ["*"]},
+          {"username": "ci", "password": "foo", "permissions": ["software.read", "software.write", "rollout.read", "rollout.write"]}
+        ]
+      GOOSEBIT_SECRET_KEY: 1a7090da4fbe9c72f888a4772302eac3
+      GOOSEBIT_ARTIFACTS_DIR: /artifacts
+      FORWARDED_ALLOW_IPS: "*"
+    volumes:
+      - artifacts:/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  nginx:
+    image: nginx:1.27.0-alpine
+    restart: unless-stopped
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx/certs:/certs:ro
+      - ./nginx/site.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - goosebit
