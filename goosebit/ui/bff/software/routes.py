@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Annotated
 
 from anyio import Path, open_file
@@ -17,6 +18,7 @@ from goosebit.updates import create_software_update
 
 from .responses import BFFSoftwareResponse
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/software")
 
 
@@ -85,12 +87,18 @@ async def post_update(
         if init:
             await temp_file.unlink(missing_ok=True)
 
-        async with await open_file(temp_file, "ab") as f:
-            await f.write(await chunk.read())
+        try:
+            async with await open_file(temp_file, "ab") as f:
+                await f.write(await chunk.read())
+        except:  # noqa: E722
+            logger.exception(f"Failed to write to {temp_file}")
 
         if done:
             try:
                 absolute = await file.absolute()
                 await create_software_update(absolute.as_uri(), temp_file)
+            except Exception as e:  # noqa: E722
+                logger.exception("Failed to create software entry")
+                raise e
             finally:
                 await temp_file.unlink(missing_ok=True)
