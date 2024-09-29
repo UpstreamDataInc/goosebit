@@ -93,7 +93,7 @@ async def test_data(db):
         await software_beta.compatibility.add(compatibility)
 
         software_release = await Software.create(
-            version="1.0.0",
+            version="1",
             hash="dummy",
             size=1200,
             uri=uri,

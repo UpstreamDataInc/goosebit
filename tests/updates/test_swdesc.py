@@ -10,7 +10,7 @@ def test_parse_descriptor_simple():
     desc = AttrDict(
         {
             "software": {
-                "version": "1.0.0",
+                "version": "1.0",
                 "description": "Software update for XXXXX Project",
                 "hardware-compatibility": ["1.0", "1.2"],
             }

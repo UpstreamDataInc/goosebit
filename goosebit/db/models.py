@@ -138,7 +138,7 @@ class Software(Model):
             return None
         return sorted(
             updates,
-            key=lambda x: semver.Version.parse(x.version),
+            key=lambda x: semver.Version.parse(x.version, optional_minor_and_patch=True),
             reverse=True,
         )[0]
 
