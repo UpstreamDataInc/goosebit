@@ -49,7 +49,7 @@ class DeviceSchema(BaseModel):
     @computed_field  # type: ignore[misc]
     @property
     def online(self) -> bool | None:
-        return self.last_seen < self.poll_seconds if self.last_seen is not None else None
+        return self.last_seen < (self.poll_seconds + 10) if self.last_seen is not None else None
 
     @computed_field  # type: ignore[misc]
     @property
