@@ -1,22 +1,32 @@
 from logging import getLogger
 
-from tortoise import Tortoise
-from tortoise.exceptions import OperationalError
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-from goosebit.db.config import TORTOISE_CONF
-from goosebit.db.models import Device
+from goosebit.db.config import SQLMODEL_CONFIG
 
 logger = getLogger(__name__)
 
+engine = create_async_engine(**SQLMODEL_CONFIG)
+
 
 async def init() -> bool:
-    await Tortoise.init(config=TORTOISE_CONF)
     try:
-        await Device.first()
-    except OperationalError:
+        async with AsyncSession(engine) as session:
+            # Try to create session to check if DB is awake
+            await session.exec(select(1))
+        return True
+    except Exception as e:
+        logger.error(e)
         return False
-    return True
 
 
 async def close():
-    await Tortoise.close_connections()
+    pass
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(init())

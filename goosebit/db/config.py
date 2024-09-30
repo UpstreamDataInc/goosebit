@@ -1,10 +1,3 @@
 from goosebit.settings import config
 
-TORTOISE_CONF = {
-    "connections": {"default": config.db_uri},
-    "apps": {
-        "models": {
-            "models": ["goosebit.db.models", "aerich.models"],
-        },
-    },
-}
+SQLMODEL_CONFIG = {"url": config.db_uri, "connect_args": {"check_same_thread": False}}

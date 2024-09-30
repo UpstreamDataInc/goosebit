@@ -1,16 +1,10 @@
 from __future__ import annotations
 
+import datetime
+import ipaddress
 from enum import IntEnum
-from typing import Self
-from urllib.parse import unquote, urlparse
-from urllib.request import url2pathname
 
-import semver
-from anyio import Path
-from tortoise import Model, fields
-from tortoise.exceptions import ValidationError
-
-from goosebit.api.telemetry.metrics import devices_count
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class UpdateModeEnum(IntEnum):
@@ -50,109 +44,65 @@ class UpdateStateEnum(IntEnum):
             return cls.NONE
 
 
-class Tag(Model):
-    id = fields.IntField(primary_key=True)
-    name = fields.CharField(max_length=255)
+class Device(SQLModel, table=True):  # type: ignore[call-arg]
+    uuid: int = Field(primary_key=True)
+    name: str | None = None
 
+    assigned_software: Software | None = Relationship(back_populates="devices")
 
-class Device(Model):
-    uuid = fields.CharField(max_length=255, primary_key=True)
-    name = fields.CharField(max_length=255, null=True)
-    assigned_software = fields.ForeignKeyField(
-        "models.Software", related_name="assigned_devices", null=True, on_delete=fields.SET_NULL
-    )
-    force_update = fields.BooleanField(default=False)
-    sw_version = fields.CharField(max_length=255, null=True)
-    hardware = fields.ForeignKeyField("models.Hardware", related_name="devices")
-    feed = fields.CharField(max_length=255, default="default")
-    update_mode = fields.IntEnumField(UpdateModeEnum, default=UpdateModeEnum.ROLLOUT)
-    last_state = fields.IntEnumField(UpdateStateEnum, default=UpdateStateEnum.UNKNOWN)
-    progress = fields.IntField(null=True)
-    log_complete = fields.BooleanField(default=False)
-    last_log = fields.TextField(null=True)
-    last_seen = fields.BigIntField(null=True)
-    last_ip = fields.CharField(max_length=15, null=True)
-    last_ipv6 = fields.CharField(max_length=40, null=True)
-    tags = fields.ManyToManyField("models.Tag", related_name="devices", through="device_tags")
-
-    async def save(self, *args, **kwargs):
-        # Check if the software is compatible with the hardware before saving
-        if self.assigned_software and self.hardware:
-            # Check if the assigned software is compatible with the hardware
-            await self.fetch_related("assigned_software", "hardware")
-            is_compatible = await self.assigned_software.compatibility.filter(id=self.hardware.id).exists()
-            if not is_compatible:
-                raise ValidationError("The assigned software is not compatible with the device's hardware.")
-
-        is_new = self._saved_in_db is False
-        await super().save(*args, **kwargs)
-        if is_new:
-            await self.notify_created()
-
-    async def delete(self, *args, **kwargs):
-        await super().delete(*args, **kwargs)
-        await self.notify_deleted()
-
-    @staticmethod
-    async def notify_created():
-        devices_count.set(await Device.all().count())
-
-    @staticmethod
-    async def notify_deleted():
-        devices_count.set(await Device.all().count())
-
-
-class Rollout(Model):
-    id = fields.IntField(primary_key=True)
-    created_at = fields.DatetimeField(auto_now_add=True)
-    name = fields.CharField(max_length=255, null=True)
-    feed = fields.CharField(max_length=255, default="default")
-    software = fields.ForeignKeyField("models.Software", related_name="rollouts")
-    paused = fields.BooleanField(default=False)
-    success_count = fields.IntField(default=0)
-    failure_count = fields.IntField(default=0)
-
-
-class Hardware(Model):
-    id = fields.IntField(primary_key=True)
-    model = fields.CharField(max_length=255)
-    revision = fields.CharField(max_length=255)
-
-
-class Software(Model):
-    id = fields.IntField(primary_key=True)
-    uri = fields.CharField(max_length=255)
-    size = fields.BigIntField()
-    hash = fields.CharField(max_length=255)
-    version = fields.CharField(max_length=255)
-    compatibility = fields.ManyToManyField(
-        "models.Hardware",
-        related_name="softwares",
-        through="software_compatibility",
-    )
-
-    @classmethod
-    async def latest(cls, device: Device) -> Self | None:
-        updates = await cls.filter(compatibility__devices__uuid=device.uuid)
-        if len(updates) == 0:
-            return None
-        return sorted(
-            updates,
-            key=lambda x: semver.Version.parse(x.version, optional_minor_and_patch=True),
-            reverse=True,
-        )[0]
+    force_update: bool = False
+    sw_version: str | None = None
+    hardware: Hardware | None = Relationship(back_populates="devices")
+    feed: str = "default"
+    update_mode: UpdateModeEnum = UpdateModeEnum.ROLLOUT
+    last_state: UpdateStateEnum = UpdateStateEnum.UNKNOWN
+    progress: int | None = None
+    log_complete: bool = False
+    last_log: str | None = None
+    last_seen: int | None = None
+    last_ipv4: ipaddress.IPv4Address | None = None
+    last_ipv6: ipaddress.IPv6Address | None = None
 
     @property
-    def path(self) -> Path:
-        return Path(url2pathname(unquote(urlparse(self.uri).path)))
+    def last_ip(self) -> str | None:
+        if self.last_ipv4 is not None:
+            return str(self.last_ipv4)
+        elif self.last_ipv6 is not None:
+            return str(self.last_ipv6)
+        return None
 
-    @property
-    def local(self) -> bool:
-        return urlparse(self.uri).scheme == "file"
 
-    @property
-    def path_user(self) -> str:
-        if self.local:
-            return self.path.name
-        else:
-            return self.uri
+class HardwareSoftwareLink(SQLModel, table=True):  # type: ignore[call-arg]
+    hardware_id: int | None = Field(default=None, foreign_key="hardware.id", primary_key=True)
+    software_id: int | None = Field(default=None, foreign_key="software.id", primary_key=True)
+
+
+class Software(SQLModel, table=True):  # type: ignore[call-arg]
+    id: int | None = Field(primary_key=True, default=None)
+    uri: str
+    size: int
+    hash: str
+    version: str
+
+    compatibility: list[Hardware] = Relationship(link_model=HardwareSoftwareLink, back_populates="compatible_software")
+    rollouts: list[Rollout] = Relationship(back_populates="software")
+    devices: list[Device] = Relationship(back_populates="assigned_software")
+
+
+class Hardware(SQLModel, table=True):  # type: ignore[call-arg]
+    id: int | None = Field(primary_key=True, default=None)
+    model: str
+    revision: str
+    compatible_software: list[Software] = Relationship(link_model=HardwareSoftwareLink, back_populates="compatibility")
+    devices: list[Device] = Relationship(back_populates="hardware")
+
+
+class Rollout(SQLModel, table=True):  # type: ignore[call-arg]
+    id: int | None = Field(primary_key=True, default=None)
+    created_at: datetime.datetime = Field(default_factory=lambda: datetime.datetime.now(datetime.UTC))
+    name: str | None = None
+    feed: str = "default"
+    software: Software | None = Relationship(back_populates="rollouts")
+    paused: bool = False
+    success_count: int = 0
+    failure_count: int = 0
