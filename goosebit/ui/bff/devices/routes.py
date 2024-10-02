@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Security
@@ -10,6 +11,8 @@ from goosebit.api.responses import StatusResponse
 from goosebit.api.v1.devices import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Device, Software, UpdateModeEnum, UpdateStateEnum
+from goosebit.schema.devices import DeviceSchema
+from goosebit.schema.software import SoftwareSchema
 from goosebit.ui.bff.common.requests import DataTableRequest
 from goosebit.ui.bff.common.util import parse_datatables_query
 from goosebit.updater.manager import get_update_manager
@@ -37,7 +40,18 @@ async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datata
 
     query = Device.all().prefetch_related("assigned_software", "hardware", "assigned_software__compatibility")
 
-    return await BFFDeviceResponse.convert(dt_query, query, search_filter)
+    response = await BFFDeviceResponse.convert(dt_query, query, search_filter)
+
+    async def set_assigned_sw(d: DeviceSchema):
+        updater = await get_update_manager(d.uuid)
+        _, target = await updater.get_update()
+        if target is not None:
+            await target.fetch_related("compatibility")
+            d.assigned_software = SoftwareSchema.model_validate(target)
+        return d
+
+    response.data = await asyncio.gather(*[set_assigned_sw(d) for d in response.data])
+    return response
 
 
 @router.patch(

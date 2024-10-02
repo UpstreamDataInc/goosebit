@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import asyncio
+
 from fastapi import APIRouter, Security
 from fastapi.requests import Request
 
 from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Device
-from goosebit.updater.manager import delete_devices
+from goosebit.schema.devices import DeviceSchema
+from goosebit.schema.software import SoftwareSchema
+from goosebit.updater.manager import delete_devices, get_update_manager
 
 from . import device
 from .requests import DevicesDeleteRequest
@@ -21,7 +25,18 @@ router = APIRouter(prefix="/devices", tags=["devices"])
 )
 async def devices_get(_: Request) -> DevicesResponse:
     devices = await Device.all().prefetch_related("assigned_software", "hardware")
-    return DevicesResponse(devices=devices)
+    response = DevicesResponse(devices=devices)
+
+    async def set_assigned_sw(d: DeviceSchema):
+        updater = await get_update_manager(d.uuid)
+        _, target = await updater.get_update()
+        if target is not None:
+            await target.fetch_related("compatibility")
+            d.assigned_software = SoftwareSchema.model_validate(target)
+        return d
+
+    response.devices = await asyncio.gather(*[set_assigned_sw(d) for d in response.devices])
+    return response
 
 
 @router.delete(
