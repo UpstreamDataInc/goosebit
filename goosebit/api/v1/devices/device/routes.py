@@ -12,7 +12,7 @@ router = APIRouter(prefix="/{dev_id}")
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=["home.read"])],
+    dependencies=[Security(validate_user_permissions, scopes=["device.read"])],
 )
 async def device_get(_: Request, updater: UpdateManager = Depends(get_update_manager)) -> DeviceResponse:
     device = await updater.get_device()
@@ -24,7 +24,7 @@ async def device_get(_: Request, updater: UpdateManager = Depends(get_update_man
 
 @router.get(
     "/log",
-    dependencies=[Security(validate_user_permissions, scopes=["home.read"])],
+    dependencies=[Security(validate_user_permissions, scopes=["device.read"])],
 )
 async def device_logs(_: Request, updater: UpdateManager = Depends(get_update_manager)) -> DeviceLogResponse:
     device = await updater.get_device()

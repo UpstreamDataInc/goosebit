@@ -25,7 +25,7 @@ router = APIRouter(prefix="/devices")
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=["home.read"])],
+    dependencies=[Security(validate_user_permissions, scopes=["device.read"])],
 )
 async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)]) -> BFFDeviceResponse:
     def search_filter(search_value: str):

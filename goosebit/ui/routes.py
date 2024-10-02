@@ -17,16 +17,7 @@ router.include_router(bff.router)
 
 @router.get("")
 async def ui_root(request: Request):
-    return RedirectResponse(request.url_for("home_ui"))
-
-
-@router.get(
-    "/home",
-    dependencies=[Security(validate_user_permissions, scopes=["home.read"])],
-)
-@nav.route("Home", permissions="home.read")
-async def home_ui(request: Request):
-    return templates.TemplateResponse(request, "index.html.jinja", context={"title": "Home"})
+    return RedirectResponse(request.url_for("devices_ui"))
 
 
 @router.get(

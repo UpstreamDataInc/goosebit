@@ -21,7 +21,7 @@ router = APIRouter(prefix="/devices", tags=["devices"])
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=["home.read"])],
+    dependencies=[Security(validate_user_permissions, scopes=["device.read"])],
 )
 async def devices_get(_: Request) -> DevicesResponse:
     devices = await Device.all().prefetch_related("assigned_software", "hardware")
