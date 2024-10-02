@@ -19,7 +19,7 @@ class RealtimeLogModel(BaseModel):
 
 @router.websocket(
     "/{dev_id}",
-    dependencies=[Security(validate_user_permissions, scopes=["home.read"])],
+    dependencies=[Security(validate_user_permissions, scopes=["device.read"])],
 )
 async def device_logs(websocket: WebSocket, dev_id: str):
     await websocket.accept()
