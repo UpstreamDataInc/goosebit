@@ -11,15 +11,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         scroller: true,
         scrollY: "65vh",
         stateSave: true,
-        stateLoadParams: (settings, data) => {
-            // if save state is older than last breaking code change...
-            if (data.time <= 1722434189000) {
-                // ... delete it
-                for (const key of Object.keys(data)) {
-                    delete data[key];
-                }
-            }
-        },
         select: true,
         rowId: "uuid",
         ajax: {
