@@ -133,27 +133,6 @@ class UpdateManager(ABC):
     async def update_log(self, log_data: str) -> None: ...
 
 
-class UnknownUpdateManager(UpdateManager):
-    def __init__(self, dev_id: str):
-        super().__init__(dev_id)
-        self.poll_time = config.poll_time_updating
-
-    async def _get_software(self) -> Software | None:
-        device = await self.get_device()
-        if device is None:
-            return None
-        return await Software.latest(device)
-
-    async def get_update(self) -> tuple[HandlingType, Software | None]:
-        software = await self._get_software()
-        if software is None:
-            return HandlingType.SKIP, None
-        return HandlingType.FORCED, software
-
-    async def update_log(self, log_data: str) -> None:
-        return
-
-
 class DeviceUpdateManager(UpdateManager):
     hardware_default = None
 
@@ -344,10 +323,7 @@ class DeviceUpdateManager(UpdateManager):
 
 
 async def get_update_manager(dev_id: str) -> UpdateManager:
-    if dev_id == "unknown":
-        return UnknownUpdateManager("unknown")
-    else:
-        return DeviceUpdateManager(dev_id)
+    return DeviceUpdateManager(dev_id)
 
 
 async def delete_devices(ids: list[str]):
