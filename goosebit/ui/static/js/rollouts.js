@@ -6,20 +6,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         paging: true,
         processing: true,
         serverSide: true,
-        order: [1, "desc"],
+        order: {
+            name: "created_at",
+            dir: "desc",
+        },
         scrollCollapse: true,
         scroller: true,
         scrollY: "65vh",
         stateSave: true,
-        stateLoadParams: (settings, data) => {
-            // if save state is older than last breaking code change...
-            if (data.time <= 1722413708000) {
-                // ... delete it
-                for (const key of Object.keys(data)) {
-                    delete data[key];
-                }
-            }
-        },
         select: true,
         rowId: "id",
         ajax: {
@@ -38,7 +32,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         ],
         columns: [
             { data: "id", visible: false },
-            { data: "created_at", orderable: true, render: (data) => new Date(data).toLocaleString() },
+            {
+                data: "created_at",
+                name: "created_at",
+                orderable: true,
+                render: (data) => new Date(data).toLocaleString(),
+            },
             { data: "name", searchable: true, orderable: true },
             { data: "feed", searchable: true, orderable: true },
             { data: "sw_file" },

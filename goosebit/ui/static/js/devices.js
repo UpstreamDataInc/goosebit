@@ -6,20 +6,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         paging: true,
         processing: false,
         serverSide: true,
-        order: [],
+        order: { name: "uuid", dir: "asc" },
         scrollCollapse: true,
         scroller: true,
         scrollY: "65vh",
         stateSave: true,
-        stateLoadParams: (settings, data) => {
-            // if save state is older than last breaking code change...
-            if (data.time <= 1722434189000) {
-                // ... delete it
-                for (const key of Object.keys(data)) {
-                    delete data[key];
-                }
-            }
-        },
         select: true,
         rowId: "uuid",
         ajax: {
@@ -52,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     return data;
                 },
             },
-            { data: "uuid", searchable: true, orderable: true },
+            { data: "uuid", name: "uuid", searchable: true, orderable: true },
             { data: "name", searchable: true, orderable: true },
             { data: "hw_model" },
             { data: "hw_revision" },

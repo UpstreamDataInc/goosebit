@@ -172,20 +172,14 @@ document.addEventListener("DOMContentLoaded", () => {
         paging: true,
         processing: false,
         serverSide: true,
-        order: [2, "desc"],
+        order: {
+            name: "version",
+            dir: "desc",
+        },
         scrollCollapse: true,
         scroller: true,
         scrollY: "60vh",
         stateSave: true,
-        stateLoadParams: (settings, data) => {
-            // if save state is older than last breaking code change...
-            if (data.time <= 1722415428000) {
-                // ... delete it
-                for (const key of Object.keys(data)) {
-                    delete data[key];
-                }
-            }
-        },
         ajax: {
             url: "/ui/bff/software",
             contentType: "application/json",
@@ -204,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
         columns: [
             { data: "id", visible: false },
             { data: "name" },
-            { data: "version", searchable: true, orderable: true },
+            { data: "version", name: "version", searchable: true, orderable: true },
             {
                 data: "compatibility",
                 render: (data) => {
