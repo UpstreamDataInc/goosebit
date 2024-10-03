@@ -172,7 +172,10 @@ document.addEventListener("DOMContentLoaded", () => {
         paging: true,
         processing: false,
         serverSide: true,
-        order: [2, "desc"],
+        order: {
+            name: "version",
+            dir: "desc",
+        },
         scrollCollapse: true,
         scroller: true,
         scrollY: "60vh",
@@ -204,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
         columns: [
             { data: "id", visible: false },
             { data: "name" },
-            { data: "version", searchable: true, orderable: true },
+            { data: "version", name: "version", searchable: true, orderable: true },
             {
                 data: "compatibility",
                 render: (data) => {

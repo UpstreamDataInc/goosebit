@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         paging: true,
         processing: false,
         serverSide: true,
-        order: [],
+        order: { name: "uuid", dir: "asc" },
         scrollCollapse: true,
         scroller: true,
         scrollY: "65vh",
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     return data;
                 },
             },
-            { data: "uuid", searchable: true, orderable: true },
+            { data: "uuid", name: "uuid", searchable: true, orderable: true },
             { data: "name", searchable: true, orderable: true },
             { data: "hw_model" },
             { data: "hw_revision" },
