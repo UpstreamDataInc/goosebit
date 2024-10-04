@@ -60,7 +60,18 @@
                 box-shadow: none!important;
             }
         </style>
-        <script>const TABLE_UPDATE_TIME = 3000;</script>
+        <script>
+            const TABLE_UPDATE_TIME = 3000;
+            DataTable.ext.errMode = function ( e, settings, helpPage, message ) {
+                if (e.jqXHR.status == 401) {
+                    window.location.reload();
+                } else if (e.jqXHR.status >= 200 && e.jqXHR.status < 300) {
+                    console.error("AJAX query error when reloading datatable");
+                }
+                console.error("Unknown error when reloading datatable");
+            };
+
+        </script>
         <script src="{{ url_for('static', path='js/util.js') }}"></script>
     </head>
     <body data-bs-theme="dark">
