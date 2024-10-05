@@ -21,11 +21,15 @@ class BFFDeviceResponse(BaseModel):
         if dt_query.search.value:
             query = query.filter(search_filter(dt_query.search.value))
 
+        filtered_records = await query.count()
+
         if dt_query.order_query:
             query = query.order_by(dt_query.order_query)
 
-        filtered_records = await query.count()
-        devices = await query.offset(dt_query.start).limit(dt_query.length).all()
+        if dt_query.length is not None:
+            query = query.limit(dt_query.length)
+
+        devices = await query.offset(dt_query.start).all()
         data = [DeviceSchema.model_validate(d) for d in devices]
 
         return cls(data=data, draw=dt_query.draw, records_total=total_records, records_filtered=filtered_records)

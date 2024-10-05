@@ -39,7 +39,7 @@ class DataTableRequest(BaseModel):
     columns: list[DataTableColumnSchema] = list()
     order: list[DataTableOrderSchema] = list()
     start: int = 0
-    length: int = 0
+    length: int | None = None
     search: DataTableSearchSchema = DataTableSearchSchema()
 
     @computed_field  # type: ignore[misc]
