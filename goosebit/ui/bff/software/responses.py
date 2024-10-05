@@ -31,7 +31,7 @@ class BFFSoftwareResponse(BaseModel):
         if not dt_query.length == 0:
             query = query.limit(dt_query.length)
 
-        devices = await query.all()
-        data = [SoftwareSchema.model_validate(d) for d in devices]
+        software = await query.all()
+        data = [SoftwareSchema.model_validate(s) for s in software]
 
         return cls(data=data, draw=dt_query.draw, records_total=total_records, records_filtered=filtered_records)
