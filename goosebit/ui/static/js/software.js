@@ -182,6 +182,10 @@ document.addEventListener("DOMContentLoaded", () => {
         stateSave: true,
         ajax: {
             url: "/ui/bff/software",
+            data: (data) => {
+                // biome-ignore lint/performance/noDelete: really has to be deleted
+                delete data.columns;
+            },
             contentType: "application/json",
         },
         initComplete: () => {

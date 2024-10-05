@@ -15,6 +15,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         rowId: "uuid",
         ajax: {
             url: "/ui/bff/devices",
+            data: (data) => {
+                // biome-ignore lint/performance/noDelete: really has to be deleted
+                delete data.columns;
+            },
             contentType: "application/json",
         },
         initComplete: () => {
@@ -44,14 +48,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 },
             },
             { data: "uuid", name: "uuid", searchable: true, orderable: true },
-            { data: "name", searchable: true, orderable: true },
+            { data: "name", name: "name", searchable: true, orderable: true },
             { data: "hw_model" },
             { data: "hw_revision" },
-            { data: "feed", searchable: true, orderable: true },
-            { data: "sw_version", searchable: true, orderable: true },
+            { data: "feed", name: "feed", searchable: true, orderable: true },
+            { data: "sw_version", name: "sw_version", searchable: true, orderable: true },
             { data: "sw_target_version" },
-            { data: "update_mode", searchable: true, orderable: true },
-            { data: "last_state", searchable: true, orderable: true },
+            { data: "update_mode", name: "update_mode", searchable: true, orderable: true },
+            { data: "last_state", name: "last_state", searchable: true, orderable: true },
             {
                 data: "force_update",
                 render: (data, type) => {
