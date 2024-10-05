@@ -70,14 +70,7 @@ async def test_data(db):
 
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
-        compatibility = await Hardware.create(model="default", revision="default")
-
-        device_rollout = await Device.create(
-            uuid="device1",
-            last_state=UpdateStateEnum.REGISTERED,
-            update_mode=UpdateModeEnum.ROLLOUT,
-            hardware=compatibility,
-        )
+        hardware = await Hardware.create(model="default", revision="default")
 
         temp_file_path = os.path.join(temp_dir, "software")
         with open(temp_file_path, "w") as temp_file:
@@ -90,7 +83,7 @@ async def test_data(db):
             size=800,
             uri=uri,
         )
-        await software_beta.compatibility.add(compatibility)
+        await software_beta.compatibility.add(hardware)
 
         software_release = await Software.create(
             version="1",
@@ -98,7 +91,7 @@ async def test_data(db):
             size=1200,
             uri=uri,
         )
-        await software_release.compatibility.add(compatibility)
+        await software_release.compatibility.add(hardware)
 
         software_rc = await Software.create(
             version="1.0.0-rc2+build77",
@@ -106,14 +99,31 @@ async def test_data(db):
             size=800,
             uri=uri,
         )
-        await software_rc.compatibility.add(compatibility)
+        await software_rc.compatibility.add(hardware)
 
         rollout_default = await Rollout.create(software_id=software_release.id)
 
+        device_rollout = await Device.create(
+            uuid="device1",
+            last_state=UpdateStateEnum.REGISTERED,
+            update_mode=UpdateModeEnum.ROLLOUT,
+            hardware=hardware,
+        )
+
+        device_assigned = await Device.create(
+            uuid="device2",
+            last_state=UpdateStateEnum.REGISTERED,
+            update_mode=UpdateModeEnum.ASSIGNED,
+            assigned_software=software_release,
+            hardware=hardware,
+        )
+
         yield dict(
-            device_rollout=device_rollout,
+            hardware=hardware,
             software_release=software_release,
             software_rc=software_rc,
             software_beta=software_beta,
             rollout_default=rollout_default,
+            device_rollout=device_rollout,
+            device_assigned=device_assigned,
         )
