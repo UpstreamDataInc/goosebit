@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         select: true,
         rowId: "uuid",
         ajax: {
-            url: "/ui/bff/devices/",
+            url: "/ui/bff/devices",
             contentType: "application/json",
         },
         initComplete: () => {
