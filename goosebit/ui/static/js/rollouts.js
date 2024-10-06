@@ -18,6 +18,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         rowId: "id",
         ajax: {
             url: "/ui/bff/rollouts",
+            data: (data) => {
+                // biome-ignore lint/performance/noDelete: really has to be deleted
+                delete data.columns;
+            },
             contentType: "application/json",
         },
         initComplete: () => {
@@ -38,8 +42,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 orderable: true,
                 render: (data) => new Date(data).toLocaleString(),
             },
-            { data: "name", searchable: true, orderable: true },
-            { data: "feed", searchable: true, orderable: true },
+            { data: "name", name: "name", searchable: true, orderable: true },
+            { data: "feed", name: "feed", searchable: true, orderable: true },
             { data: "sw_file" },
             { data: "sw_version" },
             {

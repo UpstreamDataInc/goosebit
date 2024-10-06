@@ -10,14 +10,6 @@ class DataTableSearchSchema(BaseModel):
     regex: bool | None = False
 
 
-class DataTableColumnSchema(BaseModel):
-    data: str | None
-    name: str | None = None
-    searchable: bool | None = None
-    orderable: bool | None = None
-    search: DataTableSearchSchema = DataTableSearchSchema()
-
-
 class DataTableOrderDirection(StrEnum):
     ASCENDING = "asc"
     DESCENDING = "desc"
@@ -36,21 +28,17 @@ class DataTableOrderSchema(BaseModel):
 
 class DataTableRequest(BaseModel):
     draw: int = 1
-    columns: list[DataTableColumnSchema] = list()
     order: list[DataTableOrderSchema] = list()
     start: int = 0
-    length: int = 0
+    length: int | None = None
     search: DataTableSearchSchema = DataTableSearchSchema()
 
     @computed_field  # type: ignore[misc]
     @property
     def order_query(self) -> str | None:
         try:
-            column = self.order[0].column
-            if column is None:
+            if len(self.order) == 0 or self.order[0].direction is None or self.order[0].name is None:
                 return None
-            if self.columns[column].name is None:
-                return None
-            return f"{self.order[0].direction}{self.columns[column].data}"
+            return f"{self.order[0].direction}{self.order[0].name}"
         except LookupError:
             return None

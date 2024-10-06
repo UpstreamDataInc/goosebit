@@ -24,7 +24,7 @@ router = APIRouter(prefix="/devices", tags=["devices"])
     dependencies=[Security(validate_user_permissions, scopes=["device.read"])],
 )
 async def devices_get(_: Request) -> DevicesResponse:
-    devices = await Device.all().prefetch_related("assigned_software", "hardware")
+    devices = await Device.all().prefetch_related("hardware", "assigned_software", "assigned_software__compatibility")
     response = DevicesResponse(devices=devices)
 
     async def set_assigned_sw(d: DeviceSchema):

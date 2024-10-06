@@ -7,6 +7,7 @@ from urllib.request import url2pathname
 
 import semver
 from anyio import Path
+from semver import Version
 from tortoise import Model, fields
 from tortoise.exceptions import ValidationError
 
@@ -156,3 +157,7 @@ class Software(Model):
             return self.path.name
         else:
             return self.uri
+
+    @property
+    def parsed_version(self) -> Version:
+        return semver.Version.parse(self.version, optional_minor_and_patch=True)

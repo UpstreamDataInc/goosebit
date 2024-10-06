@@ -172,16 +172,16 @@ document.addEventListener("DOMContentLoaded", () => {
         paging: true,
         processing: false,
         serverSide: true,
-        order: {
-            name: "version",
-            dir: "desc",
-        },
         scrollCollapse: true,
         scroller: true,
         scrollY: "60vh",
         stateSave: true,
         ajax: {
             url: "/ui/bff/software",
+            data: (data) => {
+                // biome-ignore lint/performance/noDelete: really has to be deleted
+                delete data.columns;
+            },
             contentType: "application/json",
         },
         initComplete: () => {
