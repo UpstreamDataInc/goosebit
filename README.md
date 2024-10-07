@@ -94,6 +94,12 @@ After a model change create the migration
 poetry run aerich migrate
 ```
 
+To seed some sample data (attention: drops all current data) use
+
+```bash
+poetry run generate-sample-data
+```
+
 ### Code formatting and linting
 
 Code is formatted using different tools
