@@ -22,7 +22,7 @@ function secondsToRecentDate(t) {
 
 async function updateSoftwareSelection(devices = null) {
     try {
-        const url = new URL("/ui/bff/software", window.location.origin);
+        const url = new URL("/ui/bff/software?order[0][dir]=desc&order[0][name]=version", window.location.origin);
         if (devices != null) {
             for (const device of devices) {
                 url.searchParams.append("uuids", device.uuid);
