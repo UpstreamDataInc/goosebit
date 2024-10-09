@@ -19,7 +19,6 @@ A simplistic, opinionated remote update server implementing hawkBit™'s [DDI AP
 2. Create the database:
 
     ```bash
-    poetry run aerich init -t goosebit.db.config
     poetry run aerich upgrade
     ```
 
