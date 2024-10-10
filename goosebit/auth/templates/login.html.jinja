@@ -46,8 +46,18 @@
                                        placeholder="Password"
                                        class="form-control form-control-lg" />
                             </div>
-                            <button class="btn btn-outline-light btn-lg px-5 w-100" type="submit">Login</button>
+                            <button class="btn btn-outline-light btn-lg px-5 w-100 mb-4" type="submit">Login</button>
                         </form>
+                        {% if azure == True %}
+                            <a class="btn btn-outline-light btn-lg px-5 w-100 mb-4"
+                               href="{{ request.url_for('login_azure') }}">
+                                <img src="{{ request.url_for('static', path='svg/login-with-azure.svg') }}"
+                                     height="20px"
+                                     width="20px"
+                                     alt="Login with Entra-ID" />
+                                Entra ID
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>

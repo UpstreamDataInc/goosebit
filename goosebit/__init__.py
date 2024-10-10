@@ -1,34 +1,28 @@
 import importlib.metadata
 from contextlib import asynccontextmanager
 from logging import getLogger
-from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
-from fastapi.security import OAuth2PasswordRequestForm
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrumentor
 from tortoise.exceptions import ValidationError
 
-from goosebit import api, db, realtime, ui, updater
+from goosebit import api, auth, db, realtime, ui, updater
 from goosebit.api.telemetry import metrics
-from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
+from goosebit.auth import get_user_from_request
 from goosebit.ui.nav import nav
 from goosebit.ui.static import static
-from goosebit.ui.templates import templates
 
 logger = getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    db_ready = await db.init()
-    if not db_ready:
-        logger.exception("DB does not exist, try running `poetry run aerich upgrade`.")
+    await db.init()
     await metrics.init()
-    if db_ready:
-        yield
+    yield
     await db.close()
 
 
@@ -55,6 +49,7 @@ app.include_router(updater.router)
 app.include_router(ui.router)
 app.include_router(api.router)
 app.include_router(realtime.router)
+app.include_router(auth.router)
 app.mount("/static", static, name="static")
 Instrumentor.instrument_app(app)
 
@@ -80,16 +75,6 @@ async def attach_nav(request: Request, call_next):
 @app.get("/", include_in_schema=False)
 def root_redirect(request: Request):
     return RedirectResponse(request.url_for("ui_root"))
-
-
-@app.get("/login", include_in_schema=False, dependencies=[Depends(redirect_if_authenticated)])
-async def login_get(request: Request):
-    return templates.TemplateResponse(request, "login.html.jinja")
-
-
-@app.post("/login", tags=["login"])
-async def login_post(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    return {"access_token": login_user(form_data.username, form_data.password), "token_type": "bearer"}
 
 
 @app.get("/logout", include_in_schema=False)
