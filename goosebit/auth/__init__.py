@@ -131,9 +131,15 @@ def check_permissions(scopes: Iterable[str] | None, permissions: Iterable[str]) 
 
 def _check_permission(scope: str, permission: str) -> bool:
     split_scope = scope.split(".")
-    for idx, permission in enumerate(permission.split(".")):
-        if permission == "*":
+    for idx, permission_part in enumerate(permission.split(".")):
+        try:
+            # if permission is longer than scope, it should be handled internally by the route
+            scope_part = split_scope[idx]
+        except IndexError:
+            break
+        # handle wildcards in both scope and permission
+        if permission_part == "*" or scope_part == "*":
             continue
-        if not split_scope[idx] == permission:
+        if not scope_part == permission_part:
             return False
     return True
