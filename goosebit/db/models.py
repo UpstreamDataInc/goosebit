@@ -72,8 +72,6 @@ class Device(Model):
     log_complete = fields.BooleanField(default=False)
     last_log = fields.TextField(null=True)
     last_seen = fields.BigIntField(null=True)
-    last_ip = fields.CharField(max_length=15, null=True)
-    last_ipv6 = fields.CharField(max_length=40, null=True)
     tags = fields.ManyToManyField("models.Tag", related_name="devices", through="device_tags")
 
     async def save(self, *args, **kwargs):

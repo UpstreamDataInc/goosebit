@@ -41,7 +41,6 @@ class DeviceSchema(BaseModel):
     last_state: Annotated[UpdateStateSchema, BeforeValidator(UpdateStateSchema.convert)]  # type: ignore[valid-type]
     update_mode: Annotated[UpdateModeSchema, BeforeValidator(UpdateModeSchema.convert)]  # type: ignore[valid-type]
     force_update: bool
-    last_ip: str | None
     last_seen: Annotated[
         int | None, BeforeValidator(lambda last_seen: round(time.time() - last_seen) if last_seen is not None else None)
     ]

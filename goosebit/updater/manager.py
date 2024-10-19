@@ -59,7 +59,7 @@ class UpdateManager(ABC):
     async def update_device_state(self, state: UpdateStateEnum) -> None:
         return
 
-    async def update_last_connection(self, last_seen: int, last_ip: str) -> None:
+    async def update_last_connection(self, last_seen: int) -> None:
         return
 
     async def update_update(self, update_mode: UpdateModeEnum, software: Software | None):
@@ -172,15 +172,10 @@ class DeviceUpdateManager(UpdateManager):
         device.last_state = state
         await self.save_device(device, update_fields=["last_state"])
 
-    async def update_last_connection(self, last_seen: int, last_ip: str) -> None:
+    async def update_last_connection(self, last_seen: int) -> None:
         device = await self.get_device()
         device.last_seen = last_seen
-        if ":" in last_ip:
-            device.last_ipv6 = last_ip
-            await self.save_device(device, update_fields=["last_seen", "last_ipv6"])
-        else:
-            device.last_ip = last_ip
-            await self.save_device(device, update_fields=["last_seen", "last_ip"])
+        await self.save_device(device, update_fields=["last_seen"])
 
     async def update_update(self, update_mode: UpdateModeEnum, software: Software | None):
         device = await self.get_device()
