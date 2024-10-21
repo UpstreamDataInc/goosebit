@@ -79,7 +79,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     return data;
                 },
             },
-            { data: "last_ip" },
             {
                 data: "last_seen",
                 render: (data, type) => {
