@@ -24,7 +24,7 @@ repos:
       - id: isort
         name: isort (python)
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
+    rev: v1.12.1
     hooks:
       - id: mypy
         additional_dependencies: [types-pyyaml==6.0.12.20240808]
