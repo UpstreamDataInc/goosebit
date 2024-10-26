@@ -1,9 +1,12 @@
 import pytest
 
 from goosebit.db.models import Hardware, Software
+from goosebit.settings import GooseBitSettings
 from goosebit.updater.manager import get_update_manager
 
 UUID = "221326d9-7873-418e-960c-c074026a3b7c"
+
+config = GooseBitSettings()
 
 
 async def _api_device_update(async_client, device, update_attribute, update_value):
@@ -47,6 +50,7 @@ async def _poll_first_time(async_client):
     assert response.status_code == 200
     data = response.json()
     assert "config" in data
+    assert data["config"]["polling"]["sleep"] == config.poll_time_registration
     assert "_links" in data
     config_url = data["_links"]["configData"]["href"]
     assert config_url == f"http://test/ddi/controller/v1/{UUID}/configData"
@@ -82,12 +86,14 @@ async def _poll(async_client, device_uuid, software: Software | None, expect_upd
     assert response.status_code == 200
     data = response.json()
     if expect_update:
+        assert data["config"]["polling"]["sleep"] == config.poll_time_updating
         assert "deploymentBase" in data["_links"], "expected update, but none available"
         deployment_base = data["_links"]["deploymentBase"]["href"]
         assert software is not None
         assert deployment_base == f"http://test/ddi/controller/v1/{device_uuid}/deploymentBase/{software.id}"
         return deployment_base
     else:
+        assert data["config"]["polling"]["sleep"] == config.poll_time_default
         assert data["_links"] == {}
         return None
 

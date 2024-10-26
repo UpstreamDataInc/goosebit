@@ -25,7 +25,6 @@ router = APIRouter(prefix="/v1")
 async def polling(request: Request, dev_id: str, updater: UpdateManager = Depends(get_update_manager)):
     links: dict[str, dict[str, str]] = {}
 
-    sleep = updater.poll_time
     device = await updater.get_device()
 
     if device is None:
@@ -45,14 +44,15 @@ async def polling(request: Request, dev_id: str, updater: UpdateManager = Depend
         logger.info(f"Skip: registration required, device={updater.dev_id}")
 
     elif device.last_state == UpdateStateEnum.ERROR and not device.force_update:
+        sleep = config.poll_time_default
         logger.warning(f"Skip: device in error state, device={updater.dev_id}")
-        pass
 
     else:
         # provide update if available. Note: this is also required while in state "running", otherwise swupdate
         # won't confirm a successful testing (might be a bug/problem in swupdate)
         handling_type, software = await updater.get_update()
         if handling_type != HandlingType.SKIP and software is not None:
+            sleep = config.poll_time_updating
             links["deploymentBase"] = {
                 "href": str(
                     request.url_for(
@@ -63,6 +63,11 @@ async def polling(request: Request, dev_id: str, updater: UpdateManager = Depend
                 )
             }
             logger.info(f"Forced: update available, device={updater.dev_id}")
+        else:
+            sleep = config.poll_time_default
+
+    # update poll time on manager so that UI can properly display if device is overdue
+    updater.poll_time = sleep
 
     return {
         "config": {"polling": {"sleep": sleep}},

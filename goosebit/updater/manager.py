@@ -83,9 +83,7 @@ class UpdateManager(ABC):
     @asynccontextmanager
     async def subscribe_log(self, callback: Callable):
         device = await self.get_device()
-        subscribers = self.log_subscribers
-        subscribers.append(callback)
-        self.log_subscribers = subscribers
+        self.log_subscribers.append(callback)
         if device is not None:
             await callback(device.last_log)
         try:
@@ -93,9 +91,7 @@ class UpdateManager(ABC):
         except asyncio.CancelledError:
             pass
         finally:
-            subscribers = self.log_subscribers
-            subscribers.remove(callback)
-            self.log_subscribers = subscribers
+            self.log_subscribers.remove(callback)
 
     @property
     def poll_seconds(self):
@@ -269,19 +265,15 @@ class DeviceUpdateManager(UpdateManager):
 
         if software is None:
             handling_type = HandlingType.SKIP
-            self.poll_time = config.poll_time_default
 
         elif software.version == device.sw_version and not device.force_update:
             handling_type = HandlingType.SKIP
-            self.poll_time = config.poll_time_default
 
         elif device.last_state == UpdateStateEnum.ERROR and not device.force_update:
             handling_type = HandlingType.SKIP
-            self.poll_time = config.poll_time_default
 
         else:
             handling_type = HandlingType.FORCED
-            self.poll_time = config.poll_time_updating
 
             if device.log_complete:
                 await self.update_log_complete(False)
