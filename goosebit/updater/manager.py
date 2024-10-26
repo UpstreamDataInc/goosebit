@@ -265,19 +265,15 @@ class DeviceUpdateManager(UpdateManager):
 
         if software is None:
             handling_type = HandlingType.SKIP
-            self.poll_time = config.poll_time_default
 
         elif software.version == device.sw_version and not device.force_update:
             handling_type = HandlingType.SKIP
-            self.poll_time = config.poll_time_default
 
         elif device.last_state == UpdateStateEnum.ERROR and not device.force_update:
             handling_type = HandlingType.SKIP
-            self.poll_time = config.poll_time_default
 
         else:
             handling_type = HandlingType.FORCED
-            self.poll_time = config.poll_time_updating
 
             if device.log_complete:
                 await self.update_log_complete(False)
