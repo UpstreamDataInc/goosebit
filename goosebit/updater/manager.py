@@ -83,9 +83,7 @@ class UpdateManager(ABC):
     @asynccontextmanager
     async def subscribe_log(self, callback: Callable):
         device = await self.get_device()
-        subscribers = self.log_subscribers
-        subscribers.append(callback)
-        self.log_subscribers = subscribers
+        self.log_subscribers.append(callback)
         if device is not None:
             await callback(device.last_log)
         try:
@@ -93,9 +91,7 @@ class UpdateManager(ABC):
         except asyncio.CancelledError:
             pass
         finally:
-            subscribers = self.log_subscribers
-            subscribers.remove(callback)
-            self.log_subscribers = subscribers
+            self.log_subscribers.remove(callback)
 
     @property
     def poll_seconds(self):
