@@ -24,6 +24,20 @@ class User(BaseModel):
         return [str(p) for p in self.permissions]
 
 
+class AzureSettings(BaseModel):
+    client_id: str
+    client_secret: str
+    tenant_id: str
+
+    @property
+    def authority(self) -> str:
+        return f"https://login.microsoftonline.com/{self.tenant_id}"
+
+
+class AuthSettings(BaseModel):
+    azure: AzureSettings | None = None
+
+
 class PrometheusSettings(BaseModel):
     enable: bool = False
 
@@ -44,6 +58,7 @@ class GooseBitSettings(BaseSettings):
     secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
 
     users: list[User] = []
+    auth: AuthSettings = AuthSettings()
 
     db_uri: str = f"sqlite:///{GOOSEBIT_ROOT_DIR.joinpath('db.sqlite3')}"
     artifacts_dir: Path = GOOSEBIT_ROOT_DIR.joinpath("artifacts")
