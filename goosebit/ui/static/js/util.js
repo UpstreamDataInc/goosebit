@@ -64,6 +64,26 @@ async function updateSoftwareSelection(devices = null) {
     }
 }
 
+async function get_request(url) {
+    const response = await fetch(url, {
+        method: "GET",
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+        if (result.detail) {
+            Swal.fire({
+                title: "Warning",
+                text: result.detail,
+                icon: "warning",
+                confirmButtonText: "Understood",
+            });
+        }
+
+        throw new Error(`POST ${url} failed for ${JSON.stringify(object)}`);
+    }
+    return result;
+}
 async function post_request(url, object) {
     const response = await fetch(url, {
         method: "POST",
