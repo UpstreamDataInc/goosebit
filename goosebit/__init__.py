@@ -14,6 +14,7 @@ from tortoise.exceptions import ValidationError
 from goosebit import api, db, realtime, ui, updater
 from goosebit.api.telemetry import metrics
 from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
+from goosebit.settings import config
 from goosebit.ui.nav import nav
 from goosebit.ui.static import static
 from goosebit.ui.templates import templates
@@ -74,6 +75,12 @@ async def attach_user(request: Request, call_next):
 @app.middleware("http")
 async def attach_nav(request: Request, call_next):
     request.scope["nav"] = nav.get()
+    return await call_next(request)
+
+
+@app.middleware("http")
+async def attach_config(request: Request, call_next):
+    request.scope["config"] = config
     return await call_next(request)
 
 
