@@ -16,7 +16,11 @@ from goosebit.settings.schema import User
 logger = logging.getLogger(__name__)
 
 
-oauth2_auth = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
+
+
+async def oauth2_auth(connection: HTTPConnection):
+    return await oauth2_bearer(connection)
 
 
 async def session_auth(connection: HTTPConnection) -> str:
