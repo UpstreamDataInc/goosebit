@@ -297,6 +297,7 @@ class DeviceUpdateManager(UpdateManager):
         if device.last_log is None:
             device.last_log = ""
 
+        # SWUpdate-specific log parsing to report progress
         matches = re.findall(r"Downloaded (\d+)%", log_data)
         if matches:
             device.progress = matches[-1]
