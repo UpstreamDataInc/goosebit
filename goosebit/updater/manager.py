@@ -301,9 +301,8 @@ class DeviceUpdateManager(UpdateManager):
         if matches:
             device.progress = matches[-1]
 
-        if not log_data == "Skipped Update.":
-            device.last_log += f"{log_data}\n"
-            await self.publish_log(f"{log_data}\n")
+        device.last_log += f"{log_data}\n"
+        await self.publish_log(f"{log_data}\n")
 
         await self.save_device(device, update_fields=["progress", "last_log"])
 
