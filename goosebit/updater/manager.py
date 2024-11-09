@@ -74,9 +74,6 @@ class UpdateManager(ABC):
     async def update_config_data(self, **kwargs):
         return
 
-    async def update_log_complete(self, log_complete: bool):
-        return
-
     async def clear_log(self) -> None:
         return
 
@@ -229,11 +226,6 @@ class DeviceUpdateManager(UpdateManager):
 
         if modified:
             await self.save_device(device, update_fields=["hardware_id", "last_state", "sw_version"])
-
-    async def update_log_complete(self, log_complete: bool):
-        device = await self.get_device()
-        device.log_complete = log_complete
-        await self.save_device(device, update_fields=["log_complete"])
 
     async def get_rollout(self) -> Rollout | None:
         device = await self.get_device()

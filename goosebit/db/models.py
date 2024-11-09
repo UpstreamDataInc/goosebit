@@ -69,7 +69,6 @@ class Device(Model):
     update_mode = fields.IntEnumField(UpdateModeEnum, default=UpdateModeEnum.ROLLOUT)
     last_state = fields.IntEnumField(UpdateStateEnum, default=UpdateStateEnum.UNKNOWN)
     progress = fields.IntField(null=True)
-    log_complete = fields.BooleanField(default=False)
     last_log = fields.TextField(null=True)
     last_seen = fields.BigIntField(null=True)
     last_ip = fields.CharField(max_length=15, null=True)
