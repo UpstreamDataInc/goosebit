@@ -107,7 +107,11 @@ async def deployment_feedback(
     _: Request, data: FeedbackSchema, action_id: int, updater: UpdateManager = Depends(get_update_manager)
 ):
     if data.status.execution == FeedbackStatusExecutionState.PROCEEDING:
-        await updater.update_device_state(UpdateStateEnum.RUNNING)
+        device = await updater.get_device()
+        if device and device.last_state != UpdateStateEnum.RUNNING:
+            await updater.clear_log()
+            await updater.update_device_state(UpdateStateEnum.RUNNING)
+
         logger.debug(f"Installation in progress, device={updater.dev_id}")
 
     elif data.status.execution == FeedbackStatusExecutionState.CLOSED:
