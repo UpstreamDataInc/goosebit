@@ -85,14 +85,6 @@ async def test_data(db):
         )
         await software_beta.compatibility.add(hardware)
 
-        software_release = await Software.create(
-            version="1",
-            hash="dummy",
-            size=1200,
-            uri=uri,
-        )
-        await software_release.compatibility.add(hardware)
-
         software_rc = await Software.create(
             version="1.0.0-rc2+build77",
             hash="dummy2",
@@ -100,6 +92,14 @@ async def test_data(db):
             uri=uri,
         )
         await software_rc.compatibility.add(hardware)
+
+        software_release = await Software.create(
+            version="1",
+            hash="dummy",
+            size=1200,
+            uri=uri,
+        )
+        await software_release.compatibility.add(hardware)
 
         rollout_default = await Rollout.create(software_id=software_release.id)
 
