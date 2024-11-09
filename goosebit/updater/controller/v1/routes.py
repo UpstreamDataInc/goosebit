@@ -116,7 +116,6 @@ async def deployment_feedback(
 
     elif data.status.execution == FeedbackStatusExecutionState.CLOSED:
         await updater.update_force_update(False)
-        await updater.update_log_complete(True)
 
         reported_software = await Software.get_or_none(id=action_id)
 
