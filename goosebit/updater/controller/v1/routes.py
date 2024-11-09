@@ -122,6 +122,7 @@ async def deployment_feedback(
         # From hawkBit docu: DDI defines also a status NONE which will not be interpreted by the update server
         # and handled like SUCCESS.
         if data.status.result.finished in [FeedbackStatusResultFinished.SUCCESS, FeedbackStatusResultFinished.NONE]:
+            await updater.deployment_action_success()
             await updater.update_device_state(UpdateStateEnum.FINISHED)
 
             # not guaranteed to be the correct rollout - see next comment.

@@ -74,6 +74,9 @@ class UpdateManager(ABC):
     async def update_config_data(self, **kwargs):
         return
 
+    async def deployment_action_success(self):
+        return
+
     async def clear_log(self) -> None:
         return
 
@@ -226,6 +229,11 @@ class DeviceUpdateManager(UpdateManager):
 
         if modified:
             await self.save_device(device, update_fields=["hardware_id", "last_state", "sw_version"])
+
+    async def deployment_action_success(self):
+        device = await self.get_device()
+        device.progress = 100
+        await self.save_device(device, update_fields=["progress"])
 
     async def get_rollout(self) -> Rollout | None:
         device = await self.get_device()
