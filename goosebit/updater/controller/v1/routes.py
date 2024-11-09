@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
-from fastapi.responses import FileResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, Response
 
 from goosebit.db.models import Software, UpdateStateEnum
 from goosebit.settings import config
@@ -184,11 +184,11 @@ async def download_artifact(_: Request, updater: UpdateManager = Depends(get_upd
     _, software = await updater.get_update()
     if software is None:
         raise HTTPException(404)
-    if software.local:
-        return FileResponse(
-            software.path,
-            media_type="application/octet-stream",
-            filename=software.path.name,
-        )
-    else:
-        return RedirectResponse(url=software.uri)
+
+    assert software.local, "device requests local software to download"
+
+    return FileResponse(
+        software.path,
+        media_type="application/octet-stream",
+        filename=software.path.name,
+    )
