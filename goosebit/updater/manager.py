@@ -77,6 +77,9 @@ class UpdateManager(ABC):
     async def update_log_complete(self, log_complete: bool):
         return
 
+    async def clear_log(self) -> None:
+        return
+
     async def get_rollout(self) -> Rollout | None:
         return None
 
@@ -284,10 +287,6 @@ class DeviceUpdateManager(UpdateManager):
         else:
             handling_type = HandlingType.FORCED
 
-            if device.log_complete:
-                await self.update_log_complete(False)
-                await self.clear_log()
-
         return handling_type, software
 
     async def update_log(self, log_data: str) -> None:
@@ -301,11 +300,6 @@ class DeviceUpdateManager(UpdateManager):
         matches = re.findall(r"Downloaded (\d+)%", log_data)
         if matches:
             device.progress = matches[-1]
-
-        if log_data.startswith("Installing Update Chunk Artifacts."):
-            # clear log
-            device.last_log = ""
-            await self.publish_log(None)
 
         if not log_data == "Skipped Update.":
             device.last_log += f"{log_data}\n"
