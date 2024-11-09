@@ -1,6 +1,6 @@
 import pytest
 
-from goosebit.db.models import Hardware, Software
+from goosebit.db.models import Device, Hardware, Software
 from goosebit.settings import GooseBitSettings
 from goosebit.updater.manager import get_update_manager
 
@@ -115,7 +115,7 @@ async def _retrieve_software_url(async_client, device_uuid, deployment_base, sof
     return data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]
 
 
-async def _feedback(async_client, device_uuid, software, finished, execution):
+async def _feedback(async_client, device_uuid, software, finished, execution, details=""):
     response = await async_client.post(
         f"/ddi/controller/v1/{device_uuid}/deploymentBase/{software.id}/feedback",
         json={
@@ -123,7 +123,7 @@ async def _feedback(async_client, device_uuid, software, finished, execution):
             "status": {
                 "result": {"finished": finished},
                 "execution": execution,
-                "details": [""],
+                "details": [details],
             },
         },
     )
@@ -281,3 +281,52 @@ async def test_up_to_date(async_client, test_data):
     await manager.update_sw_version(software.version)
 
     await _poll(async_client, device.uuid, None, False)
+
+
+async def _assertLogLines(device, expected_line_count):
+    persisted_device = await Device.get(uuid=device.uuid)
+    log = persisted_device.last_log
+    if log is None:
+        assert expected_line_count == 0
+    else:
+        actual_line_count = log.count("\n")
+        if not log.endswith("\n"):
+            actual_line_count += 1
+
+        assert actual_line_count == expected_line_count
+
+
+@pytest.mark.asyncio
+async def test_update_logs_and_progress(async_client, test_data):
+    device = test_data["device_rollout"]
+    software = test_data["software_release"]
+
+    await _api_device_update(async_client, device, "software", "latest")
+
+    deployment_base = await _poll(async_client, device.uuid, software)
+    await _assertLogLines(device, 0)
+
+    await _retrieve_software_url(async_client, device.uuid, deployment_base, software)
+
+    # confirm installation start (in reality: several of similar posts)
+    await _feedback(async_client, device.uuid, software, "none", "proceeding", "Downloaded 7%")
+    await _assertLogLines(device, 1)
+    device_api = await _api_device_get(async_client, device.uuid)
+    assert device_api["last_state"] == "Running"
+    assert device_api["progress"] == 7
+
+    await _feedback(async_client, device.uuid, software, "none", "proceeding", "Installing Update Chunk Artifacts.")
+    await _assertLogLines(device, 2)
+
+    # report finished installation
+    await _feedback(async_client, device.uuid, software, "success", "closed")
+    device_api = await _api_device_get(async_client, device.uuid)
+    assert device_api["progress"] == 100
+    assert device_api["last_state"] == "Finished"
+    assert device_api["sw_version"] == software.version
+
+    await _assertLogLines(device, 3)
+
+    # fake installation start confirmation to check clearing of logs
+    await _feedback(async_client, device.uuid, software, "none", "proceeding", "Downloaded 1%")
+    await _assertLogLines(device, 1)
