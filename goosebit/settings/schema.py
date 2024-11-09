@@ -52,6 +52,8 @@ class GooseBitSettings(BaseSettings):
 
     logging: dict = LOGGING_DEFAULT
 
+    track_device_ip: bool = True
+
     @classmethod
     def settings_customise_sources(
         cls,

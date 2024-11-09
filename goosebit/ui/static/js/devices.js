@@ -1,6 +1,52 @@
 let dataTable;
 
+const renderFunctions = {
+    online: (data, type) => {
+        if (type === "display" || type === "filter") {
+            const color = data ? "success" : "danger";
+            return `
+            <div class="text-${color}">
+                ●
+            </div>
+            `;
+        }
+        return data;
+    },
+    force_update: (data, type) => {
+        if (type === "display" || type === "filter") {
+            const color = data ? "success" : "muted";
+            return `
+            <div class="text-${color}">
+                ●
+            </div>
+            `;
+        }
+        return data;
+    },
+    progress: (data, type) => {
+        if (type === "display" || type === "filter") {
+            return data ? `${data}%` : "-";
+        }
+        return data;
+    },
+    last_seen: (data, type) => {
+        if (type === "display" || type === "filter") {
+            return secondsToRecentDate(data);
+        }
+        return data;
+    },
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
+    const columnConfig = await get_request("/ui/bff/devices/columns");
+    for (const col in columnConfig.columns) {
+        const colDesc = columnConfig.columns[col];
+        const colName = colDesc.data;
+        if (renderFunctions[colName]) {
+            columnConfig.columns[col].render = renderFunctions[colName];
+        }
+    }
+
     dataTable = new DataTable("#device-table", {
         responsive: true,
         paging: true,
@@ -32,64 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 render: (data) => data || "-",
             },
         ],
-        columns: [
-            {
-                data: "online",
-                render: (data, type) => {
-                    if (type === "display" || type === "filter") {
-                        const color = data ? "success" : "danger";
-                        return `
-                        <div class="text-${color}">
-                            ●
-                        </div>
-                        `;
-                    }
-                    return data;
-                },
-            },
-            { data: "uuid", name: "uuid", searchable: true, orderable: true },
-            { data: "name", name: "name", searchable: true, orderable: true },
-            { data: "hw_model" },
-            { data: "hw_revision" },
-            { data: "feed", name: "feed", searchable: true, orderable: true },
-            { data: "sw_version", name: "sw_version", searchable: true, orderable: true },
-            { data: "sw_target_version" },
-            { data: "update_mode", name: "update_mode", searchable: true, orderable: true },
-            { data: "last_state", name: "last_state", searchable: true, orderable: true },
-            {
-                data: "force_update",
-                render: (data, type) => {
-                    if (type === "display" || type === "filter") {
-                        const color = data ? "success" : "muted";
-                        return `
-                        <div class="text-${color}">
-                            ●
-                        </div>
-                        `;
-                    }
-                    return data;
-                },
-            },
-            {
-                data: "progress",
-                render: (data, type) => {
-                    if (type === "display" || type === "filter") {
-                        return data ? `${data}%` : "-";
-                    }
-                    return data;
-                },
-            },
-            { data: "last_ip" },
-            {
-                data: "last_seen",
-                render: (data, type) => {
-                    if (type === "display" || type === "filter") {
-                        return secondsToRecentDate(data);
-                    }
-                    return data;
-                },
-            },
-        ],
+        columns: columnConfig.columns,
         layout: {
             top1Start: {
                 buttons: [

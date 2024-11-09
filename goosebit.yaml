@@ -16,6 +16,9 @@ poll_time_default: 00:01:00
 # and device logs get updated.
 poll_time_updating: 00:00:05
 
+# Whether to track the IP of the device when it polls.  Useful for debugging, but can be turned off for privacy.
+# track_device_ip: true
+
 # Secret key used for parsing user sessions. It is HIGHLY advised to pass this as an environment variable instead.
 # Defaults to a randomized value. If this value is not set, user sessions will not persist when app restarts.
 # secret_key: my_very_top_secret_key123
