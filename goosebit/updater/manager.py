@@ -305,10 +305,7 @@ class DeviceUpdateManager(UpdateManager):
             device.last_log += f"{log_data}\n"
             await self.publish_log(f"{log_data}\n")
 
-        await self.save_device(
-            device,
-            update_fields=["progress", "last_log"],
-        )
+        await self.save_device(device, update_fields=["progress", "last_log"])
 
     async def clear_log(self) -> None:
         device = await self.get_device()
