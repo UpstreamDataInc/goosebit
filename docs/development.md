@@ -48,7 +48,7 @@ poetry run pre-commit install
 To manually apply the hooks to all files use:
 
 ```bash
-pre-commit run --all-files
+poetry run pre-commit run --all-files
 ```
 
 ### Testing
