@@ -45,7 +45,7 @@ async def polling(request: Request, dev_id: str, updater: UpdateManager = Depend
 
     elif device.last_state == UpdateStateEnum.ERROR and not device.force_update:
         sleep = config.poll_time_default
-        logger.warning(f"Skip: device in error state, device={updater.dev_id}")
+        logger.info(f"Skip: device in error state, device={updater.dev_id}")
 
     else:
         # provide update if available. Note: this is also required while in state "running", otherwise swupdate
@@ -158,7 +158,7 @@ async def deployment_feedback(
 
             logger.debug(f"Installation failed, software={reported_software.version}, device={updater.dev_id}")
     else:
-        logging.warning(
+        logging.error(
             f"Device reported unhandled execution state, state={data.status.execution}, device={updater.dev_id}"
         )
 
