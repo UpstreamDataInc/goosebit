@@ -4,11 +4,13 @@ from logging import getLogger
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrumentor
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from tortoise.exceptions import ValidationError
 
 from goosebit import api, db, realtime, ui, updater
@@ -64,6 +66,13 @@ Instrumentor.instrument_app(app)
 @app.exception_handler(ValidationError)
 async def tortoise_validation_exception_handler(request: Request, exc: ValidationError):
     raise HTTPException(422, str(exc))
+
+
+# Extend default handler to do logging
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request, exc):
+    logger.warning(f"HTTPException, request={request.url}, status={exc.status_code}, detail={exc.detail}")
+    return await http_exception_handler(request, exc)
 
 
 @app.middleware("http")
