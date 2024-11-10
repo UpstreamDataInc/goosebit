@@ -125,33 +125,30 @@ async def deployment_feedback(
             await updater.deployment_action_success()
             await updater.update_device_state(UpdateStateEnum.FINISHED)
 
-            # not guaranteed to be the correct rollout - see next comment.
             rollout = await updater.get_rollout()
             if rollout:
                 if rollout.software == reported_software:
                     rollout.success_count += 1
                     await rollout.save()
                 else:
+                    # edge case where device update mode got changed while update was running
                     logging.warning(
                         f"Updating rollout success stats failed, software={reported_software.id}, device={updater.dev_id}"  # noqa: E501
                     )
 
-            # setting the currently installed version based on the current assigned software / existing rollouts
-            # is problematic. Better to assign custom action_id for each update (rollout id? software id? new id?).
-            # Alternatively - but requires customization on the gateway side - use version reported by the gateway.
             await updater.update_sw_version(reported_software.version)
             logger.debug(f"Installation successful, software={reported_software.version}, device={updater.dev_id}")
 
         elif data.status.result.finished == FeedbackStatusResultFinished.FAILURE:
             await updater.update_device_state(UpdateStateEnum.ERROR)
 
-            # not guaranteed to be the correct rollout - see comment above.
             rollout = await updater.get_rollout()
             if rollout:
                 if rollout.software == reported_software:
                     rollout.failure_count += 1
                     await rollout.save()
                 else:
+                    # edge case where device update mode got changed while update was running
                     logging.warning(
                         f"Updating rollout failure stats failed, software={reported_software.id}, device={updater.dev_id}"  # noqa: E501
                     )
