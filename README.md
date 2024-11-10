@@ -2,6 +2,8 @@
 
 <img src="docs/img/goosebit-logo.png" style="width: 100px; height: 100px; display: block;">
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/UpstreamDataInc/goosebit/badge)](https://scorecard.dev/viewer/?uri=github.com/UpstreamDataInc/goosebit)
+
 ---
 
 A simplistic, opinionated remote update server implementing hawkBit™'s [DDI API](https://eclipse.dev/hawkbit/apis/ddi_api/).
@@ -121,7 +123,7 @@ poetry run pre-commit install
 To manually apply the hooks to all files use:
 
 ```bash
-pre-commit run --all-files
+poetry run pre-commit run --all-files
 ```
 
 ### Testing
