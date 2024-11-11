@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = {extras = ["uvicorn"], version = "^0.111.0"}
+fastapi = {extras = ["uvicorn"], version = "^0.115.4"}
 python-multipart = "^0.0.9"
 jinja2 = "^3.1.4"
 itsdangerous = "^2.2.0"
