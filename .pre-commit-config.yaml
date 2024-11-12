@@ -5,6 +5,7 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
+      - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-yaml
         name: check-yaml for mkdocs.yml
@@ -57,3 +58,7 @@ repos:
     hooks:
       - id: djlint-reformat-jinja
       - id: djlint-jinja
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.16.3
+    hooks:
+      - id: gitleaks
