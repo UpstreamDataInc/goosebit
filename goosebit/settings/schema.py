@@ -1,5 +1,6 @@
 import os
 import secrets
+from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
 
@@ -24,6 +25,17 @@ class User(BaseModel):
         return [str(p) for p in self.permissions]
 
 
+class DeviceAuthMode(StrEnum):
+    SETUP = "setup"  # setup mode, any devices polling with an auth token that don't have one will save it
+    STRICT = "strict"  # all devices must have keys, and all keys must be set up with the API
+    LAX = "lax"  # devices may or may not use keys, but device with keys set must poll with them
+
+
+class DeviceAuthSettings(BaseModel):
+    enable: bool = False
+    mode: DeviceAuthMode = DeviceAuthMode.STRICT
+
+
 class PrometheusSettings(BaseModel):
     enable: bool = False
 
@@ -38,6 +50,8 @@ class GooseBitSettings(BaseSettings):
     port: int = 60053  # GOOSE
 
     poll_time: str = "00:01:00"
+
+    device_auth: DeviceAuthSettings = DeviceAuthSettings()
 
     secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
 
