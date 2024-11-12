@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.requests import Request
 from tortoise.expressions import Q
 
@@ -62,6 +62,8 @@ async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datata
 )
 async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusResponse:
     for uuid in config.devices:
+        if await Device.get_or_none(uuid=uuid) is None:
+            raise HTTPException(404, f"Device with UUID {uuid} not found")
         device = await get_device(uuid)
         if config.software is not None:
             if config.software == "rollout":
@@ -79,6 +81,8 @@ async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusRespon
             await DeviceManager.update_feed(device, config.feed)
         if config.force_update is not None:
             await DeviceManager.update_force_update(device, config.force_update)
+        if config.auth_token is not None:
+            await DeviceManager.update_auth_token(device, config.auth_token)
     return StatusResponse(success=True)
 
 

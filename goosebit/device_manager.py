@@ -39,7 +39,7 @@ class DeviceManager:
     _log_subscriptions: dict[Device, list[Callable]] = {}
 
     @staticmethod
-    async def get_device(dev_id) -> Device:
+    async def get_device(dev_id: str) -> Device:
         cache = caches.get("default")
         device = await cache.get(dev_id)
         if device:
@@ -63,6 +63,11 @@ class DeviceManager:
         # only update cache after a successful database save
         result = await caches.get("default").set(device.uuid, device, ttl=600)
         assert result, "device being cached"
+
+    @staticmethod
+    async def update_auth_token(device: Device, auth_token: str) -> None:
+        device.auth_token = auth_token
+        await DeviceManager.save_device(device, update_fields=["auth_token"])
 
     @staticmethod
     async def update_force_update(device: Device, force_update: bool) -> None:
