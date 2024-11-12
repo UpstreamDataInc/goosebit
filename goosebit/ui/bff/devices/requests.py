@@ -10,3 +10,4 @@ class DevicesPatchRequest(BaseModel):
     pinned: bool | None = None
     feed: str | None = None
     force_update: bool | None = None
+    auth_token: str | None = None

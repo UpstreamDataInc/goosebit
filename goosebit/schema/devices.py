@@ -46,6 +46,7 @@ class DeviceSchema(BaseModel):
     last_seen: Annotated[
         int | None, BeforeValidator(lambda last_seen: round(time.time() - last_seen) if last_seen is not None else None)
     ]
+    auth_token: str | None
 
     @computed_field  # type: ignore[misc]
     @property
