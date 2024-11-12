@@ -1,23 +1,35 @@
 ## Settings to adjust for each installation
 
 # Port to host the server on, default:
-# port: 60053 # GOOSE ;)
+#port: 60053 # GOOSE ;)
 
 # Database to be used, default:
-# db_uri: sqlite:///<project root>/db.sqlite3
+#db_uri: sqlite:///<project root>/db.sqlite3
 
 # Path to the directory containing artifact files, default:
-# artifacts_dir: /<project root>/artifacts
+#artifacts_dir: /<project root>/artifacts
 
 # Frequency that devices should check for available updates.
 poll_time: 00:01:00
 
 # Whether to track the IP of the device when it polls.  Useful for debugging, but can be turned off for privacy.
-# track_device_ip: true
+#track_device_ip: true
+
+# Device authentication settings
+# Token-based device authentication
+#device_auth:
+#  enable: false
+
+# The auth mode, one of:
+# - strict: Strict mode, all devices must have keys, and all keys must be set via the API.
+# - lax: Lax mode, devices which have keys must use them, but devices without keys do not require them.
+# - setup: Setup mode, any devices polling with an auth token that don't have one will save it.
+# Setup mode is designed for users migrating from other services, it makes setting up existing devices easy.
+#  mode: strict
 
 # Secret key used for parsing user sessions. It is HIGHLY advised to pass this as an environment variable instead.
 # Defaults to a randomized value. If this value is not set, user sessions will not persist when app restarts.
-# secret_key: my_very_top_secret_key123
+#secret_key: my_very_top_secret_key123
 
 # User account for the frontend. Available permissions:
 # "software.read", "software.write", "software.delete"
