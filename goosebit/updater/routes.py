@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
 
 from goosebit.device_manager import DeviceManager, get_device
-from goosebit.settings import config
 from goosebit.settings.schema import DeviceAuthMode
 
 from ..db import Device
@@ -13,14 +12,14 @@ from . import controller
 
 async def log_last_connection(request: Request, dev_id: str):
     device = await get_device(dev_id)
-    if config.track_device_ip:
+    if request.scope["config"].track_device_ip:
         await DeviceManager.update_last_connection(device, round(time.time()), request.client.host)
     else:
         await DeviceManager.update_last_connection(device, round(time.time()))
 
 
 async def validate_device_token(request: Request, dev_id: str):
-    if not config.device_auth.enable:
+    if not request.scope["config"].device_auth.enable:
         return
 
     # parse device token, needs to be the `TargetToken`
@@ -33,13 +32,13 @@ async def validate_device_token(request: Request, dev_id: str):
 
     device = await DeviceManager.get_device(dev_id)
     # setup mode should register devices and set up their auth token
-    if config.device_auth.mode == DeviceAuthMode.SETUP:
+    if request.scope["config"].device_auth.mode == DeviceAuthMode.SETUP:
         if device_token is None:
             return
         await DeviceManager.update_auth_token(device, device_token)
 
     # lax mode should register devices and check their token if they have one, but not register their tokens
-    elif config.device_auth.mode == DeviceAuthMode.LAX:
+    elif request.scope["config"].device_auth.mode == DeviceAuthMode.LAX:
         # should not be possible
         assert device is not None
 
@@ -47,7 +46,7 @@ async def validate_device_token(request: Request, dev_id: str):
             raise HTTPException(401, "Device authentication token does not match.")
 
     # strict mode should ensure all device are already set up and have a token, then check the token
-    elif config.device_auth.mode == DeviceAuthMode.STRICT:
+    elif request.scope["config"].device_auth.mode == DeviceAuthMode.STRICT:
         if device_token is None:
             raise HTTPException(401, "Device authentication token is required in strict mode.")
         # do not create a device in strict mode
