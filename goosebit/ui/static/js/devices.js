@@ -2,7 +2,7 @@ let dataTable;
 
 const renderFunctions = {
     online: (data, type) => {
-        if (type === "display" || type === "filter") {
+        if (type === "display") {
             const color = data ? "success" : "danger";
             return `
             <div class="text-${color}">
@@ -13,7 +13,7 @@ const renderFunctions = {
         return data;
     },
     force_update: (data, type) => {
-        if (type === "display" || type === "filter") {
+        if (type === "display") {
             const color = data ? "success" : "muted";
             return `
             <div class="text-${color}">
