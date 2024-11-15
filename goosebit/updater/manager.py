@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import re
-from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from datetime import datetime
 from enum import StrEnum
@@ -37,110 +36,30 @@ class HandlingType(StrEnum):
     FORCED = "forced"
 
 
-class UpdateManager(ABC):
+class DeviceUpdateManager:
+    hardware_default = None
     device_log_subscriptions: dict[str, list[Callable]] = {}
     device_poll_time: dict[str, str] = {}
 
     def __init__(self, dev_id: str):
         self.dev_id = dev_id
 
-    async def get_device(self) -> Device | None:
-        return None
+    @property
+    def poll_time(self):
+        return DeviceUpdateManager.device_poll_time.get(self.dev_id, config.poll_time_default)
 
-    async def update_force_update(self, force_update: bool) -> None:
-        return
-
-    async def update_sw_version(self, version: str) -> None:
-        return
-
-    async def update_hardware(self, hardware: Hardware) -> None:
-        return
-
-    async def update_device_state(self, state: UpdateStateEnum) -> None:
-        return
-
-    async def update_last_connection(self, last_seen: int, last_ip: str | None = None) -> None:
-        return
-
-    async def update_update(self, update_mode: UpdateModeEnum, software: Software | None):
-        return
-
-    async def update_name(self, name: str):
-        return
-
-    async def update_feed(self, feed: str):
-        return
-
-    async def update_config_data(self, **kwargs):
-        return
-
-    async def deployment_action_success(self):
-        return
-
-    async def clear_log(self) -> None:
-        return
-
-    async def get_rollout(self) -> Rollout | None:
-        return None
-
-    @asynccontextmanager
-    async def subscribe_log(self, callback: Callable):
-        device = await self.get_device()
-        # do not modify, breaks when combined
-        subscribers = self.log_subscribers
-        subscribers.append(callback)
-        self.log_subscribers = subscribers
-
-        if device is not None:
-            await callback(device.last_log)
-        try:
-            yield
-        except asyncio.CancelledError:
-            pass
-        finally:
-            # do not modify, breaks when combined
-            subscribers = self.log_subscribers
-            subscribers.remove(callback)
-            self.log_subscribers = subscribers
+    @poll_time.setter
+    def poll_time(self, value: str):
+        if not value == config.poll_time_default:
+            DeviceUpdateManager.device_poll_time[self.dev_id] = value
+            return
+        if self.dev_id in DeviceUpdateManager.device_poll_time:
+            del DeviceUpdateManager.device_poll_time[self.dev_id]
 
     @property
     def poll_seconds(self):
         time_obj = datetime.strptime(self.poll_time, "%H:%M:%S")
         return time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second
-
-    @property
-    def log_subscribers(self):
-        return UpdateManager.device_log_subscriptions.get(self.dev_id, [])
-
-    @log_subscribers.setter
-    def log_subscribers(self, value: list):
-        UpdateManager.device_log_subscriptions[self.dev_id] = value
-
-    @property
-    def poll_time(self):
-        return UpdateManager.device_poll_time.get(self.dev_id, config.poll_time_default)
-
-    @poll_time.setter
-    def poll_time(self, value: str):
-        if not value == config.poll_time_default:
-            UpdateManager.device_poll_time[self.dev_id] = value
-            return
-        if self.dev_id in UpdateManager.device_poll_time:
-            del UpdateManager.device_poll_time[self.dev_id]
-
-    async def publish_log(self, log_data: str | None):
-        for cb in self.log_subscribers:
-            await cb(log_data)
-
-    @abstractmethod
-    async def get_update(self) -> tuple[HandlingType, Software | None]: ...
-
-    @abstractmethod
-    async def update_log(self, log_data: str) -> None: ...
-
-
-class DeviceUpdateManager(UpdateManager):
-    hardware_default = None
 
     @cached(key_builder=lambda fn, self: self.dev_id, alias="default")
     async def get_device(self) -> Device:
@@ -289,6 +208,38 @@ class DeviceUpdateManager(UpdateManager):
 
         return handling_type, software
 
+    @asynccontextmanager
+    async def subscribe_log(self, callback: Callable):
+        device = await self.get_device()
+        # do not modify, breaks when combined
+        subscribers = self.log_subscribers
+        subscribers.append(callback)
+        self.log_subscribers = subscribers
+
+        if device is not None:
+            await callback(device.last_log)
+        try:
+            yield
+        except asyncio.CancelledError:
+            pass
+        finally:
+            # do not modify, breaks when combined
+            subscribers = self.log_subscribers
+            subscribers.remove(callback)
+            self.log_subscribers = subscribers
+
+    @property
+    def log_subscribers(self):
+        return DeviceUpdateManager.device_log_subscriptions.get(self.dev_id, [])
+
+    @log_subscribers.setter
+    def log_subscribers(self, value: list):
+        DeviceUpdateManager.device_log_subscriptions[self.dev_id] = value
+
+    async def publish_log(self, log_data: str | None):
+        for cb in self.log_subscribers:
+            await cb(log_data)
+
     async def update_log(self, log_data: str) -> None:
         if log_data is None:
             return
@@ -314,7 +265,7 @@ class DeviceUpdateManager(UpdateManager):
         await self.publish_log(None)
 
 
-async def get_update_manager(dev_id: str) -> UpdateManager:
+async def get_update_manager(dev_id: str) -> DeviceUpdateManager:
     return DeviceUpdateManager(dev_id)
 
 
