@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             {
                 data: "paused",
                 render: (data, type) => {
-                    if (type === "display" || type === "filter") {
+                    if (type === "display") {
                         const color = data ? "danger" : "muted";
                         return `
                         <div class="text-${color}">
