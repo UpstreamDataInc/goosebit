@@ -113,7 +113,7 @@ async def deployment_feedback(
     if data.status.execution == FeedbackStatusExecutionState.PROCEEDING:
         device = await updater.get_device()
         if device and device.last_state != UpdateStateEnum.RUNNING:
-            await updater.clear_log()
+            await updater.deployment_action_start()
             await updater.update_device_state(UpdateStateEnum.RUNNING)
 
         logger.debug(f"Installation in progress, device={updater.dev_id}")

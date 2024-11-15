@@ -149,6 +149,14 @@ class DeviceUpdateManager:
         if modified:
             await self.save_device(device, update_fields=["hardware_id", "last_state", "sw_version"])
 
+    async def deployment_action_start(self):
+        device = await self.get_device()
+        device.last_log = ""
+        device.progress = 0
+        await self.save_device(device, update_fields=["last_log", "progress"])
+
+        await self.publish_log(None)
+
     async def deployment_action_success(self):
         device = await self.get_device()
         device.progress = 100
@@ -257,12 +265,6 @@ class DeviceUpdateManager:
         await self.publish_log(f"{log_data}\n")
 
         await self.save_device(device, update_fields=["progress", "last_log"])
-
-    async def clear_log(self) -> None:
-        device = await self.get_device()
-        device.last_log = ""
-        await self.save_device(device, update_fields=["last_log"])
-        await self.publish_log(None)
 
 
 async def get_update_manager(dev_id: str) -> DeviceUpdateManager:
