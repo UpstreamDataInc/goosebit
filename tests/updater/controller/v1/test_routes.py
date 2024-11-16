@@ -86,7 +86,7 @@ async def _poll(async_client, device_uuid, software: Software | None, expect_upd
     assert response.status_code == 200
     data = response.json()
     if expect_update:
-        assert data["config"]["polling"]["sleep"] == config.poll_time_updating
+        assert data["config"]["polling"]["sleep"] == config.poll_time_default
         assert "deploymentBase" in data["_links"], "expected update, but none available"
         deployment_base = data["_links"]["deploymentBase"]["href"]
         assert software is not None
