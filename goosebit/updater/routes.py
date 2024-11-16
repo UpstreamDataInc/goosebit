@@ -3,7 +3,7 @@ import time
 from fastapi import APIRouter, Depends
 from fastapi.requests import Request
 
-from goosebit.manager import get_update_manager
+from goosebit.device_manager import get_update_manager
 from goosebit.settings import config
 
 from . import controller

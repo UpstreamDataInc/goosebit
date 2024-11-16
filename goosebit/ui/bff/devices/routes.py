@@ -11,7 +11,7 @@ from goosebit.api.responses import StatusResponse
 from goosebit.api.v1.devices import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Device, Software, UpdateModeEnum, UpdateStateEnum
-from goosebit.manager import get_update_manager
+from goosebit.device_manager import get_update_manager
 from goosebit.schema.devices import DeviceSchema
 from goosebit.schema.software import SoftwareSchema
 from goosebit.settings import config
