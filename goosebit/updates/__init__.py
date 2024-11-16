@@ -9,7 +9,7 @@ from fastapi.requests import Request
 from tortoise.expressions import Q
 
 from goosebit.db.models import Hardware, Software
-from goosebit.manager import DeviceManager
+from goosebit.device_manager import DeviceManager
 
 from ..settings import config
 from . import swdesc

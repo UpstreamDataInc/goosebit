@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from websockets.exceptions import ConnectionClosed
 
 from goosebit.auth import validate_user_permissions
-from goosebit.manager import get_update_manager
+from goosebit.device_manager import get_update_manager
 
 router = APIRouter(prefix="/logs")
 
