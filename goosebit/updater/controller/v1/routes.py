@@ -34,11 +34,11 @@ async def polling(request: Request, dev_id: str, updater: DeviceUpdateManager = 
     if device is None:
         raise HTTPException(404)
 
-    sleep = config.poll_time_default
+    sleep = config.poll_time
 
     if device.last_state == UpdateStateEnum.UNKNOWN:
-        # device registration
-        sleep = config.poll_time_registration
+        # device registration: force device to poll again in 10s. After registration, an update might be available
+        sleep = "00:00:10"
         links["configData"] = {
             "href": str(
                 request.url_for(
@@ -67,9 +67,6 @@ async def polling(request: Request, dev_id: str, updater: DeviceUpdateManager = 
                 )
             }
             logger.info(f"Forced: update available, device={updater.dev_id}")
-
-    # update poll time on manager so that UI can properly display if device is overdue
-    updater.poll_time = sleep
 
     return {
         "config": {"polling": {"sleep": sleep}},
