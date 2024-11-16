@@ -98,7 +98,6 @@ router.add_api_route(
 )
 async def devices_get_columns() -> DTColumns:
     columns = []
-    columns.append(DTColumnDescription(title="Online", data="online"))
     columns.append(DTColumnDescription(title="UUID", data="uuid", name="uuid", searchable=True, orderable=True))
     columns.append(DTColumnDescription(title="Name", data="name", name="name", searchable=True, orderable=True))
     columns.append(DTColumnDescription(title="Model", data="hw_model"))
@@ -122,5 +121,6 @@ async def devices_get_columns() -> DTColumns:
     columns.append(DTColumnDescription(title="Progress", data="progress"))
     if config.track_device_ip:
         columns.append(DTColumnDescription(title="Last IP", data="last_ip"))
+    columns.append(DTColumnDescription(title="Polling", data="polling"))
     columns.append(DTColumnDescription(title="Last Seen", data="last_seen"))
     return DTColumns(columns=columns)
