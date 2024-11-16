@@ -8,7 +8,7 @@ from fastapi.requests import Request
 from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Device
-from goosebit.device_manager import delete_devices, get_update_manager
+from goosebit.device_manager import DeviceManager, get_device
 from goosebit.schema.devices import DeviceSchema
 from goosebit.schema.software import SoftwareSchema
 
@@ -28,8 +28,8 @@ async def devices_get(_: Request) -> DevicesResponse:
     response = DevicesResponse(devices=devices)
 
     async def set_assigned_sw(d: DeviceSchema):
-        updater = await get_update_manager(d.uuid)
-        _, target = await updater.get_update()
+        device = await get_device(d.uuid)
+        _, target = await DeviceManager.get_update(device)
         if target is not None:
             await target.fetch_related("compatibility")
             d.assigned_software = SoftwareSchema.model_validate(target)
@@ -44,7 +44,7 @@ async def devices_get(_: Request) -> DevicesResponse:
     dependencies=[Security(validate_user_permissions, scopes=["device.delete"])],
 )
 async def devices_delete(_: Request, config: DevicesDeleteRequest) -> StatusResponse:
-    await delete_devices(config.devices)
+    await DeviceManager.delete_devices(config.devices)
     return StatusResponse(success=True)
 
 

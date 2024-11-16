@@ -4,9 +4,9 @@ import asyncio
 import re
 from contextlib import asynccontextmanager
 from enum import StrEnum
-from typing import Callable
+from typing import Awaitable, Callable
 
-from aiocache import cached, caches
+from aiocache import caches
 
 from goosebit.db.models import (
     Device,
@@ -36,82 +36,89 @@ class HandlingType(StrEnum):
 
 class DeviceManager:
     _hardware_default = None
-    device_log_subscriptions: dict[str, list[Callable]] = {}
+    _log_subscriptions: dict[Device, list[Callable]] = {}
 
-    def __init__(self, dev_id: str):
-        self.dev_id = dev_id
+    @staticmethod
+    async def get_device(dev_id) -> Device:
+        cache = caches.get("default")
+        device = await cache.get(dev_id)
+        if device:
+            return device
 
-    @cached(key_builder=lambda fn, self: self.dev_id, alias="default")
-    async def get_device(self) -> Device:
         hardware = DeviceManager._hardware_default
         if hardware is None:
             hardware = (await Hardware.get_or_create(model="default", revision="default"))[0]
             DeviceManager._hardware_default = hardware
 
-        return (await Device.get_or_create(uuid=self.dev_id, defaults={"hardware": hardware}))[0]
+        device = (await Device.get_or_create(uuid=dev_id, defaults={"hardware": hardware}))[0]
+        result = await cache.set(device.uuid, device, ttl=600)
+        assert result, "device being cached"
 
-    async def save_device(self, device: Device, update_fields: list[str]):
+        return device
+
+    @staticmethod
+    async def save_device(device: Device, update_fields: list[str]):
         await device.save(update_fields=update_fields)
 
         # only update cache after a successful database save
-        result = await caches.get("default").set(self.dev_id, device, ttl=600)
+        result = await caches.get("default").set(device.uuid, device, ttl=600)
         assert result, "device being cached"
 
-    async def update_force_update(self, force_update: bool) -> None:
-        device = await self.get_device()
+    @staticmethod
+    async def update_force_update(device: Device, force_update: bool) -> None:
         device.force_update = force_update
-        await self.save_device(device, update_fields=["force_update"])
+        await DeviceManager.save_device(device, update_fields=["force_update"])
 
-    async def update_sw_version(self, version: str) -> None:
-        device = await self.get_device()
+    @staticmethod
+    async def update_sw_version(device: Device, version: str) -> None:
         device.sw_version = version
-        await self.save_device(device, update_fields=["sw_version"])
+        await DeviceManager.save_device(device, update_fields=["sw_version"])
 
-    async def update_hardware(self, hardware: Hardware) -> None:
-        device = await self.get_device()
+    @staticmethod
+    async def update_hardware(device: Device, hardware: Hardware) -> None:
         device.hardware = hardware
-        await self.save_device(device, update_fields=["hardware"])
+        await DeviceManager.save_device(device, update_fields=["hardware"])
 
-    async def update_device_state(self, state: UpdateStateEnum) -> None:
-        device = await self.get_device()
+    @staticmethod
+    async def update_device_state(device: Device, state: UpdateStateEnum) -> None:
         device.last_state = state
-        await self.save_device(device, update_fields=["last_state"])
+        await DeviceManager.save_device(device, update_fields=["last_state"])
 
-    async def update_last_connection(self, last_seen: int, last_ip: str | None = None) -> None:
-        device = await self.get_device()
+    @staticmethod
+    async def update_last_connection(device: Device, last_seen: int, last_ip: str | None = None) -> None:
         device.last_seen = last_seen
         if last_ip is None:
-            await self.save_device(device, update_fields=["last_seen"])
+            await DeviceManager.save_device(device, update_fields=["last_seen"])
         elif ":" in last_ip:
             device.last_ipv6 = last_ip
-            await self.save_device(device, update_fields=["last_seen", "last_ipv6"])
+            await DeviceManager.save_device(device, update_fields=["last_seen", "last_ipv6"])
         else:
             device.last_ip = last_ip
-            await self.save_device(device, update_fields=["last_seen", "last_ip"])
+            await DeviceManager.save_device(device, update_fields=["last_seen", "last_ip"])
 
-    async def update_update(self, update_mode: UpdateModeEnum, software: Software | None):
-        device = await self.get_device()
+    @staticmethod
+    async def update_update(device: Device, update_mode: UpdateModeEnum, software: Software | None):
         device.assigned_software = software
         device.update_mode = update_mode
-        await self.save_device(device, update_fields=["assigned_software_id", "update_mode"])
+        await DeviceManager.save_device(device, update_fields=["assigned_software_id", "update_mode"])
 
-    async def update_name(self, name: str):
-        device = await self.get_device()
+    @staticmethod
+    async def update_name(device: Device, name: str):
         device.name = name
-        await self.save_device(device, update_fields=["name"])
+        await DeviceManager.save_device(device, update_fields=["name"])
 
-    async def update_feed(self, feed: str):
-        device = await self.get_device()
+    @staticmethod
+    async def update_feed(device: Device, feed: str):
         device.feed = feed
-        await self.save_device(device, update_fields=["feed"])
+        await DeviceManager.save_device(device, update_fields=["feed"])
 
-    async def update_config_data(self, **kwargs):
+    @staticmethod
+    async def update_config_data(device: Device, **kwargs):
         model = kwargs.get("hw_boardname") or "default"
         revision = kwargs.get("hw_revision") or "default"
         sw_version = kwargs.get("sw_version")
 
         hardware = (await Hardware.get_or_create(model=model, revision=revision))[0]
-        device = await self.get_device()
         modified = False
 
         if device.hardware != hardware:
@@ -127,24 +134,23 @@ class DeviceManager:
             modified = True
 
         if modified:
-            await self.save_device(device, update_fields=["hardware_id", "last_state", "sw_version"])
+            await DeviceManager.save_device(device, update_fields=["hardware_id", "last_state", "sw_version"])
 
-    async def deployment_action_start(self):
-        device = await self.get_device()
+    @staticmethod
+    async def deployment_action_start(device: Device):
         device.last_log = ""
         device.progress = 0
-        await self.save_device(device, update_fields=["last_log", "progress"])
+        await DeviceManager.save_device(device, update_fields=["last_log", "progress"])
 
-        await self.publish_log(None)
+        await DeviceManager.publish_log(device, None)
 
-    async def deployment_action_success(self):
-        device = await self.get_device()
+    @staticmethod
+    async def deployment_action_success(device: Device):
         device.progress = 100
-        await self.save_device(device, update_fields=["progress"])
+        await DeviceManager.save_device(device, update_fields=["progress"])
 
-    async def get_rollout(self) -> Rollout | None:
-        device = await self.get_device()
-
+    @staticmethod
+    async def get_rollout(device: Device) -> Rollout | None:
         if device.update_mode == UpdateModeEnum.ROLLOUT:
             return (
                 await Rollout.filter(
@@ -159,11 +165,10 @@ class DeviceManager:
 
         return None
 
-    async def _get_software(self) -> Software | None:
-        device = await self.get_device()
-
+    @staticmethod
+    async def _get_software(device: Device) -> Software | None:
         if device.update_mode == UpdateModeEnum.ROLLOUT:
-            rollout = await self.get_rollout()
+            rollout = await DeviceManager.get_rollout(device)
             if not rollout or rollout.paused:
                 return None
             await rollout.fetch_related("software")
@@ -178,9 +183,9 @@ class DeviceManager:
         assert device.update_mode == UpdateModeEnum.PINNED
         return None
 
-    async def get_update(self) -> tuple[HandlingType, Software | None]:
-        device = await self.get_device()
-        software = await self._get_software()
+    @staticmethod
+    async def get_update(device: Device) -> tuple[HandlingType, Software | None]:
+        software = await DeviceManager._get_software(device)
 
         if software is None:
             handling_type = HandlingType.SKIP
@@ -196,13 +201,13 @@ class DeviceManager:
 
         return handling_type, software
 
+    @staticmethod
     @asynccontextmanager
-    async def subscribe_log(self, callback: Callable):
-        device = await self.get_device()
+    async def subscribe_log(device: Device, callback: Callable[[str], Awaitable[None]]):
         # do not modify, breaks when combined
-        subscribers = self.log_subscribers
+        subscribers = DeviceManager.get_log_subscribers(device)
         subscribers.append(callback)
-        self.log_subscribers = subscribers
+        DeviceManager.set_log_subscribers(device, subscribers)
 
         if device is not None:
             await callback(device.last_log)
@@ -212,26 +217,27 @@ class DeviceManager:
             pass
         finally:
             # do not modify, breaks when combined
-            subscribers = self.log_subscribers
+            subscribers = DeviceManager.get_log_subscribers(device)
             subscribers.remove(callback)
-            self.log_subscribers = subscribers
+            DeviceManager.set_log_subscribers(device, subscribers)
 
-    @property
-    def log_subscribers(self):
-        return DeviceManager.device_log_subscriptions.get(self.dev_id, [])
+    @staticmethod
+    def get_log_subscribers(device: Device):
+        return DeviceManager._log_subscriptions.get(device, [])
 
-    @log_subscribers.setter
-    def log_subscribers(self, value: list):
-        DeviceManager.device_log_subscriptions[self.dev_id] = value
+    @staticmethod
+    def set_log_subscribers(device: Device, value: list):
+        DeviceManager._log_subscriptions[device] = value
 
-    async def publish_log(self, log_data: str | None):
-        for cb in self.log_subscribers:
+    @staticmethod
+    async def publish_log(device: Device, log_data: str | None):
+        for cb in DeviceManager.get_log_subscribers(device):
             await cb(log_data)
 
-    async def update_log(self, log_data: str) -> None:
+    @staticmethod
+    async def update_log(device: Device, log_data: str) -> None:
         if log_data is None:
             return
-        device = await self.get_device()
 
         if device.last_log is None:
             device.last_log = ""
@@ -242,17 +248,17 @@ class DeviceManager:
             device.progress = matches[-1]
 
         device.last_log += f"{log_data}\n"
-        await self.publish_log(f"{log_data}\n")
+        await DeviceManager.publish_log(device, f"{log_data}\n")
 
-        await self.save_device(device, update_fields=["progress", "last_log"])
+        await DeviceManager.save_device(device, update_fields=["progress", "last_log"])
+
+    @staticmethod
+    async def delete_devices(ids: list[str]):
+        await Device.filter(uuid__in=ids).delete()
+        for dev_id in ids:
+            result = await caches.get("default").delete(dev_id)
+            assert result == 1, "device has been cached"
 
 
-async def get_update_manager(dev_id: str) -> DeviceManager:
-    return DeviceManager(dev_id)
-
-
-async def delete_devices(ids: list[str]):
-    await Device.filter(uuid__in=ids).delete()
-    for dev_id in ids:
-        result = await caches.get("default").delete(dev_id)
-        assert result == 1, "device has been cached"
+async def get_device(dev_id: str) -> Device:
+    return await DeviceManager.get_device(dev_id)
