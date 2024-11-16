@@ -50,7 +50,7 @@ async def _poll_first_time(async_client):
     assert response.status_code == 200
     data = response.json()
     assert "config" in data
-    assert data["config"]["polling"]["sleep"] == config.poll_time_registration
+    assert data["config"]["polling"]["sleep"] == "00:00:10"
     assert "_links" in data
     config_url = data["_links"]["configData"]["href"]
     assert config_url == f"http://test/ddi/controller/v1/{UUID}/configData"
@@ -86,14 +86,14 @@ async def _poll(async_client, device_uuid, software: Software | None, expect_upd
     assert response.status_code == 200
     data = response.json()
     if expect_update:
-        assert data["config"]["polling"]["sleep"] == config.poll_time_default
+        assert data["config"]["polling"]["sleep"] == config.poll_time
         assert "deploymentBase" in data["_links"], "expected update, but none available"
         deployment_base = data["_links"]["deploymentBase"]["href"]
         assert software is not None
         assert deployment_base == f"http://test/ddi/controller/v1/{device_uuid}/deploymentBase/{software.id}"
         return deployment_base
     else:
-        assert data["config"]["polling"]["sleep"] == config.poll_time_default
+        assert data["config"]["polling"]["sleep"] == config.poll_time
         assert data["_links"] == {}
         return None
 

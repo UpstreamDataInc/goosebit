@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import re
 from contextlib import asynccontextmanager
-from datetime import datetime
 from enum import StrEnum
 from typing import Callable
 
@@ -17,7 +16,6 @@ from goosebit.db.models import (
     UpdateModeEnum,
     UpdateStateEnum,
 )
-from goosebit.settings import config
 
 caches.set_config(
     {
@@ -39,27 +37,9 @@ class HandlingType(StrEnum):
 class DeviceUpdateManager:
     hardware_default = None
     device_log_subscriptions: dict[str, list[Callable]] = {}
-    device_poll_time: dict[str, str] = {}
 
     def __init__(self, dev_id: str):
         self.dev_id = dev_id
-
-    @property
-    def poll_time(self):
-        return DeviceUpdateManager.device_poll_time.get(self.dev_id, config.poll_time_default)
-
-    @poll_time.setter
-    def poll_time(self, value: str):
-        if not value == config.poll_time_default:
-            DeviceUpdateManager.device_poll_time[self.dev_id] = value
-            return
-        if self.dev_id in DeviceUpdateManager.device_poll_time:
-            del DeviceUpdateManager.device_poll_time[self.dev_id]
-
-    @property
-    def poll_seconds(self):
-        time_obj = datetime.strptime(self.poll_time, "%H:%M:%S")
-        return time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second
 
     @cached(key_builder=lambda fn, self: self.dev_id, alias="default")
     async def get_device(self) -> Device:
