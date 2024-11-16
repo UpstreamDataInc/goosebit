@@ -9,7 +9,7 @@ from fastapi.requests import Request
 from tortoise.expressions import Q
 
 from goosebit.db.models import Hardware, Software
-from goosebit.updater.manager import DeviceUpdateManager
+from goosebit.updater.manager import DeviceManager
 
 from ..settings import config
 from . import swdesc
@@ -92,7 +92,7 @@ async def _is_software_colliding(update_info):
     return is_colliding
 
 
-async def generate_chunk(request: Request, updater: DeviceUpdateManager) -> list:
+async def generate_chunk(request: Request, updater: DeviceManager) -> list:
     _, software = await updater.get_update()
     if software is None:
         return []

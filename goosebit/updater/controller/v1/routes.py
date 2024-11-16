@@ -6,11 +6,7 @@ from fastapi.responses import FileResponse, Response
 
 from goosebit.db.models import Software, UpdateStateEnum
 from goosebit.settings import config
-from goosebit.updater.manager import (
-    DeviceUpdateManager,
-    HandlingType,
-    get_update_manager,
-)
+from goosebit.updater.manager import DeviceManager, HandlingType, get_update_manager
 from goosebit.updates import generate_chunk
 
 from .schema import (
@@ -26,7 +22,7 @@ router = APIRouter(prefix="/v1")
 
 
 @router.get("/{dev_id}")
-async def polling(request: Request, dev_id: str, updater: DeviceUpdateManager = Depends(get_update_manager)):
+async def polling(request: Request, dev_id: str, updater: DeviceManager = Depends(get_update_manager)):
     links: dict[str, dict[str, str]] = {}
 
     device = await updater.get_device()
@@ -75,7 +71,7 @@ async def polling(request: Request, dev_id: str, updater: DeviceUpdateManager = 
 
 
 @router.put("/{dev_id}/configData")
-async def config_data(_: Request, cfg: ConfigDataSchema, updater: DeviceUpdateManager = Depends(get_update_manager)):
+async def config_data(_: Request, cfg: ConfigDataSchema, updater: DeviceManager = Depends(get_update_manager)):
     await updater.update_config_data(**cfg.data)
     logger.info(f"Updating config data, device={updater.dev_id}")
     return {"success": True, "message": "Updated swupdate data."}
@@ -85,7 +81,7 @@ async def config_data(_: Request, cfg: ConfigDataSchema, updater: DeviceUpdateMa
 async def deployment_base(
     request: Request,
     action_id: int,
-    updater: DeviceUpdateManager = Depends(get_update_manager),
+    updater: DeviceManager = Depends(get_update_manager),
 ):
     handling_type, software = await updater.get_update()
 
@@ -103,7 +99,7 @@ async def deployment_base(
 
 @router.post("/{dev_id}/deploymentBase/{action_id}/feedback")
 async def deployment_feedback(
-    _: Request, data: FeedbackSchema, action_id: int, updater: DeviceUpdateManager = Depends(get_update_manager)
+    _: Request, data: FeedbackSchema, action_id: int, updater: DeviceManager = Depends(get_update_manager)
 ):
     if data.status.execution == FeedbackStatusExecutionState.PROCEEDING:
         device = await updater.get_device()
@@ -169,7 +165,7 @@ async def deployment_feedback(
 
 
 @router.head("/{dev_id}/download")
-async def download_artifact_head(_: Request, updater: DeviceUpdateManager = Depends(get_update_manager)):
+async def download_artifact_head(_: Request, updater: DeviceManager = Depends(get_update_manager)):
     _, software = await updater.get_update()
     if software is None:
         raise HTTPException(404)
@@ -180,7 +176,7 @@ async def download_artifact_head(_: Request, updater: DeviceUpdateManager = Depe
 
 
 @router.get("/{dev_id}/download")
-async def download_artifact(_: Request, updater: DeviceUpdateManager = Depends(get_update_manager)):
+async def download_artifact(_: Request, updater: DeviceManager = Depends(get_update_manager)):
     _, software = await updater.get_update()
     if software is None:
         raise HTTPException(404)

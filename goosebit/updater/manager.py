@@ -34,7 +34,7 @@ class HandlingType(StrEnum):
     FORCED = "forced"
 
 
-class DeviceUpdateManager:
+class DeviceManager:
     _hardware_default = None
     device_log_subscriptions: dict[str, list[Callable]] = {}
 
@@ -43,10 +43,10 @@ class DeviceUpdateManager:
 
     @cached(key_builder=lambda fn, self: self.dev_id, alias="default")
     async def get_device(self) -> Device:
-        hardware = DeviceUpdateManager._hardware_default
+        hardware = DeviceManager._hardware_default
         if hardware is None:
             hardware = (await Hardware.get_or_create(model="default", revision="default"))[0]
-            DeviceUpdateManager._hardware_default = hardware
+            DeviceManager._hardware_default = hardware
 
         return (await Device.get_or_create(uuid=self.dev_id, defaults={"hardware": hardware}))[0]
 
@@ -218,11 +218,11 @@ class DeviceUpdateManager:
 
     @property
     def log_subscribers(self):
-        return DeviceUpdateManager.device_log_subscriptions.get(self.dev_id, [])
+        return DeviceManager.device_log_subscriptions.get(self.dev_id, [])
 
     @log_subscribers.setter
     def log_subscribers(self, value: list):
-        DeviceUpdateManager.device_log_subscriptions[self.dev_id] = value
+        DeviceManager.device_log_subscriptions[self.dev_id] = value
 
     async def publish_log(self, log_data: str | None):
         for cb in self.log_subscribers:
@@ -247,8 +247,8 @@ class DeviceUpdateManager:
         await self.save_device(device, update_fields=["progress", "last_log"])
 
 
-async def get_update_manager(dev_id: str) -> DeviceUpdateManager:
-    return DeviceUpdateManager(dev_id)
+async def get_update_manager(dev_id: str) -> DeviceManager:
+    return DeviceManager(dev_id)
 
 
 async def delete_devices(ids: list[str]):
