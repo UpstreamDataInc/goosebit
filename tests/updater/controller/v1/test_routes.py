@@ -1,7 +1,7 @@
 import pytest
 
 from goosebit.db.models import Device, Hardware, Software
-from goosebit.device_manager import get_update_manager
+from goosebit.device_manager import DeviceManager, get_device
 from goosebit.settings import GooseBitSettings
 
 UUID = "221326d9-7873-418e-960c-c074026a3b7c"
@@ -277,8 +277,8 @@ async def test_up_to_date(async_client, test_data):
 
     await _api_device_update(async_client, device, "software", "latest")
 
-    manager = await get_update_manager(dev_id=device.uuid)
-    await manager.update_sw_version(software.version)
+    device = await get_device(dev_id=device.uuid)
+    await DeviceManager.update_sw_version(device, software.version)
 
     await _poll(async_client, device.uuid, None, False)
 
