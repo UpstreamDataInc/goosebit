@@ -3,10 +3,10 @@ import time
 from fastapi import APIRouter, Depends
 from fastapi.requests import Request
 
+from goosebit.manager import get_update_manager
 from goosebit.settings import config
 
 from . import controller
-from .manager import get_update_manager
 
 
 async def log_last_connection(request: Request, dev_id: str):

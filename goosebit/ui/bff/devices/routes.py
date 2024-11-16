@@ -11,12 +11,12 @@ from goosebit.api.responses import StatusResponse
 from goosebit.api.v1.devices import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Device, Software, UpdateModeEnum, UpdateStateEnum
+from goosebit.manager import get_update_manager
 from goosebit.schema.devices import DeviceSchema
 from goosebit.schema.software import SoftwareSchema
 from goosebit.settings import config
 from goosebit.ui.bff.common.requests import DataTableRequest
 from goosebit.ui.bff.common.util import parse_datatables_query
-from goosebit.updater.manager import get_update_manager
 
 from ..common.responses import DTColumnDescription, DTColumns
 from .requests import DevicesPatchRequest

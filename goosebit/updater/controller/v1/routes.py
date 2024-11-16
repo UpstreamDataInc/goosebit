@@ -5,8 +5,8 @@ from fastapi.requests import Request
 from fastapi.responses import FileResponse, Response
 
 from goosebit.db.models import Software, UpdateStateEnum
+from goosebit.manager import DeviceManager, HandlingType, get_update_manager
 from goosebit.settings import config
-from goosebit.updater.manager import DeviceManager, HandlingType, get_update_manager
 from goosebit.updates import generate_chunk
 
 from .schema import (

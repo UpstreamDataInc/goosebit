@@ -5,7 +5,7 @@ from fastapi.requests import Request
 
 from goosebit.api.v1.devices.device.responses import DeviceLogResponse, DeviceResponse
 from goosebit.auth import validate_user_permissions
-from goosebit.updater.manager import DeviceManager, get_update_manager
+from goosebit.manager import DeviceManager, get_update_manager
 
 router = APIRouter(prefix="/{dev_id}")
 
