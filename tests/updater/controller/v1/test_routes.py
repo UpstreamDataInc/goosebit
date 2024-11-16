@@ -1,8 +1,8 @@
 import pytest
 
 from goosebit.db.models import Device, Hardware, Software
+from goosebit.manager import get_update_manager
 from goosebit.settings import GooseBitSettings
-from goosebit.updater.manager import get_update_manager
 
 UUID = "221326d9-7873-418e-960c-c074026a3b7c"
 

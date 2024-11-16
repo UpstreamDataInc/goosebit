@@ -8,9 +8,9 @@ from fastapi.requests import Request
 from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Device
+from goosebit.manager import delete_devices, get_update_manager
 from goosebit.schema.devices import DeviceSchema
 from goosebit.schema.software import SoftwareSchema
-from goosebit.updater.manager import delete_devices, get_update_manager
 
 from . import device
 from .requests import DevicesDeleteRequest
