@@ -35,7 +35,7 @@ class HandlingType(StrEnum):
 
 
 class DeviceUpdateManager:
-    hardware_default = None
+    _hardware_default = None
     device_log_subscriptions: dict[str, list[Callable]] = {}
 
     def __init__(self, dev_id: str):
@@ -43,10 +43,10 @@ class DeviceUpdateManager:
 
     @cached(key_builder=lambda fn, self: self.dev_id, alias="default")
     async def get_device(self) -> Device:
-        hardware = DeviceUpdateManager.hardware_default
+        hardware = DeviceUpdateManager._hardware_default
         if hardware is None:
             hardware = (await Hardware.get_or_create(model="default", revision="default"))[0]
-            DeviceUpdateManager.hardware_default = hardware
+            DeviceUpdateManager._hardware_default = hardware
 
         return (await Device.get_or_create(uuid=self.dev_id, defaults={"hardware": hardware}))[0]
 
