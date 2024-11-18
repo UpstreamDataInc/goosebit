@@ -8,7 +8,6 @@ RUN addgroup -g 1000 goosebit && \
     chown goosebit:goosebit /artifacts && \
     pip install --no-cache-dir \
         gunicorn \
-        uvicorn \
         goosebit[postgresql]==$GOOSEBIT_VERSION
 
 COPY aerich.toml /
