@@ -37,9 +37,7 @@ class GooseBitSettings(BaseSettings):
 
     port: int = 60053  # GOOSE
 
-    poll_time_default: str = "00:01:00"
-    poll_time_updating: str = "00:00:05"
-    poll_time_registration: str = "00:00:10"
+    poll_time: str = "00:01:00"
 
     secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
 

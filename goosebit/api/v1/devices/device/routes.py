@@ -5,7 +5,8 @@ from fastapi.requests import Request
 
 from goosebit.api.v1.devices.device.responses import DeviceLogResponse, DeviceResponse
 from goosebit.auth import validate_user_permissions
-from goosebit.updater.manager import UpdateManager, get_update_manager
+from goosebit.db import Device
+from goosebit.device_manager import get_device
 
 router = APIRouter(prefix="/{dev_id}")
 
@@ -14,8 +15,7 @@ router = APIRouter(prefix="/{dev_id}")
     "",
     dependencies=[Security(validate_user_permissions, scopes=["device.read"])],
 )
-async def device_get(_: Request, updater: UpdateManager = Depends(get_update_manager)) -> DeviceResponse:
-    device = await updater.get_device()
+async def device_get(_: Request, device: Device = Depends(get_device)) -> DeviceResponse:
     if device is None:
         raise HTTPException(404)
     await device.fetch_related("assigned_software", "hardware")
@@ -26,8 +26,7 @@ async def device_get(_: Request, updater: UpdateManager = Depends(get_update_man
     "/log",
     dependencies=[Security(validate_user_permissions, scopes=["device.read"])],
 )
-async def device_logs(_: Request, updater: UpdateManager = Depends(get_update_manager)) -> DeviceLogResponse:
-    device = await updater.get_device()
+async def device_logs(_: Request, device: Device = Depends(get_device)) -> DeviceLogResponse:
     if device is None:
         raise HTTPException(404)
     return DeviceLogResponse(log=device.last_log)

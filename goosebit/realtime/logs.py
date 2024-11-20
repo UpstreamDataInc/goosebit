@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from websockets.exceptions import ConnectionClosed
 
 from goosebit.auth import validate_user_permissions
-from goosebit.updater.manager import get_update_manager
+from goosebit.device_manager import DeviceManager, get_device
 
 router = APIRouter(prefix="/logs")
 
@@ -24,8 +24,7 @@ class RealtimeLogModel(BaseModel):
 async def device_logs(websocket: WebSocket, dev_id: str):
     await websocket.accept()
 
-    manager = await get_update_manager(dev_id)
-    device = await manager.get_device()
+    device = await get_device(dev_id)
 
     async def callback(log_update):
         data = RealtimeLogModel(log=log_update, progress=device.progress)
@@ -34,7 +33,7 @@ async def device_logs(websocket: WebSocket, dev_id: str):
             data.log = ""
         await websocket.send_json(dict(data))
 
-    async with manager.subscribe_log(callback):
+    async with DeviceManager.subscribe_log(device, callback):
         try:
             while True:
                 await websocket.receive()

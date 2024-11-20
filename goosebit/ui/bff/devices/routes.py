@@ -11,12 +11,12 @@ from goosebit.api.responses import StatusResponse
 from goosebit.api.v1.devices import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Device, Software, UpdateModeEnum, UpdateStateEnum
+from goosebit.device_manager import DeviceManager, get_device
 from goosebit.schema.devices import DeviceSchema
 from goosebit.schema.software import SoftwareSchema
 from goosebit.settings import config
 from goosebit.ui.bff.common.requests import DataTableRequest
 from goosebit.ui.bff.common.util import parse_datatables_query
-from goosebit.updater.manager import get_update_manager
 
 from ..common.responses import DTColumnDescription, DTColumns
 from .requests import DevicesPatchRequest
@@ -45,8 +45,8 @@ async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datata
     response = await BFFDeviceResponse.convert(dt_query, query, search_filter)
 
     async def set_assigned_sw(d: DeviceSchema):
-        updater = await get_update_manager(d.uuid)
-        _, target = await updater.get_update()
+        device = await get_device(d.uuid)
+        _, target = await DeviceManager.get_update(device)
         if target is not None:
             await target.fetch_related("compatibility")
             d.assigned_software = SoftwareSchema.model_validate(target)
@@ -62,23 +62,23 @@ async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datata
 )
 async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusResponse:
     for uuid in config.devices:
-        updater = await get_update_manager(uuid)
+        device = await get_device(uuid)
         if config.software is not None:
             if config.software == "rollout":
-                await updater.update_update(UpdateModeEnum.ROLLOUT, None)
+                await DeviceManager.update_update(device, UpdateModeEnum.ROLLOUT, None)
             elif config.software == "latest":
-                await updater.update_update(UpdateModeEnum.LATEST, None)
+                await DeviceManager.update_update(device, UpdateModeEnum.LATEST, None)
             else:
                 software = await Software.get_or_none(id=config.software)
-                await updater.update_update(UpdateModeEnum.ASSIGNED, software)
+                await DeviceManager.update_update(device, UpdateModeEnum.ASSIGNED, software)
         if config.pinned is not None:
-            await updater.update_update(UpdateModeEnum.PINNED, None)
+            await DeviceManager.update_update(device, UpdateModeEnum.PINNED, None)
         if config.name is not None:
-            await updater.update_name(config.name)
+            await DeviceManager.update_name(device, config.name)
         if config.feed is not None:
-            await updater.update_feed(config.feed)
+            await DeviceManager.update_feed(device, config.feed)
         if config.force_update is not None:
-            await updater.update_force_update(config.force_update)
+            await DeviceManager.update_force_update(device, config.force_update)
     return StatusResponse(success=True)
 
 
@@ -98,7 +98,6 @@ router.add_api_route(
 )
 async def devices_get_columns() -> DTColumns:
     columns = []
-    columns.append(DTColumnDescription(title="Online", data="online"))
     columns.append(DTColumnDescription(title="UUID", data="uuid", name="uuid", searchable=True, orderable=True))
     columns.append(DTColumnDescription(title="Name", data="name", name="name", searchable=True, orderable=True))
     columns.append(DTColumnDescription(title="Model", data="hw_model"))
@@ -122,5 +121,6 @@ async def devices_get_columns() -> DTColumns:
     columns.append(DTColumnDescription(title="Progress", data="progress"))
     if config.track_device_ip:
         columns.append(DTColumnDescription(title="Last IP", data="last_ip"))
+    columns.append(DTColumnDescription(title="Polling", data="polling"))
     columns.append(DTColumnDescription(title="Last Seen", data="last_seen"))
     return DTColumns(columns=columns)

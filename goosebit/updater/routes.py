@@ -3,18 +3,18 @@ import time
 from fastapi import APIRouter, Depends
 from fastapi.requests import Request
 
+from goosebit.device_manager import DeviceManager, get_device
 from goosebit.settings import config
 
 from . import controller
-from .manager import get_update_manager
 
 
 async def log_last_connection(request: Request, dev_id: str):
-    updater = await get_update_manager(dev_id)
+    device = await get_device(dev_id)
     if config.track_device_ip:
-        await updater.update_last_connection(round(time.time()), request.client.host)
+        await DeviceManager.update_last_connection(device, round(time.time()), request.client.host)
     else:
-        await updater.update_last_connection(round(time.time()))
+        await DeviceManager.update_last_connection(device, round(time.time()))
 
 
 router = APIRouter(

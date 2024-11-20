@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from datetime import datetime
 from enum import Enum, IntEnum, StrEnum
 from typing import Annotated
 
@@ -8,7 +9,7 @@ from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, computed_fie
 
 from goosebit.db.models import UpdateModeEnum, UpdateStateEnum
 from goosebit.schema.software import HardwareSchema, SoftwareSchema
-from goosebit.updater.manager import DeviceUpdateManager
+from goosebit.settings import config
 
 
 class ConvertableEnum(StrEnum):
@@ -48,7 +49,7 @@ class DeviceSchema(BaseModel):
 
     @computed_field  # type: ignore[misc]
     @property
-    def online(self) -> bool | None:
+    def polling(self) -> bool | None:
         return self.last_seen < (self.poll_seconds + 10) if self.last_seen is not None else None
 
     @computed_field  # type: ignore[misc]
@@ -74,4 +75,5 @@ class DeviceSchema(BaseModel):
     @computed_field  # type: ignore[misc]
     @property
     def poll_seconds(self) -> int:
-        return DeviceUpdateManager(self.uuid).poll_seconds
+        time_obj = datetime.strptime(config.poll_time, "%H:%M:%S")
+        return time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second

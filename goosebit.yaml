@@ -10,11 +10,7 @@
 # artifacts_dir: /<project root>/artifacts
 
 # Frequency that devices should check for available updates.
-poll_time_default: 00:01:00
-
-# Frequency to log information during an update. Defines how often download progress
-# and device logs get updated.
-poll_time_updating: 00:00:05
+poll_time: 00:01:00
 
 # Whether to track the IP of the device when it polls.  Useful for debugging, but can be turned off for privacy.
 # track_device_ip: true
@@ -38,7 +34,6 @@ users:
       - "device.read"
 
 ## Internal settings that usually don't need to be modified
-poll_time_registration: 00:00:10
 metrics:
   prometheus:
     enable: false

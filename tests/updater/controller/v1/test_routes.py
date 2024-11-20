@@ -1,8 +1,8 @@
 import pytest
 
 from goosebit.db.models import Device, Hardware, Software
+from goosebit.device_manager import DeviceManager, get_device
 from goosebit.settings import GooseBitSettings
-from goosebit.updater.manager import get_update_manager
 
 UUID = "221326d9-7873-418e-960c-c074026a3b7c"
 
@@ -50,7 +50,7 @@ async def _poll_first_time(async_client):
     assert response.status_code == 200
     data = response.json()
     assert "config" in data
-    assert data["config"]["polling"]["sleep"] == config.poll_time_registration
+    assert data["config"]["polling"]["sleep"] == "00:00:10"
     assert "_links" in data
     config_url = data["_links"]["configData"]["href"]
     assert config_url == f"http://test/ddi/controller/v1/{UUID}/configData"
@@ -86,14 +86,14 @@ async def _poll(async_client, device_uuid, software: Software | None, expect_upd
     assert response.status_code == 200
     data = response.json()
     if expect_update:
-        assert data["config"]["polling"]["sleep"] == config.poll_time_updating
+        assert data["config"]["polling"]["sleep"] == config.poll_time
         assert "deploymentBase" in data["_links"], "expected update, but none available"
         deployment_base = data["_links"]["deploymentBase"]["href"]
         assert software is not None
         assert deployment_base == f"http://test/ddi/controller/v1/{device_uuid}/deploymentBase/{software.id}"
         return deployment_base
     else:
-        assert data["config"]["polling"]["sleep"] == config.poll_time_default
+        assert data["config"]["polling"]["sleep"] == config.poll_time
         assert data["_links"] == {}
         return None
 
@@ -277,8 +277,8 @@ async def test_up_to_date(async_client, test_data):
 
     await _api_device_update(async_client, device, "software", "latest")
 
-    manager = await get_update_manager(dev_id=device.uuid)
-    await manager.update_sw_version(software.version)
+    device = await get_device(dev_id=device.uuid)
+    await DeviceManager.update_sw_version(device, software.version)
 
     await _poll(async_client, device.uuid, None, False)
 

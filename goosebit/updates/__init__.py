@@ -8,8 +8,8 @@ from fastapi import HTTPException
 from fastapi.requests import Request
 from tortoise.expressions import Q
 
-from goosebit.db.models import Hardware, Software
-from goosebit.updater.manager import UpdateManager
+from goosebit.db.models import Device, Hardware, Software
+from goosebit.device_manager import DeviceManager
 
 from ..settings import config
 from . import swdesc
@@ -92,15 +92,15 @@ async def _is_software_colliding(update_info):
     return is_colliding
 
 
-async def generate_chunk(request: Request, updater: UpdateManager) -> list:
-    _, software = await updater.get_update()
+async def generate_chunk(request: Request, device: Device) -> list:
+    _, software = await DeviceManager.get_update(device)
     if software is None:
         return []
     if software.local:
         href = str(
             request.url_for(
                 "download_artifact",
-                dev_id=updater.dev_id,
+                dev_id=device.uuid,
             )
         )
     else:
