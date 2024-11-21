@@ -107,7 +107,7 @@ class Rollout(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     name = fields.CharField(max_length=255, null=True)
     feed = fields.CharField(max_length=255, default="default")
-    software = fields.ForeignKeyField("models.Software", related_name="rollouts")
+    software = fields.ForeignKeyField("models.Software", related_name="rollouts", index=True)
     paused = fields.BooleanField(default=False)
     success_count = fields.IntField(default=0)
     failure_count = fields.IntField(default=0)
