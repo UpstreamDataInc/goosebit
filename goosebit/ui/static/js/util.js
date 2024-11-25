@@ -80,7 +80,7 @@ async function get_request(url) {
             });
         }
 
-        throw new Error(`POST ${url} failed for ${JSON.stringify(object)}`);
+        throw new Error(`GET ${url} failed for ${JSON.stringify(object)}`);
     }
     return result;
 }
@@ -123,7 +123,7 @@ async function patch_request(url, object) {
             });
         }
 
-        throw new Error(`POST ${url} failed for ${JSON.stringify(object)}`);
+        throw new Error(`PATCH ${url} failed for ${JSON.stringify(object)}`);
     }
 }
 async function delete_request(url, object) {
@@ -144,6 +144,6 @@ async function delete_request(url, object) {
             });
         }
 
-        throw new Error(`POST ${url} failed for ${JSON.stringify(object)}`);
+        throw new Error(`DELETE ${url} failed for ${JSON.stringify(object)}`);
     }
 }
