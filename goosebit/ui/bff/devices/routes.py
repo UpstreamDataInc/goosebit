@@ -19,10 +19,12 @@ from goosebit.ui.bff.common.requests import DataTableRequest
 from goosebit.ui.bff.common.util import parse_datatables_query
 
 from ..common.responses import DTColumnDescription, DTColumns
+from . import device
 from .requests import DevicesPatchRequest
 from .responses import BFFDeviceResponse
 
 router = APIRouter(prefix="/devices")
+router.include_router(device.router)
 
 
 @router.get(

@@ -29,4 +29,4 @@ async def device_get(_: Request, device: Device = Depends(get_device)) -> Device
 async def device_logs(_: Request, device: Device = Depends(get_device)) -> DeviceLogResponse:
     if device is None:
         raise HTTPException(404)
-    return DeviceLogResponse(log=device.last_log)
+    return DeviceLogResponse(log=device.last_log, progress=device.progress)

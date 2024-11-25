@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-import asyncio
 import re
-from contextlib import asynccontextmanager
 from enum import StrEnum
-from typing import Awaitable, Callable
 
 from aiocache import caches
 
@@ -36,7 +33,6 @@ class HandlingType(StrEnum):
 
 class DeviceManager:
     _hardware_default = None
-    _log_subscriptions: dict[Device, list[Callable]] = {}
 
     @staticmethod
     async def get_device(dev_id: str) -> Device:
@@ -147,8 +143,6 @@ class DeviceManager:
         device.progress = 0
         await DeviceManager.save_device(device, update_fields=["last_log", "progress"])
 
-        await DeviceManager.publish_log(device, None)
-
     @staticmethod
     async def deployment_action_success(device: Device):
         device.progress = 100
@@ -207,39 +201,6 @@ class DeviceManager:
         return handling_type, software
 
     @staticmethod
-    @asynccontextmanager
-    async def subscribe_log(device: Device, callback: Callable[[str], Awaitable[None]]):
-        # do not modify, breaks when combined
-        subscribers = DeviceManager.get_log_subscribers(device)
-        subscribers.append(callback)
-        DeviceManager.set_log_subscribers(device, subscribers)
-
-        if device is not None:
-            await callback(device.last_log)
-        try:
-            yield
-        except asyncio.CancelledError:
-            pass
-        finally:
-            # do not modify, breaks when combined
-            subscribers = DeviceManager.get_log_subscribers(device)
-            subscribers.remove(callback)
-            DeviceManager.set_log_subscribers(device, subscribers)
-
-    @staticmethod
-    def get_log_subscribers(device: Device):
-        return DeviceManager._log_subscriptions.get(device, [])
-
-    @staticmethod
-    def set_log_subscribers(device: Device, value: list):
-        DeviceManager._log_subscriptions[device] = value
-
-    @staticmethod
-    async def publish_log(device: Device, log_data: str | None):
-        for cb in DeviceManager.get_log_subscribers(device):
-            await cb(log_data)
-
-    @staticmethod
     async def update_log(device: Device, log_data: str) -> None:
         if log_data is None:
             return
@@ -253,7 +214,6 @@ class DeviceManager:
             device.progress = matches[-1]
 
         device.last_log += f"{log_data}\n"
-        await DeviceManager.publish_log(device, f"{log_data}\n")
 
         await DeviceManager.save_device(device, update_fields=["progress", "last_log"])
 
