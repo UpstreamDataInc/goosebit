@@ -13,7 +13,7 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrum
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from tortoise.exceptions import ValidationError
 
-from goosebit import api, db, realtime, ui, updater
+from goosebit import api, db, ui, updater
 from goosebit.api.telemetry import metrics
 from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
 from goosebit.settings import config
@@ -57,7 +57,6 @@ app = FastAPI(
 app.include_router(updater.router)
 app.include_router(ui.router)
 app.include_router(api.router)
-app.include_router(realtime.router)
 app.mount("/static", static, name="static")
 Instrumentor.instrument_app(app)
 

@@ -146,7 +146,6 @@ The structure of gooseBit is as follows:
     -   `nav`: Navbar handler.
 -   `updater`: DDI API handler and device update manager.
 -   `updates`: SWUpdate file parsing.
--   `realtime`: Realtime API functionality with websockets.
 -   `auth`: Authentication functions and permission handling.
 -   `models`: Database models.
 -   `db`: Database config and initialization.
