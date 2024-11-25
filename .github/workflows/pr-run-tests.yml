@@ -23,7 +23,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install poetry
-        uses: abatilo/actions-poetry@a5643c67b5fcc9ac5eddb395c7f61b1b66d86034 # v2.4.0
+        uses: abatilo/actions-poetry@e78f54a89cb052fff327414dd9ff010b5d2b4dbd # v3.0.1
       - name: Install dependencies
         run: poetry install --with tests
       - name: Run tests
