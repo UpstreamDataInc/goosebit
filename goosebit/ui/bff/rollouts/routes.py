@@ -9,6 +9,8 @@ from goosebit.db.models import Rollout
 from goosebit.ui.bff.common.requests import DataTableRequest
 from goosebit.ui.bff.common.util import parse_datatables_query
 
+from ..common.columns import RolloutColumns
+from ..common.responses import DTColumns
 from .responses import BFFRolloutsResponse
 
 router = APIRouter(prefix="/rollouts")
@@ -52,3 +54,28 @@ router.add_api_route(
     dependencies=[Security(validate_user_permissions, scopes=["rollout.delete"])],
     name="bff_rollouts_delete",
 )
+
+
+@router.get(
+    "/columns",
+    dependencies=[Security(validate_user_permissions, scopes=["rollout.read"])],
+    response_model_exclude_none=True,
+)
+async def devices_get_columns() -> DTColumns:
+    columns = list(
+        filter(
+            None,
+            [
+                RolloutColumns.id,
+                RolloutColumns.created_at,
+                RolloutColumns.name,
+                RolloutColumns.feed,
+                RolloutColumns.sw_file,
+                RolloutColumns.sw_version,
+                RolloutColumns.paused,
+                RolloutColumns.success_count,
+                RolloutColumns.failure_count,
+            ],
+        )
+    )
+    return DTColumns(columns=columns)

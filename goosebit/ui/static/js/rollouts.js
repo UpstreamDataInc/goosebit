@@ -1,6 +1,30 @@
 let dataTable;
 
+const renderFunctions = {
+    paused: (data, type) => {
+        if (type === "display") {
+            const color = data ? "danger" : "muted";
+            return `
+            <div class="text-${color}">
+                ●
+            </div>
+            `;
+        }
+        return data;
+    },
+    created_at: (data, type) => new Date(data).toLocaleString(),
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
+    const columnConfig = await get_request("/ui/bff/rollouts/columns");
+    for (const col in columnConfig.columns) {
+        const colDesc = columnConfig.columns[col];
+        const colName = colDesc.data;
+        if (renderFunctions[colName]) {
+            columnConfig.columns[col].render = renderFunctions[colName];
+        }
+    }
+
     dataTable = new DataTable("#rollout-table", {
         responsive: true,
         paging: true,
@@ -32,37 +56,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 targets: "_all",
                 searchable: false,
                 orderable: false,
+                render: (data) => data || "-",
             },
         ],
-        columns: [
-            { data: "id", visible: false },
-            {
-                data: "created_at",
-                name: "created_at",
-                orderable: true,
-                render: (data) => new Date(data).toLocaleString(),
-            },
-            { data: "name", name: "name", searchable: true, orderable: true },
-            { data: "feed", name: "feed", searchable: true, orderable: true },
-            { data: "sw_file" },
-            { data: "sw_version" },
-            {
-                data: "paused",
-                render: (data, type) => {
-                    if (type === "display") {
-                        const color = data ? "danger" : "muted";
-                        return `
-                        <div class="text-${color}">
-                            ●
-                        </div>
-                        `;
-                    }
-                    return data;
-                },
-            },
-            { data: "success_count" },
-            { data: "failure_count" },
-        ],
+        columns: columnConfig.columns,
         layout: {
             top1Start: {
                 buttons: [],
