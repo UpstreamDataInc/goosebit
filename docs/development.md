@@ -28,16 +28,16 @@ poetry install --all-extras
 
 Code is formatted using different tools
 
--   black and isort for `*.py`
--   biomejs for `*.js`, `*.json`
--   prettier for `*.html`, `*.md`, `*.yml`, `*.yaml`
--   djlint for `*.html.jinja`
+- black and isort for `*.py`
+- biomejs for `*.js`, `*.json`
+- prettier for `*.html`, `*.md`, `*.yml`, `*.yaml`
+- djlint for `*.html.jinja`
 
 Code is linted using different tools as well
 
--   flake8 for `*.py`
--   biomejs for `*.js`
--   djlint for `*.html.jinja`
+- flake8 for `*.py`
+- biomejs for `*.js`
+- djlint for `*.html.jinja`
 
 Best to have pre-commit install git hooks that run all those tools before a commit:
 
@@ -63,18 +63,18 @@ poetry run pytest
 
 The structure of gooseBit is as follows:
 
--   `api`: Files for the API.
--   `ui`: Files for the UI.
-    -   `bff`: Backend for frontend API.
-    -   `static`: Static files.
-    -   `templates`: Jinja2 formatted templates.
-    -   `nav`: Navbar handler.
--   `updater`: DDI API handler and device update manager.
--   `updates`: SWUpdate file parsing.
--   `auth`: Authentication functions and permission handling.
--   `models`: Database models.
--   `db`: Database config and initialization.
--   `schema`: Pydantic models used for API type hinting.
--   `settings`: Settings loader and handler.
--   `telemetry`: Telemetry data handlers.
--   `routes`: Routes for a giving endpoint, including the router.
+- `api`: Files for the API.
+- `ui`: Files for the UI.
+    - `bff`: Backend for frontend API.
+    - `static`: Static files.
+    - `templates`: Jinja2 formatted templates.
+    - `nav`: Navbar handler.
+- `updater`: DDI API handler and device update manager.
+- `updates`: SWUpdate file parsing.
+- `auth`: Authentication functions and permission handling.
+- `models`: Database models.
+- `db`: Database config and initialization.
+- `schema`: Pydantic models used for API type hinting.
+- `settings`: Settings loader and handler.
+- `telemetry`: Telemetry data handlers.
+- `routes`: Routes for a giving endpoint, including the router.

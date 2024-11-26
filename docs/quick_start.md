@@ -20,5 +20,5 @@ python main.py
 
 Before running gooseBit for the first time, update the default credentials in `settings.yaml`. The default login for testing purposes is:
 
--   **Username:** `admin@goosebit.local`
--   **Password:** `admin`
+- **Username:** `admin@goosebit.local`
+- **Password:** `admin`
