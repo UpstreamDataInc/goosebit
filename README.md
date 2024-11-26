@@ -33,12 +33,12 @@ A simplistic, opinionated remote update server implementing hawkBit™'s [DDI AP
 
 Before running gooseBit for the first time, update the default credentials in `settings.yaml`. The default login for testing purposes is:
 
--   **Username:** `admin@goosebit.local`
--   **Password:** `admin`
+- **Username:** `admin@goosebit.local`
+- **Password:** `admin`
 
 ## Assumptions
 
--   Devices use [SWUpdate](https://swupdate.org) for managing software updates.
+- Devices use [SWUpdate](https://swupdate.org) for managing software updates.
 
 ## Features
 
@@ -46,8 +46,8 @@ Before running gooseBit for the first time, update the default credentials in `s
 
 When a device connects to gooseBit for the first time, it is automatically added to the device registry. The server will then request the device's configuration data, including:
 
--   `hw_model` and `hw_revision`: Used to match compatible software.
--   `sw_version`: Indicates the currently installed software version.
+- `hw_model` and `hw_revision`: Used to match compatible software.
+- `sw_version`: Indicates the currently installed software version.
 
 The registry tracks each device's status, including the last online timestamp, installed software version, update state, and more.
 
@@ -105,14 +105,14 @@ poetry run generate-sample-data
 
 Code is formatted using different tools
 
--   black and isort for `*.py`
--   biomejs for `*.js`, `*.json`
--   prettier for `*.html`, `*.md`, `*.yml`, `*.yaml`
+- black and isort for `*.py`
+- biomejs for `*.js`, `*.json`
+- prettier for `*.html`, `*.md`, `*.yml`, `*.yaml`
 
 Code is linted using different tools as well
 
--   flake8 for `*.py`
--   biomejs for `*.js`
+- flake8 for `*.py`
+- biomejs for `*.js`
 
 Best to have pre-commit install git hooks that run all those tools before a commit:
 
@@ -138,18 +138,18 @@ poetry run pytest
 
 The structure of gooseBit is as follows:
 
--   `api`: Files for the API.
--   `ui`: Files for the UI.
-    -   `bff`: Backend for frontend API.
-    -   `static`: Static files.
-    -   `templates`: Jinja2 formatted templates.
-    -   `nav`: Navbar handler.
--   `updater`: DDI API handler and device update manager.
--   `updates`: SWUpdate file parsing.
--   `auth`: Authentication functions and permission handling.
--   `models`: Database models.
--   `db`: Database config and initialization.
--   `schema`: Pydantic models used for API type hinting.
--   `settings`: Settings loader and handler.
--   `telemetry`: Telemetry data handlers.
--   `routes`: Routes for a giving endpoint, including the router.
+- `api`: Files for the API.
+- `ui`: Files for the UI.
+    - `bff`: Backend for frontend API.
+    - `static`: Static files.
+    - `templates`: Jinja2 formatted templates.
+    - `nav`: Navbar handler.
+- `updater`: DDI API handler and device update manager.
+- `updates`: SWUpdate file parsing.
+- `auth`: Authentication functions and permission handling.
+- `models`: Database models.
+- `db`: Database config and initialization.
+- `schema`: Pydantic models used for API type hinting.
+- `settings`: Settings loader and handler.
+- `telemetry`: Telemetry data handlers.
+- `routes`: Routes for a giving endpoint, including the router.

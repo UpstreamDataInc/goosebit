@@ -9,7 +9,7 @@ designed to make remote updates of embedded devices easier.
 
 ## Assumptions
 
--   Devices use [SWUpdate](https://swupdate.org) for managing software updates.
+- Devices use [SWUpdate](https://swupdate.org) for managing software updates.
 
 ## Features
 
@@ -17,8 +17,8 @@ designed to make remote updates of embedded devices easier.
 
 When a device connects to gooseBit for the first time, it is automatically added to the device registry. The server will then request the device's configuration data, including:
 
--   `hw_model` and `hw_revision`: Used to match compatible software.
--   `sw_version`: Indicates the currently installed software version.
+- `hw_model` and `hw_revision`: Used to match compatible software.
+- `sw_version`: Indicates the currently installed software version.
 
 The registry tracks each device's status, including the last online timestamp, installed software version, update state, and more.
 

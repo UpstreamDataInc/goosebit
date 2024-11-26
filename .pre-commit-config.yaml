@@ -1,7 +1,14 @@
 ci:
   skip:
+    - poetry-lock
     - pytest
 repos:
+  - repo: https://github.com/python-poetry/poetry
+    rev: 1.8.4
+    hooks:
+      - id: poetry-check
+      - id: poetry-lock
+      - id: poetry-install
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -49,7 +56,7 @@ repos:
       - id: biome-check
         additional_dependencies: ["@biomejs/biome@1.8.3"]
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.3.3"
+    rev: "v3.4.0"
     hooks:
       - id: prettier
         files: \.(html|md|yml|yaml)$

@@ -165,4 +165,3 @@ cython_debug/
 # application files
 /artifacts
 /db.sqlite3*
-/poetry.lock
