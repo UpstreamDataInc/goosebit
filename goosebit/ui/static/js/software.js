@@ -6,6 +6,128 @@ const uploadProgressBar = document.getElementById("upload-progress");
 
 let dataTable;
 
+const renderFunctions = {
+    compatibility: (data, type) => {
+        const result = data.reduce((acc, { model, revision }) => {
+            if (!acc[model]) {
+                acc[model] = [];
+            }
+            acc[model].push(revision);
+            return acc;
+        }, {});
+
+        return Object.entries(result)
+            .map(([model, revision]) => `${model} - ${revision.join(", ")}`)
+            .join("\n");
+    },
+    size: (data, type) => {
+        if (type === "display" || type === "filter") {
+            return `${(data / 1024 / 1024).toFixed(2)}MB`;
+        }
+        return data;
+    },
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const columnConfig = await get_request("/ui/bff/software/columns");
+    for (const col in columnConfig.columns) {
+        const colDesc = columnConfig.columns[col];
+        const colName = colDesc.data;
+        if (renderFunctions[colName]) {
+            columnConfig.columns[col].render = renderFunctions[colName];
+        }
+    }
+
+    const buttons = [
+        {
+            text: '<i class="bi bi-cloud-download" ></i>',
+            action: (e, dt) => {
+                const selectedSoftware = dt
+                    .rows({ selected: true })
+                    .data()
+                    .toArray()
+                    .map((d) => d.id);
+                downloadSoftware(selectedSoftware[0]);
+            },
+            className: "buttons-download",
+            titleAttr: "Download Software",
+        },
+        {
+            text: '<i class="bi bi-trash" ></i>',
+            action: async (e, dt) => {
+                const selectedSoftware = dt
+                    .rows({ selected: true })
+                    .data()
+                    .toArray()
+                    .map((d) => d.id);
+                await deleteSoftware(selectedSoftware);
+            },
+            className: "buttons-delete",
+            titleAttr: "Delete Software",
+        },
+    ];
+
+    // add create button at the beginning if upload modal exists
+    if ($("#upload-modal").length > 0) {
+        buttons.unshift({
+            text: '<i class="bi bi-plus" ></i>',
+            action: () => {
+                new bootstrap.Modal("#upload-modal").show();
+            },
+            className: "buttons-create",
+            titleAttr: "Add Software",
+        });
+    }
+
+    dataTable = new DataTable("#software-table", {
+        responsive: true,
+        paging: true,
+        processing: false,
+        serverSide: true,
+        scrollCollapse: true,
+        scroller: true,
+        scrollY: "60vh",
+        stateSave: true,
+        ajax: {
+            url: "/ui/bff/software",
+            data: (data) => {
+                // biome-ignore lint/performance/noDelete: really has to be deleted
+                delete data.columns;
+            },
+            contentType: "application/json",
+        },
+        initComplete: () => {
+            updateBtnState();
+        },
+        columnDefs: [
+            {
+                targets: "_all",
+                searchable: false,
+                orderable: false,
+                render: (data) => data || "-",
+            },
+        ],
+        columns: columnConfig.columns,
+        select: true,
+        rowId: "id",
+        layout: {
+            bottom1Start: {
+                buttons,
+            },
+        },
+    });
+
+    dataTable
+        .on("select", () => {
+            updateBtnState();
+        })
+        .on("deselect", () => {
+            updateBtnState();
+        });
+
+    updateSoftwareList();
+});
+
 uploadForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     await sendFileChunks(uploadFileInput.files[0]);
@@ -124,126 +246,6 @@ function resetProgress() {
 
     updateSoftwareList();
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    const buttons = [
-        {
-            text: '<i class="bi bi-cloud-download" ></i>',
-            action: (e, dt) => {
-                const selectedSoftware = dt
-                    .rows({ selected: true })
-                    .data()
-                    .toArray()
-                    .map((d) => d.id);
-                downloadSoftware(selectedSoftware[0]);
-            },
-            className: "buttons-download",
-            titleAttr: "Download Software",
-        },
-        {
-            text: '<i class="bi bi-trash" ></i>',
-            action: async (e, dt) => {
-                const selectedSoftware = dt
-                    .rows({ selected: true })
-                    .data()
-                    .toArray()
-                    .map((d) => d.id);
-                await deleteSoftware(selectedSoftware);
-            },
-            className: "buttons-delete",
-            titleAttr: "Delete Software",
-        },
-    ];
-
-    // add create button at the beginning if upload modal exists
-    if ($("#upload-modal").length > 0) {
-        buttons.unshift({
-            text: '<i class="bi bi-plus" ></i>',
-            action: () => {
-                new bootstrap.Modal("#upload-modal").show();
-            },
-            className: "buttons-create",
-            titleAttr: "Add Software",
-        });
-    }
-
-    dataTable = new DataTable("#software-table", {
-        responsive: true,
-        paging: true,
-        processing: false,
-        serverSide: true,
-        scrollCollapse: true,
-        scroller: true,
-        scrollY: "60vh",
-        stateSave: true,
-        ajax: {
-            url: "/ui/bff/software",
-            data: (data) => {
-                // biome-ignore lint/performance/noDelete: really has to be deleted
-                delete data.columns;
-            },
-            contentType: "application/json",
-        },
-        initComplete: () => {
-            updateBtnState();
-        },
-        columnDefs: [
-            {
-                targets: "_all",
-                searchable: false,
-                orderable: false,
-                render: (data) => data || "-",
-            },
-        ],
-        columns: [
-            { data: "id", visible: false },
-            { data: "name" },
-            { data: "version", name: "version", searchable: true, orderable: true },
-            {
-                data: "compatibility",
-                render: (data) => {
-                    const result = data.reduce((acc, { model, revision }) => {
-                        if (!acc[model]) {
-                            acc[model] = [];
-                        }
-                        acc[model].push(revision);
-                        return acc;
-                    }, {});
-
-                    return Object.entries(result)
-                        .map(([model, revision]) => `${model} - ${revision.join(", ")}`)
-                        .join("\n");
-                },
-            },
-            {
-                data: "size",
-                render: (data, type) => {
-                    if (type === "display" || type === "filter") {
-                        return `${(data / 1024 / 1024).toFixed(2)}MB`;
-                    }
-                    return data;
-                },
-            },
-        ],
-        select: true,
-        rowId: "id",
-        layout: {
-            bottom1Start: {
-                buttons,
-            },
-        },
-    });
-
-    dataTable
-        .on("select", () => {
-            updateBtnState();
-        })
-        .on("deselect", () => {
-            updateBtnState();
-        });
-
-    updateSoftwareList();
-});
 
 function updateBtnState() {
     if (dataTable.rows({ selected: true }).any()) {

@@ -15,6 +15,8 @@ from goosebit.ui.bff.common.requests import DataTableRequest
 from goosebit.ui.bff.common.util import parse_datatables_query
 from goosebit.updates import create_software_update
 
+from ..common.columns import SoftwareColumns
+from ..common.responses import DTColumns
 from .responses import BFFSoftwareResponse
 
 router = APIRouter(prefix="/software")
@@ -94,3 +96,24 @@ async def post_update(
                 await create_software_update(absolute.as_uri(), temp_file)
             finally:
                 await temp_file.unlink(missing_ok=True)
+
+
+@router.get(
+    "/columns",
+    dependencies=[Security(validate_user_permissions, scopes=["software.read"])],
+    response_model_exclude_none=True,
+)
+async def devices_get_columns() -> DTColumns:
+    columns = list(
+        filter(
+            None,
+            [
+                SoftwareColumns.id,
+                SoftwareColumns.name,
+                SoftwareColumns.version,
+                SoftwareColumns.compatibility,
+                SoftwareColumns.size,
+            ],
+        )
+    )
+    return DTColumns(columns=columns)
