@@ -14,11 +14,11 @@ from goosebit.db.models import Device, Software, UpdateModeEnum, UpdateStateEnum
 from goosebit.device_manager import DeviceManager, get_device
 from goosebit.schema.devices import DeviceSchema
 from goosebit.schema.software import SoftwareSchema
-from goosebit.settings import config
 from goosebit.ui.bff.common.requests import DataTableRequest
 from goosebit.ui.bff.common.util import parse_datatables_query
 
-from ..common.responses import DTColumnDescription, DTColumns
+from ..common.columns import DeviceColumns
+from ..common.responses import DTColumns
 from . import device
 from .requests import DevicesPatchRequest
 from .responses import BFFDeviceResponse
@@ -102,31 +102,27 @@ router.add_api_route(
     dependencies=[Security(validate_user_permissions, scopes=["device.read"])],
     response_model_exclude_none=True,
 )
-async def devices_get_columns() -> DTColumns:
-    columns = []
-    columns.append(DTColumnDescription(title="UUID", data="uuid", name="uuid", searchable=True, orderable=True))
-    columns.append(DTColumnDescription(title="Name", data="name", name="name", searchable=True, orderable=True))
-    columns.append(DTColumnDescription(title="Model", data="hw_model"))
-    columns.append(DTColumnDescription(title="Revision", data="hw_revision"))
-    columns.append(DTColumnDescription(title="Feed", data="feed", name="feed", searchable=True, orderable=True))
-    columns.append(
-        DTColumnDescription(
-            title="Installed Software", data="sw_version", name="sw_version", searchable=True, orderable=True
+async def devices_get_columns(request: Request) -> DTColumns:
+    config = request.scope["config"]
+    columns = list(
+        filter(
+            None,
+            [
+                DeviceColumns.uuid,
+                DeviceColumns.name,
+                DeviceColumns.hw_model,
+                DeviceColumns.hw_revision,
+                DeviceColumns.feed,
+                DeviceColumns.sw_version,
+                DeviceColumns.sw_target_version,
+                DeviceColumns.update_mode,
+                DeviceColumns.last_state,
+                DeviceColumns.force_update,
+                DeviceColumns.progress,
+                DeviceColumns.last_ip if config.track_device_ip else None,
+                DeviceColumns.polling,
+                DeviceColumns.last_seen,
+            ],
         )
     )
-    columns.append(DTColumnDescription(title="Target Software", data="sw_target_version"))
-    columns.append(
-        DTColumnDescription(
-            title="Update Mode", data="update_mode", name="update_mode", searchable=True, orderable=True
-        )
-    )
-    columns.append(
-        DTColumnDescription(title="State", data="last_state", name="last_state", searchable=True, orderable=True)
-    )
-    columns.append(DTColumnDescription(title="Force Update", data="force_update"))
-    columns.append(DTColumnDescription(title="Progress", data="progress"))
-    if config.track_device_ip:
-        columns.append(DTColumnDescription(title="Last IP", data="last_ip"))
-    columns.append(DTColumnDescription(title="Polling", data="polling"))
-    columns.append(DTColumnDescription(title="Last Seen", data="last_seen"))
     return DTColumns(columns=columns)
