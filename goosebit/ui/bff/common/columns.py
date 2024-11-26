@@ -34,3 +34,11 @@ class RolloutColumns:
     paused = DTColumnDescription(title="Paused", name="paused", data="paused")
     success_count = DTColumnDescription(title="Success Count", data="success_count", name="success_count")
     failure_count = DTColumnDescription(title="Failure Count", data="failure_count", name="failure_count")
+
+
+class SoftwareColumns:
+    id = DTColumnDescription(title="ID", data="id", visible=False)
+    name = DTColumnDescription(title="Name", data="name", name="name")
+    version = DTColumnDescription(title="Version", data="version", name="version", searchable=True, orderable=True)
+    compatibility = DTColumnDescription(title="Compatibility", name="compatibility", data="compatibility")
+    size = DTColumnDescription(title="Size", name="size", data="size")
