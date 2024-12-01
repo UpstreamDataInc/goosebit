@@ -1,6 +1,6 @@
 import pytest
 
-from goosebit.db.models import Device, Hardware, Software
+from goosebit.db.models import Hardware, Software
 from goosebit.device_manager import DeviceManager, get_device
 from goosebit.settings import GooseBitSettings
 
@@ -290,9 +290,11 @@ async def test_up_to_date(async_client, test_data):
     await _poll(async_client, device.uuid, None, False)
 
 
-async def _assertLogLines(device, expected_line_count):
-    persisted_device = await Device.get(uuid=device.uuid)
-    log = persisted_device.last_log
+async def _assert_log_lines(async_client, device, expected_line_count):
+    response = await async_client.get(f"/ui/bff/devices/{device.uuid}/log")
+    assert response.status_code == 200
+
+    log = response.json()["log"]
     if log is None:
         assert expected_line_count == 0
     else:
@@ -311,19 +313,19 @@ async def test_update_logs_and_progress(async_client, test_data):
     await _api_device_update(async_client, device, "software", "latest")
 
     deployment_base = await _poll(async_client, device.uuid, software)
-    await _assertLogLines(device, 0)
+    await _assert_log_lines(async_client, device, 0)
 
     await _retrieve_software_url(async_client, device.uuid, deployment_base, software)
 
     # confirm installation start (in reality: several of similar posts)
     await _feedback(async_client, device.uuid, software, "none", "proceeding", "Downloaded 7%")
-    await _assertLogLines(device, 1)
+    await _assert_log_lines(async_client, device, 1)
     device_api = await _api_device_get(async_client, device.uuid)
     assert device_api["last_state"] == "Running"
     assert device_api["progress"] == 7
 
     await _feedback(async_client, device.uuid, software, "none", "proceeding", "Installing Update Chunk Artifacts.")
-    await _assertLogLines(device, 2)
+    await _assert_log_lines(async_client, device, 2)
 
     # report finished installation
     await _feedback(async_client, device.uuid, software, "success", "closed")
@@ -332,8 +334,8 @@ async def test_update_logs_and_progress(async_client, test_data):
     assert device_api["last_state"] == "Finished"
     assert device_api["sw_version"] == software.version
 
-    await _assertLogLines(device, 3)
+    await _assert_log_lines(async_client, device, 3)
 
     # fake installation start confirmation to check clearing of logs
     await _feedback(async_client, device.uuid, software, "none", "proceeding", "Downloaded 1%")
-    await _assertLogLines(device, 1)
+    await _assert_log_lines(async_client, device, 1)
