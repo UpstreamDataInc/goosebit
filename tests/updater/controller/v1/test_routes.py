@@ -146,7 +146,8 @@ async def test_register_device(async_client, test_data):
 
 
 @pytest.mark.asyncio
-async def test_rollout_full(async_client, test_data):
+@pytest.mark.parametrize("delete_software", [False, True])
+async def test_rollout_full(async_client, test_data, delete_software):
     device = test_data["device_rollout"]
     software = test_data["software_release"]
     rollout = test_data["rollout_default"]
@@ -160,16 +161,22 @@ async def test_rollout_full(async_client, test_data):
     device_api = await _api_device_get(async_client, device.uuid)
     assert device_api["last_state"] == "Running"
 
+    # edge case: remove software during update
+    if delete_software:
+        await Software.delete(software)
+
     # report finished installation
     await _feedback(async_client, device.uuid, software, "success", "closed")
     device_api = await _api_device_get(async_client, device.uuid)
     assert device_api["last_state"] == "Finished"
-    assert device_api["sw_version"] == software.version
 
-    await rollout.refresh_from_db()
-    rollouts = await _api_rollouts_get(async_client)
-    assert rollouts["rollouts"][0]["success_count"] == 1
-    assert rollouts["rollouts"][0]["failure_count"] == 0
+    if not delete_software:
+        assert device_api["sw_version"] == software.version
+
+        await rollout.refresh_from_db()
+        rollouts = await _api_rollouts_get(async_client)
+        assert rollouts["rollouts"][0]["success_count"] == 1
+        assert rollouts["rollouts"][0]["failure_count"] == 0
 
 
 @pytest.mark.asyncio
