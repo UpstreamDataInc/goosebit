@@ -123,11 +123,14 @@ async def deployment_feedback(_: Request, data: FeedbackSchema, action_id: int, 
                 else:
                     # edge case where device update mode got changed while update was running
                     logging.warning(
-                        f"Updating rollout success stats failed, software={reported_software.id}, device={device.uuid}"  # noqa: E501
+                        f"Updating rollout success stats failed, action_id={action_id}, device={device.uuid}"  # noqa: E501
                     )
 
-            await DeviceManager.update_sw_version(device, reported_software.version)
-            logger.debug(f"Installation successful, software={reported_software.version}, device={device.uuid}")
+            if reported_software:
+                await DeviceManager.update_sw_version(device, reported_software.version)
+
+            software_version = reported_software.version if reported_software else None
+            logger.debug(f"Installation successful, software={software_version}, device={device.uuid}")
 
         elif data.status.result.finished == FeedbackStatusResultFinished.FAILURE:
             await DeviceManager.update_device_state(device, UpdateStateEnum.ERROR)
@@ -140,10 +143,11 @@ async def deployment_feedback(_: Request, data: FeedbackSchema, action_id: int, 
                 else:
                     # edge case where device update mode got changed while update was running
                     logging.warning(
-                        f"Updating rollout failure stats failed, software={reported_software.id}, device={device.uuid}"  # noqa: E501
+                        f"Updating rollout failure stats failed, action_id={action_id}, device={device.uuid}"  # noqa: E501
                     )
 
-            logger.debug(f"Installation failed, software={reported_software.version}, device={device.uuid}")
+            software_version = reported_software.version if reported_software else None
+            logger.debug(f"Installation failed, software={software_version}, device={device.uuid}")
     else:
         logging.error(f"Device reported unhandled execution state, state={data.status.execution}, device={device.uuid}")
 
