@@ -4,7 +4,7 @@ ci:
     - pytest
 repos:
   - repo: https://github.com/python-poetry/poetry
-    rev: 1.8.4
+    rev: 1.8.0
     hooks:
       - id: poetry-check
       - id: poetry-lock
@@ -56,12 +56,12 @@ repos:
       - id: biome-check
         additional_dependencies: ["@biomejs/biome@1.8.3"]
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.4.0"
+    rev: "v3.4.1"
     hooks:
       - id: prettier
         files: \.(html|md|yml|yaml)$
   - repo: https://github.com/djlint/djLint
-    rev: v1.36.1
+    rev: v1.36.3
     hooks:
       - id: djlint-reformat-jinja
       - id: djlint-jinja
