@@ -8,13 +8,13 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.115.6"
-python-multipart = "^0.0.19"
-jinja2 = "^3.1.4"
+python-multipart = "^0.0.20"
+jinja2 = "^3.1.5"
 itsdangerous = "^2.2.0"
 tortoise-orm = "^0.22.1"
 aerich = "^0.7.2"
 argon2-cffi = "^23.1.0"
-joserfc = "^1.0.0"
+joserfc = "^1.0.1"
 semver = "^3.0.2"
 libconf = "^2.0.1"
 opentelemetry-distro = "^0.49b1"
@@ -22,8 +22,8 @@ opentelemetry-instrumentation-fastapi = "^0.49b1"
 opentelemetry-exporter-prometheus = "^0.49b1"
 aiocache = "^0.12.2"
 httpx = "^0.28.0"
-pydantic-settings = "^2.4.0"
-uvicorn = "^0.32.0"
+pydantic-settings = {extras = ["yaml"], version = "^2.7.1"}
+uvicorn = "^0.34.0"
 
 asyncpg = { version = "^0.30.0", optional = true }
 
