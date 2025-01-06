@@ -4,7 +4,33 @@ updates:
     directory: /
     schedule:
       interval: monthly
-    open-pull-requests-limit: 5
+    groups:
+      opentelemetry:
+        patterns:
+          - "opentelemetry-*"
+      database:
+        patterns:
+          - "tortoise-orm"
+          - "aerich"
+          - "aiocache"
+          - "asyncpg"
+      webserver:
+        patterns:
+          - "fastapi"
+          - "jinja2"
+          - "python-multipart"
+          - "uvicorn"
+          - "httpx"
+          - "pydantic-settings"
+      auth:
+        patterns:
+          - "itsdangerous"
+          - "argon2-*"
+          - "joserfc"
+      swu:
+        patterns:
+          - "libconf"
+          - "semver"
 
   - package-ecosystem: github-actions
     directory: /
