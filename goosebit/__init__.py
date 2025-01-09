@@ -13,7 +13,8 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrum
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from tortoise.exceptions import ValidationError
 
-from goosebit import api, db, ui, updater
+from goosebit import api, db, plugins, ui, updater
+from goosebit.api.telemetry import metrics
 from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
 from goosebit.settings import PWD_CXT, config
 from goosebit.ui.nav import nav
@@ -34,7 +35,6 @@ async def lifespan(_: FastAPI):
 
     if db_ready:
         yield
-
     await db.close()
 
 
@@ -62,6 +62,8 @@ app.include_router(ui.router)
 app.include_router(api.router)
 app.mount("/static", static, name="static")
 Instrumentor.instrument_app(app)
+
+loaded_plugins = plugins.load()
 
 
 # Custom exception handler for Tortoise ValidationError
