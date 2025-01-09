@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Annotated
 
 from joserfc.jwk import OctKey
-from pydantic import BaseModel, BeforeValidator, model_validator
+from pydantic import BaseModel, BeforeValidator, Field, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -84,6 +84,8 @@ class GooseBitSettings(BaseSettings):
     device_auth: DeviceAuthSettings = DeviceAuthSettings()
 
     secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
+
+    plugins: list[str] = Field(default_factory=list)
 
     db_uri: str = f"sqlite:///{GOOSEBIT_ROOT_DIR.joinpath('db.sqlite3')}"
     db_ssl_crt: Path | None = None
