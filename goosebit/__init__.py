@@ -13,7 +13,7 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrum
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from tortoise.exceptions import ValidationError
 
-from goosebit import api, db, ui, updater
+from goosebit import api, db, plugins, ui, updater
 from goosebit.api.telemetry import metrics
 from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
 from goosebit.settings import config
@@ -29,6 +29,7 @@ async def lifespan(_: FastAPI):
     db_ready = await db.init()
     if not db_ready:
         logger.exception("DB does not exist, try running `poetry run aerich upgrade`.")
+    plugins.load()
     await metrics.init()
     if db_ready:
         yield
