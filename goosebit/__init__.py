@@ -115,7 +115,7 @@ async def logout(request: Request):
     return resp
 
 
-@app.get("/docs")
+@app.get("/docs", include_in_schema=False)
 async def swagger_docs(request: Request):
     return get_swagger_ui_html(
         title="gooseBit docs",
