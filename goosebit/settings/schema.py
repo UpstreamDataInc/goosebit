@@ -45,7 +45,7 @@ class MetricsSettings(BaseModel):
 
 
 class GooseBitSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="GOOSEBIT_")
+    model_config = SettingsConfigDict(env_prefix="GOOSEBIT_", extra="ignore")
 
     port: int = 60053  # GOOSE
 
