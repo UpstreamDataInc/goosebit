@@ -25,11 +25,10 @@ logger = getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(_app: FastAPI):
     db_ready = await db.init()
     if not db_ready:
         logger.exception("DB does not exist, try running `poetry run aerich upgrade`.")
-    plugins.load()
     await metrics.init()
     if db_ready:
         yield
@@ -60,6 +59,8 @@ app.include_router(ui.router)
 app.include_router(api.router)
 app.mount("/static", static, name="static")
 Instrumentor.instrument_app(app)
+
+loaded_plugins = plugins.load()
 
 
 # Custom exception handler for Tortoise ValidationError
