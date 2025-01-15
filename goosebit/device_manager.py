@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import re
 from enum import StrEnum
+from typing import Any, Awaitable, Callable
 
 from aiocache import caches
+from fastapi.requests import Request
 
 from goosebit.db.models import (
     Device,
@@ -13,6 +16,7 @@ from goosebit.db.models import (
     UpdateModeEnum,
     UpdateStateEnum,
 )
+from goosebit.schema.updates import UpdateChunk
 
 caches.set_config(
     {
@@ -33,6 +37,9 @@ class HandlingType(StrEnum):
 
 class DeviceManager:
     _hardware_default = None
+
+    _update_sources: list[Callable[[Request, Device], Awaitable[tuple[HandlingType, UpdateChunk | None]]]] = []
+    _config_callbacks: list[Callable[[Device, dict[str, Any]], Awaitable[None]]] = []
 
     @staticmethod
     async def get_device(dev_id: str) -> Device:
@@ -114,10 +121,22 @@ class DeviceManager:
         await DeviceManager.save_device(device, update_fields=["feed"])
 
     @staticmethod
-    async def update_config_data(device: Device, **kwargs):
+    def add_config_callback(callback: Callable[[Device, dict[str, Any]], Awaitable[None]]):
+        DeviceManager._config_callbacks.append(callback)
+
+    @staticmethod
+    def remove_config_callback(callback: Callable[[Device, dict[str, Any]], Awaitable[None]]):
+        DeviceManager._config_callbacks.remove(callback)
+
+    @staticmethod
+    async def update_config_data(device: Device, **kwargs: dict[str, Any]):
         model = kwargs.get("hw_boardname") or "default"
         revision = kwargs.get("hw_revision") or "default"
         sw_version = kwargs.get("sw_version")
+
+        await asyncio.gather(
+            *[cb(device, **kwargs) for cb in DeviceManager._config_callbacks]  # type: ignore[call-arg]
+        )
 
         hardware = (await Hardware.get_or_create(model=model, revision=revision))[0]
         modified = False
@@ -181,6 +200,14 @@ class DeviceManager:
 
         assert device.update_mode == UpdateModeEnum.PINNED
         return None
+
+    @staticmethod
+    def add_update_source(source: Callable[[Request, Device], Awaitable[tuple[HandlingType, UpdateChunk | None]]]):
+        DeviceManager._update_sources.append(source)
+
+    @staticmethod
+    async def get_alt_src_updates(request: Request, device: Device) -> list[tuple[HandlingType, UpdateChunk | None]]:
+        return await asyncio.gather(*[source(request, device) for source in DeviceManager._update_sources])
 
     @staticmethod
     async def get_update(device: Device) -> tuple[HandlingType, Software | None]:
