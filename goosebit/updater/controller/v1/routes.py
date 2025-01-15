@@ -69,7 +69,23 @@ async def polling(request: Request, device: Device = Depends(get_device)):
                     )
                 }
                 logger.info(f"Forced: update available, device={device.id}")
-
+        else:
+            number_of_running = await Device.filter(last_state=UpdateStateEnum.RUNNING).count()
+            if number_of_running < config.max_concurrent_updates or device.last_state == UpdateStateEnum.RUNNING:
+                plugin_sources = await DeviceManager.get_alt_src_updates(request, device)
+                for handling_type, _ in plugin_sources:
+                    if handling_type == HandlingType.SKIP:
+                        continue
+                    links["deploymentBase"] = {
+                        "href": str(
+                            request.url_for(
+                                "deployment_base",
+                                dev_id=device.id,
+                                action_id=-1,  # custom plugin
+                            )
+                        )
+                    }
+                    break
     return {
         "config": {"polling": {"sleep": sleep}},
         "_links": links,
@@ -91,16 +107,29 @@ async def deployment_base(
 ):
     handling_type, software = await DeviceManager.get_update(device)
 
-    logger.info(f"Request deployment base, device={device.id}")
-
-    return {
-        "id": str(action_id),
-        "deployment": {
-            "download": str(handling_type),
-            "update": str(handling_type),
-            "chunks": await generate_chunk(request, device),
-        },
-    }
+    logger.info(f"Request deployment base, device={device.uuid}")
+    if not handling_type == HandlingType.SKIP:
+        return {
+            "id": str(action_id),
+            "deployment": {
+                "download": str(handling_type),
+                "update": str(handling_type),
+                "chunks": [chunk.model_dump(by_alias=True) for chunk in (await generate_chunk(request, device))],
+            },
+        }
+    else:
+        plugin_sources = await DeviceManager.get_alt_src_updates(request, device)
+        for handling_type, chunk in plugin_sources:
+            if handling_type == HandlingType.SKIP or chunk is None:
+                continue
+            return {
+                "id": str(action_id),
+                "deployment": {
+                    "download": str(handling_type),
+                    "update": str(handling_type),
+                    "chunks": [chunk.model_dump(by_alias=True)],
+                },
+            }
 
 
 @router.post("/{dev_id}/deploymentBase/{action_id}/feedback")
