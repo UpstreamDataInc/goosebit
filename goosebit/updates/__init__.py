@@ -11,6 +11,7 @@ from tortoise.expressions import Q
 from goosebit.db.models import Device, Hardware, Software
 from goosebit.device_manager import DeviceManager
 from goosebit.storage import storage
+from goosebit.schema.updates import UpdateChunk, UpdateChunkArtifact
 
 from . import swdesc
 
@@ -90,7 +91,7 @@ async def _is_software_colliding(update_info):
     return is_colliding
 
 
-async def generate_chunk(request: Request, device: Device) -> list:
+async def generate_chunk(request: Request, device: Device) -> list[UpdateChunk]:
     _, software = await DeviceManager.get_update(device)
     if software is None:
         return []
@@ -100,17 +101,15 @@ async def generate_chunk(request: Request, device: Device) -> list:
     href = str(request.url_for("download_artifact", dev_id=device.id))
 
     return [
-        {
-            "part": "os",
-            "version": "1",
-            "name": software.path.name,
-            "artifacts": [
-                {
-                    "filename": software.path.name,
-                    "hashes": {"sha1": software.hash},
-                    "size": software.size,
-                    "_links": {"download": {"href": href}},
-                }
+        UpdateChunk(
+            name=software.path.name,
+            artifacts=[
+                UpdateChunkArtifact(
+                    filename=software.path.name,
+                    hashes={"sha1": software.hash},
+                    size=software.size,
+                    links={"download": {"href": href}},
+                )
             ],
-        }
+        )
     ]
