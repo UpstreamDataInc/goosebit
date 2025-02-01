@@ -45,7 +45,7 @@ mkdocs-material = "^9.5.49"
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^8.3.4"
-pytest-asyncio = "^0.24.0"
+pytest-asyncio = "^0.25.3"
 pytest-md-report = "^0.6.2"
 pytest_httpserver = "^1.1.0"
 
