@@ -40,7 +40,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     dataTable = new DataTable("#device-table", {
-        responsive: true,
         paging: true,
         processing: false,
         serverSide: true,

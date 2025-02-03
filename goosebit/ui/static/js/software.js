@@ -80,7 +80,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     dataTable = new DataTable("#software-table", {
-        responsive: true,
         paging: true,
         processing: false,
         serverSide: true,
