@@ -191,7 +191,11 @@ async function createRollout() {
 }
 
 function updateRolloutList() {
-    dataTable.ajax.reload();
+    const scrollPosition = $("#rollout-table").parent().scrollTop(); // Get current scroll position
+
+    dataTable.ajax.reload(() => {
+        $("#rollout-table").parent().scrollTop(scrollPosition); // Restore scroll position after reload
+    }, false);
 }
 
 async function deleteRollouts(ids) {

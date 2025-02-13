@@ -231,7 +231,11 @@ async function sendFileUrl(url) {
 }
 
 function updateSoftwareList() {
-    dataTable.ajax.reload(null, false);
+    const scrollPosition = $("#software-table").parent().scrollTop(); // Get current scroll position
+
+    dataTable.ajax.reload(() => {
+        $("#software-table").parent().scrollTop(scrollPosition); // Restore scroll position after reload
+    }, false);
 }
 
 function resetProgress() {
