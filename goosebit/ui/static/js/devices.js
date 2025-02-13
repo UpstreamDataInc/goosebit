@@ -163,20 +163,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
     setInterval(() => {
-        const selectedRows = dataTable
-            .rows({ selected: true })
-            .data()
-            .toArray()
-            .map((d) => d.uuid);
-
-        dataTable.ajax.reload(() => {
-            dataTable.rows().every(function () {
-                const rowData = this.data();
-                if (selectedRows.includes(rowData.uuid)) {
-                    this.select();
-                }
-            });
-        }, false);
+        updateDeviceList();
     }, TABLE_UPDATE_TIME);
 
     await updateSoftwareSelection();
@@ -393,5 +380,21 @@ async function pinDevices(devices) {
 }
 
 function updateDeviceList() {
-    dataTable.ajax.reload();
+    const scrollPosition = $("#device-table").parent().scrollTop(); // Get current scroll position
+
+    const selectedRows = dataTable
+        .rows({ selected: true })
+        .data()
+        .toArray()
+        .map((d) => d.uuid);
+
+    dataTable.ajax.reload(() => {
+        dataTable.rows().every(function () {
+            const rowData = this.data();
+            if (selectedRows.includes(rowData.uuid)) {
+                this.select();
+            }
+        });
+        $("#device-table").parent().scrollTop(scrollPosition); // Restore scroll position after reload
+    }, false);
 }
