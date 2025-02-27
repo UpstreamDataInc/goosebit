@@ -16,8 +16,8 @@ env = jinja2.Environment(loader=jinja2.ChoiceLoader([jinja2.FileSystemLoader(str
 templates = Jinja2Templates(context_processors=[attach_permissions_comparison], env=env)
 
 
-def add_dir(directory: PathLike):
+def add_template_dir(directory: PathLike):
     templates.env.loader.loaders.append(jinja2.FileSystemLoader(directory))
 
 
-templates.add_dir = add_dir
+templates.add_template_dir = add_template_dir
