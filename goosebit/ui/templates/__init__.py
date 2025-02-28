@@ -1,4 +1,3 @@
-from os import PathLike
 from pathlib import Path
 
 import jinja2
@@ -16,8 +15,8 @@ env = jinja2.Environment(loader=jinja2.ChoiceLoader([jinja2.FileSystemLoader(str
 templates = Jinja2Templates(context_processors=[attach_permissions_comparison], env=env)
 
 
-def add_template_dir(directory: PathLike):
-    templates.env.loader.loaders.append(jinja2.FileSystemLoader(directory))
+def add_template_handler(handler: Jinja2Templates):
+    templates.env.loader.loaders.append(handler.env.loader)
 
 
-templates.add_template_dir = add_template_dir
+templates.add_template_handler = add_template_handler
