@@ -1,0 +1,19 @@
+[project]
+name = "example-plugin"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Brett Rowan",email = "121075405+b-rowan@users.noreply.github.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+
+[tool.poetry.dependencies]
+goosebit = {path = "../../goosebit", develop = true}
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project.entry-points.'goosebit.plugins']
+example_plugin = "example_plugin"
