@@ -13,6 +13,7 @@ def load() -> list:
     if len(config.plugins) == 0:
         logger.info("No plugins found.")
         return []
+    logger.info(f"Found plugins enabled in config: {config.plugins}")
 
     entries = entry_points(group="goosebit.plugins")
 

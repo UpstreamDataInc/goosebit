@@ -74,9 +74,9 @@ for plugin in plugins.load():
     if plugin.static_files is not None:
         logger.info(f"Adding static files handler for plugin: {plugin.name}")
         app.mount(f"{plugin.url_prefix}/static", plugin.static_files, name=plugin.static_files_name)
-    if plugin.template_dir is not None:
+    if plugin.templates is not None:
         logger.info(f"Adding template handler for plugin: {plugin.name}")
-        templates.add_template_dir(plugin.template_dir)
+        templates.add_template_handler(plugin.templates)
     if plugin.update_source_hook is not None:
         DeviceManager.add_update_source(plugin.update_source_hook)
     if plugin.config_data_hook is not None:
