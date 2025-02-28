@@ -17,3 +17,6 @@ build-backend = "poetry.core.masonry.api"
 
 [project.entry-points.'goosebit.plugins']
 example_plugin = "example_plugin"
+
+[tool.djlint]
+ignore = "H030,H031,H021"

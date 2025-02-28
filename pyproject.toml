@@ -71,6 +71,9 @@ src_folder = "./goosebit"
 [tool.mypy]
 explicit_package_bases = true
 
+[tool.djlint]
+ignore = "H030,H031,H021"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
