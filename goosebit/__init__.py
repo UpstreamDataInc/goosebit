@@ -13,9 +13,10 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrum
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from tortoise.exceptions import ValidationError
 
-from goosebit import api, db, ui, updater
+from goosebit import api, db, plugins, ui, updater
 from goosebit.api.telemetry import metrics
 from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
+from goosebit.device_manager import DeviceManager
 from goosebit.settings import config
 from goosebit.ui.nav import nav
 from goosebit.ui.static import static
@@ -25,7 +26,7 @@ logger = getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(_app: FastAPI):
     db_ready = await db.init()
     if not db_ready:
         logger.exception("DB does not exist, try running `poetry run aerich upgrade`.")
@@ -59,6 +60,24 @@ app.include_router(ui.router)
 app.include_router(api.router)
 app.mount("/static", static, name="static")
 Instrumentor.instrument_app(app)
+
+for plugin in plugins.load():
+    if plugin.router is not None:
+        logger.info(f"Adding routing handler for plugin: {plugin.name}")
+        app.include_router(router=plugin.router, prefix=plugin.url_prefix)
+    if plugin.db_model_path is not None:
+        logger.info(f"Adding db handler for plugin: {plugin.name}")
+        db.config.add_models(plugin.db_model_path)
+    if plugin.static_files is not None:
+        logger.info(f"Adding static files handler for plugin: {plugin.name}")
+        app.mount(f"{plugin.url_prefix}/static", plugin.static_files, name=plugin.static_files_name)
+    if plugin.templates is not None:
+        logger.info(f"Adding template handler for plugin: {plugin.name}")
+        templates.add_template_handler(plugin.templates)
+    if plugin.update_source_hook is not None:
+        DeviceManager.add_update_source(plugin.update_source_hook)
+    if plugin.config_data_hook is not None:
+        DeviceManager.add_config_callback(plugin.config_data_hook)
 
 
 # Custom exception handler for Tortoise ValidationError
@@ -114,7 +133,7 @@ async def logout(request: Request):
     return resp
 
 
-@app.get("/docs")
+@app.get("/docs", include_in_schema=False)
 async def swagger_docs(request: Request):
     return get_swagger_ui_html(
         title="gooseBit docs",

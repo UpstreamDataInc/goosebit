@@ -45,7 +45,7 @@ class MetricsSettings(BaseModel):
 
 
 class GooseBitSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="GOOSEBIT_")
+    model_config = SettingsConfigDict(env_prefix="GOOSEBIT_", extra="ignore")
 
     port: int = 60053  # GOOSE
 
@@ -55,7 +55,9 @@ class GooseBitSettings(BaseSettings):
 
     secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
 
-    users: list[User] = []
+    users: list[User] = Field(default_factory=list)
+
+    plugins: list[str] = Field(default_factory=list)
 
     db_uri: str = f"sqlite:///{GOOSEBIT_ROOT_DIR.joinpath('db.sqlite3')}"
     artifacts_dir: Path = GOOSEBIT_ROOT_DIR.joinpath("artifacts")
