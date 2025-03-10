@@ -163,7 +163,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
     setInterval(() => {
-        dataTable.ajax.reload(null, false);
+        const selectedRows = dataTable
+            .rows({ selected: true })
+            .data()
+            .toArray()
+            .map((d) => d.uuid);
+
+        dataTable.ajax.reload(() => {
+            dataTable.rows().every(function () {
+                const rowData = this.data();
+                if (selectedRows.includes(rowData.uuid)) {
+                    this.select();
+                }
+            });
+        }, false);
     }, TABLE_UPDATE_TIME);
 
     await updateSoftwareSelection();
