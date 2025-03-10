@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     dataTable = new DataTable("#rollout-table", {
-        responsive: true,
         paging: true,
         processing: true,
         serverSide: true,
