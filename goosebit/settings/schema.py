@@ -58,6 +58,8 @@ class GooseBitSettings(BaseSettings):
     users: list[User] = []
 
     db_uri: str = f"sqlite:///{GOOSEBIT_ROOT_DIR.joinpath('db.sqlite3')}"
+    db_ssl_crt: Path | None = None
+
     artifacts_dir: Path = GOOSEBIT_ROOT_DIR.joinpath("artifacts")
 
     metrics: MetricsSettings = MetricsSettings()

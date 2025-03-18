@@ -5,6 +5,7 @@
 
 # Database to be used, default:
 #db_uri: sqlite:///<project root>/db.sqlite3
+#db_ssl_crt: /<project root>/ca-certificate.crt
 
 # Path to the directory containing artifact files, default:
 #artifacts_dir: /<project root>/artifacts
