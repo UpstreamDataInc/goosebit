@@ -24,7 +24,7 @@ async def ui_root(request: Request):
     "/devices",
     dependencies=[Depends(redirect_if_unauthenticated), Security(validate_user_permissions, scopes=["device.read"])],
 )
-@nav.route("Devices", permissions="device.read")
+@nav.route("Devices", permissions=["device.read"])
 async def devices_ui(request: Request):
     return templates.TemplateResponse(request, "devices.html.jinja", context={"title": "Devices"})
 
@@ -33,7 +33,7 @@ async def devices_ui(request: Request):
     "/software",
     dependencies=[Depends(redirect_if_unauthenticated), Security(validate_user_permissions, scopes=["software.read"])],
 )
-@nav.route("Software", permissions="software.read")
+@nav.route("Software", permissions=["software.read"])
 async def software_ui(request: Request):
     return templates.TemplateResponse(request, "software.html.jinja", context={"title": "Software"})
 
@@ -42,7 +42,7 @@ async def software_ui(request: Request):
     "/rollouts",
     dependencies=[Depends(redirect_if_unauthenticated), Security(validate_user_permissions, scopes=["rollout.read"])],
 )
-@nav.route("Rollouts", permissions="rollout.read")
+@nav.route("Rollouts", permissions=["rollout.read"])
 async def rollouts_ui(request: Request):
     return templates.TemplateResponse(request, "rollouts.html.jinja", context={"title": "Rollouts"})
 
