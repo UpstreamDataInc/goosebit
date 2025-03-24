@@ -13,8 +13,7 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrum
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from tortoise.exceptions import ValidationError
 
-from goosebit import api, db, ui, updater
-from goosebit.api.telemetry import metrics
+from goosebit import api, db, ui, updater, users
 from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
 from goosebit.settings import config
 from goosebit.ui.nav import nav
@@ -29,7 +28,7 @@ async def lifespan(_: FastAPI):
     db_ready = await db.init()
     if not db_ready:
         logger.exception("DB does not exist, try running `poetry run aerich upgrade`.")
-    await metrics.init()
+    await users.init()
     if db_ready:
         yield
     await db.close()
@@ -104,7 +103,7 @@ async def login_get(request: Request):
 
 @app.post("/login", tags=["login"])
 async def login_post(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    return {"access_token": login_user(form_data.username, form_data.password), "token_type": "bearer"}
+    return {"access_token": await login_user(form_data.username, form_data.password), "token_type": "bearer"}
 
 
 @app.get("/logout", include_in_schema=False)

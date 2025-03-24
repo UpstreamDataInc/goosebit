@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <script>const PERMISSIONS = {{request.user.get_json_permissions() | safe}};</script>
+        <script>const PERMISSIONS = {{request.user.permissions | safe}};</script>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{{ title }}</title>
