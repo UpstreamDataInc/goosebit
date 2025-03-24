@@ -9,6 +9,7 @@ from fastapi.requests import Request
 
 from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
+from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 from goosebit.db.models import Rollout, Software
 from goosebit.settings import config
 from goosebit.updates import create_software_update
@@ -21,7 +22,7 @@ router = APIRouter(prefix="/software", tags=["software"])
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=["software.read"])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["read"]()])],
 )
 async def software_get(_: Request) -> SoftwareResponse:
     software = await Software.all().prefetch_related("compatibility")
@@ -30,7 +31,7 @@ async def software_get(_: Request) -> SoftwareResponse:
 
 @router.delete(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=["software.delete"])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["delete"]()])],
 )
 async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> StatusResponse:
     success = False
@@ -56,7 +57,7 @@ async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> Stat
 
 @router.post(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=["software.write"])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["write"]()])],
 )
 async def post_update(_: Request, file: UploadFile | None = File(None), url: str | None = Form(None)):
     if url is not None:

@@ -9,6 +9,7 @@ from tortoise.expressions import Q
 
 from goosebit.api.v1.software import routes
 from goosebit.auth import validate_user_permissions
+from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 from goosebit.db.models import Hardware, Rollout, Software
 from goosebit.settings import config
 from goosebit.ui.bff.common.requests import DataTableRequest
@@ -24,7 +25,7 @@ router = APIRouter(prefix="/software")
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=["software.read"])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["read"]()])],
 )
 async def software_get(
     dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)],
@@ -49,14 +50,14 @@ router.add_api_route(
     "",
     routes.software_delete,
     methods=["DELETE"],
-    dependencies=[Security(validate_user_permissions, scopes=["software.delete"])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["delete"]()])],
     name="bff_software_delete",
 )
 
 
 @router.post(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=["software.write"])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["write"]()])],
 )
 async def post_update(
     request: Request,
@@ -100,7 +101,7 @@ async def post_update(
 
 @router.get(
     "/columns",
-    dependencies=[Security(validate_user_permissions, scopes=["software.read"])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["read"]()])],
     response_model_exclude_none=True,
 )
 async def devices_get_columns() -> DTColumns:
