@@ -160,3 +160,10 @@ class Software(Model):
     @property
     def parsed_version(self) -> Version:
         return Version.parse(self.version)
+
+
+class User(Model):
+    username = fields.CharField(max_length=255, primary_key=True, null=False)
+    hashed_pwd = fields.CharField(max_length=255, null=False)
+    permissions: fields.JSONField[list[str]] = fields.JSONField(default=[])
+    enabled = fields.BooleanField(default=True)

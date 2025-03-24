@@ -16,13 +16,9 @@ from pydantic_settings import (
 from .const import CURRENT_DIR, GOOSEBIT_ROOT_DIR, LOGGING_DEFAULT, PWD_CXT
 
 
-class User(BaseModel):
+class InitialUser(BaseModel):
     username: str
     hashed_pwd: Annotated[str, BeforeValidator(PWD_CXT.hash)] = Field(validation_alias="password")
-    permissions: set[str]
-
-    def get_json_permissions(self):
-        return [str(p) for p in self.permissions]
 
 
 class DeviceAuthMode(StrEnum):
@@ -56,7 +52,7 @@ class GooseBitSettings(BaseSettings):
 
     secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
 
-    users: list[User] = []
+    initial_user: InitialUser
 
     db_uri: str = f"sqlite:///{GOOSEBIT_ROOT_DIR.joinpath('db.sqlite3')}"
     db_ssl_crt: Path | None = None

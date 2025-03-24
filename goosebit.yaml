@@ -39,15 +39,9 @@ poll_time: 00:01:00
 # "software.read", "software.write", "software.delete"
 # "device.read", "device.write", "device.delete"
 # "rollout.read", "rollout.write", "rollout.delete"
-users:
-  - username: admin@goosebit.local
-    password: admin
-    permissions:
-      - "*"
-  - username: ops@goosebit.local
-    password: ops
-    permissions:
-      - "device.read"
+initial_user:
+  username: admin@goosebit.local
+  password: admin
 
 ## Internal settings that usually don't need to be modified
 metrics:

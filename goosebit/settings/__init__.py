@@ -12,6 +12,3 @@ logger = logging.getLogger(__name__)
 
 if config.config_file is not None:
     logger.info(f"Loading settings from: {config.config_file}")
-
-
-USERS = {u.username: u for u in config.users}
