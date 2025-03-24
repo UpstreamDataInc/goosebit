@@ -20,11 +20,8 @@ services:
     image: upstreamdata/goosebit
     environment:
       GOOSEBIT_DB_URI: postgres://db_user:db_pw@postgres:5432/goosebit
-      GOOSEBIT_USERS: |-
-        [
-          {"username": "admin@goosebit.local", "password": "admin", "permissions": ["*"]},
-          {"username": "ci", "password": "foo", "permissions": ["software.read", "software.write", "rollout.read", "rollout.write"]}
-        ]
+      GOOSEBIT_INITAL_USER: |-
+        {"username": "admin@goosebit.local", "password": "admin"}
       GOOSEBIT_SECRET_KEY: 1a7090da4fbe9c72f888a4772302eac3
       GOOSEBIT_ARTIFACTS_DIR: /artifacts
       FORWARDED_ALLOW_IPS: "*"
