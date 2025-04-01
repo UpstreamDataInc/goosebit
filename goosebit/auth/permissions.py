@@ -50,16 +50,26 @@ ROLLOUT_PERMISSIONS = Permission(
     description="Access to rollouts",
     sub_permissions=[READ_PERMISSION, WRITE_PERMISSION, DELETE_PERMISSION],
 )
+SETTINGS_USERS_PERMISSIONS = Permission(
+    name="users",
+    description="Access to user control",
+    sub_permissions=[READ_PERMISSION, WRITE_PERMISSION, DELETE_PERMISSION],
+)
+SETTING_PERMISSIONS = Permission(
+    name="settings",
+    description="Access to settings",
+    sub_permissions=[SETTINGS_USERS_PERMISSIONS],
+)
 
 API_PERMISSIONS = Permission(
     name="api",
     description="Access to the GooseBit API",
-    sub_permissions=[DEVICE_PERMISSIONS, SOFTWARE_PERMISSIONS, ROLLOUT_PERMISSIONS],
+    sub_permissions=[DEVICE_PERMISSIONS, SOFTWARE_PERMISSIONS, ROLLOUT_PERMISSIONS, SETTING_PERMISSIONS],
 )
 UI_PERMISSIONS = Permission(
     name="ui",
     description="Access to the GooseBit UI",
-    sub_permissions=[DEVICE_PERMISSIONS, SOFTWARE_PERMISSIONS, ROLLOUT_PERMISSIONS],
+    sub_permissions=[DEVICE_PERMISSIONS, SOFTWARE_PERMISSIONS, ROLLOUT_PERMISSIONS, SETTING_PERMISSIONS],
 )
 
 GOOSEBIT_PERMISSIONS = Permission(

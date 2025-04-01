@@ -42,3 +42,9 @@ class SoftwareColumns:
     version = DTColumnDescription(title="Version", data="version", name="version", searchable=True, orderable=True)
     compatibility = DTColumnDescription(title="Compatibility", name="compatibility", data="compatibility")
     size = DTColumnDescription(title="Size", name="size", data="size")
+
+
+class SettingsUsersColumns:
+    username = DTColumnDescription(title="Username", data="username", searchable=True, orderable=True)
+    enabled = DTColumnDescription(title="Enabled", data="enabled")
+    permissions = DTColumnDescription(title="Permissions", data="permissions")
