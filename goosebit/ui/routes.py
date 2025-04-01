@@ -66,3 +66,14 @@ async def rollouts_ui(request: Request):
 )
 async def logs_ui(request: Request, dev_id: str):
     return templates.TemplateResponse(request, "logs.html.jinja", context={"title": "Log", "device": dev_id})
+
+
+@router.get(
+    "/settings",
+    dependencies=[
+        Depends(redirect_if_unauthenticated),
+        Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["settings"]()]),
+    ],
+)
+async def settings_ui(request: Request):
+    return templates.TemplateResponse(request, "settings.html.jinja", context={"title": "Settings"})
