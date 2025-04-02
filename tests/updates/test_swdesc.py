@@ -5,6 +5,23 @@ from libconf import AttrDict
 from goosebit.updates.swdesc import parse_descriptor, parse_file
 
 
+def test_parse_descriptor_no_compatibility_defined():
+    desc = AttrDict(
+        {
+            "software": {
+                "version": "1.0",
+                "description": "Software update for XXXXX Project",
+            }
+        }
+    )
+
+    swdesc_attrs = parse_descriptor(desc)
+    assert swdesc_attrs["version"] == "1.0.0"
+    assert swdesc_attrs["compatibility"] == [
+        {"hw_model": "default", "hw_revision": "default"},
+    ]
+
+
 def test_parse_descriptor_simple():
     # simplified example from https://sbabic.github.io/swupdate/sw-description.html#introduction
     desc = AttrDict(
