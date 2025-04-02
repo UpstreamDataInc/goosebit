@@ -19,11 +19,9 @@ router = APIRouter(prefix="/users")
 
 @router.get(
     "",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["settings"]["users"]["read"]()])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["settings"]["users"]["read"]()])],
 )
-async def software_get(
+async def settings_users_get(
     dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)],
 ) -> BFFSettingsUsersResponse:
     filters: list[Q] = []
@@ -39,9 +37,7 @@ async def software_get(
 
 @router.get(
     "/columns",
-    dependencies=[
-        Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["settings"]["users"]["read"]()])
-    ],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["settings"]["users"]["read"]()])],
     response_model_exclude_none=True,
 )
 async def settings_users_get_columns() -> DTColumns:
