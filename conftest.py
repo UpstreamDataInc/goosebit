@@ -104,14 +104,14 @@ async def test_data(db):
         rollout_default = await Rollout.create(software_id=software_release.id)
 
         device_rollout = await Device.create(
-            uuid="device1",
+            id="device1",
             last_state=UpdateStateEnum.REGISTERED,
             update_mode=UpdateModeEnum.ROLLOUT,
             hardware=hardware,
         )
 
         device_assigned = await Device.create(
-            uuid="device2",
+            id="device2",
             last_state=UpdateStateEnum.REGISTERED,
             update_mode=UpdateModeEnum.ASSIGNED,
             assigned_software=software_release,

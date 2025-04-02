@@ -46,8 +46,8 @@ class DeviceManager:
             hardware = (await Hardware.get_or_create(model="default", revision="default"))[0]
             DeviceManager._hardware_default = hardware
 
-        device = (await Device.get_or_create(uuid=dev_id, defaults={"hardware": hardware}))[0]
-        result = await cache.set(device.uuid, device, ttl=600)
+        device = (await Device.get_or_create(id=dev_id, defaults={"hardware": hardware}))[0]
+        result = await cache.set(device.id, device, ttl=600)
         assert result, "device being cached"
 
         return device
@@ -57,7 +57,7 @@ class DeviceManager:
         await device.save(update_fields=update_fields)
 
         # only update cache after a successful database save
-        result = await caches.get("default").set(device.uuid, device, ttl=600)
+        result = await caches.get("default").set(device.id, device, ttl=600)
         assert result, "device being cached"
 
     @staticmethod
@@ -155,7 +155,7 @@ class DeviceManager:
                 await Rollout.filter(
                     feed=device.feed,
                     paused=False,
-                    software__compatibility__devices__uuid=device.uuid,
+                    software__compatibility__devices__id=device.id,
                 )
                 .order_by("-created_at")
                 .first()
@@ -219,7 +219,7 @@ class DeviceManager:
 
     @staticmethod
     async def delete_devices(ids: list[str]):
-        await Device.filter(uuid__in=ids).delete()
+        await Device.filter(id__in=ids).delete()
         for dev_id in ids:
             result = await caches.get("default").delete(dev_id)
             assert result == 1, "device has been cached"

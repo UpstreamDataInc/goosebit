@@ -51,7 +51,7 @@ async def validate_device_token(request: Request, dev_id: str):
         if device_token is None:
             raise HTTPException(401, "Device authentication token is required in strict mode.")
         # do not create a device in strict mode
-        device = await Device.get_or_none(uuid=dev_id)
+        device = await Device.get_or_none(id=dev_id)
         if device is None:
             raise HTTPException(401, "Cannot register a new device in strict mode.")
         if not device.auth_token == device_token:

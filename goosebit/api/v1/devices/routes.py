@@ -29,7 +29,7 @@ async def devices_get(_: Request) -> DevicesResponse:
     response = DevicesResponse(devices=devices)
 
     async def set_assigned_sw(d: DeviceSchema):
-        device = await get_device(d.uuid)
+        device = await get_device(d.id)
         _, target = await DeviceManager.get_update(device)
         if target is not None:
             await target.fetch_related("compatibility")
@@ -54,10 +54,10 @@ async def devices_delete(_: Request, config: DevicesDeleteRequest) -> StatusResp
     dependencies=[Security(validate_user_permissions, scopes=["device.write"])],
 )
 async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusResponse:
-    for uuid in config.devices:
-        if await Device.get_or_none(uuid=uuid) is None:
-            raise HTTPException(404, f"Device with UUID {uuid} not found")
-        device = await DeviceManager.get_device(uuid)
+    for dev_id in config.devices:
+        if await Device.get_or_none(id=dev_id) is None:
+            raise HTTPException(404, f"Device with ID {dev_id} not found")
+        device = await DeviceManager.get_device(dev_id)
         if config.software is not None:
             if config.software == "rollout":
                 await DeviceManager.update_update(device, UpdateModeEnum.ROLLOUT, None)
@@ -84,8 +84,8 @@ async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusRespon
     dependencies=[Security(validate_user_permissions, scopes=["device.write"])],
 )
 async def devices_put(_: Request, config: DevicesPutRequest) -> StatusResponse:
-    for uuid in config.devices:
-        device = await DeviceManager.get_device(uuid)
+    for dev_id in config.devices:
+        device = await DeviceManager.get_device(dev_id)
         if config.software is not None:
             if config.software == "rollout":
                 await DeviceManager.update_update(device, UpdateModeEnum.ROLLOUT, None)
