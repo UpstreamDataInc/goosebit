@@ -5,13 +5,12 @@ from typing import Self
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
-import semver
 from anyio import Path
-from semver import Version
 from tortoise import Model, fields
 from tortoise.exceptions import ValidationError
 
 from goosebit.api.telemetry.metrics import devices_count
+from goosebit.util.version import Version
 
 
 class UpdateModeEnum(IntEnum):
@@ -139,7 +138,7 @@ class Software(Model):
             return None
         return sorted(
             updates,
-            key=lambda x: semver.Version.parse(x.version, optional_minor_and_patch=True),
+            key=lambda x: Version.parse(x.version),
             reverse=True,
         )[0]
 
@@ -160,4 +159,4 @@ class Software(Model):
 
     @property
     def parsed_version(self) -> Version:
-        return semver.Version.parse(self.version, optional_minor_and_patch=True)
+        return Version.parse(self.version)
