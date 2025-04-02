@@ -46,14 +46,14 @@ async def _api_rollouts_get(async_client):
 
 
 async def _poll_first_time(async_client):
-    response = await async_client.get(f"/ddi/controller/v1/{UUID}")
+    response = await async_client.get(f"/DEFAULT/controller/v1/{UUID}")
     assert response.status_code == 200
     data = response.json()
     assert "config" in data
     assert data["config"]["polling"]["sleep"] == "00:00:10"
     assert "_links" in data
     config_url = data["_links"]["configData"]["href"]
-    assert config_url == f"http://test/ddi/controller/v1/{UUID}/configData"
+    assert config_url == f"http://test/DEFAULT/controller/v1/{UUID}/configData"
     return config_url
 
 
@@ -81,7 +81,7 @@ async def _register(async_client, config_url):
 
 
 async def _poll(async_client, device_uuid, software: Software | None, expect_update=True):
-    response = await async_client.get(f"/ddi/controller/v1/{device_uuid}")
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device_uuid}")
 
     assert response.status_code == 200
     data = response.json()
@@ -90,7 +90,7 @@ async def _poll(async_client, device_uuid, software: Software | None, expect_upd
         assert "deploymentBase" in data["_links"], "expected update, but none available"
         deployment_base = data["_links"]["deploymentBase"]["href"]
         assert software is not None
-        assert deployment_base == f"http://test/ddi/controller/v1/{device_uuid}/deploymentBase/{software.id}"
+        assert deployment_base == f"http://test/DEFAULT/controller/v1/{device_uuid}/deploymentBase/{software.id}"
         return deployment_base
     else:
         assert data["config"]["polling"]["sleep"] == config.poll_time
@@ -107,7 +107,7 @@ async def _retrieve_software_url(async_client, device_uuid, deployment_base, sof
     assert data["id"] == str(software.id)
     assert (
         data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]
-        == f"http://test/ddi/controller/v1/{device_uuid}/download"
+        == f"http://test/DEFAULT/controller/v1/{device_uuid}/download"
     )
     assert data["deployment"]["chunks"][0]["artifacts"][0]["hashes"]["sha1"] == software.hash
     assert data["deployment"]["chunks"][0]["artifacts"][0]["size"] == software.size
@@ -117,7 +117,7 @@ async def _retrieve_software_url(async_client, device_uuid, deployment_base, sof
 
 async def _feedback(async_client, device_uuid, software, finished, execution, details=""):
     response = await async_client.post(
-        f"/ddi/controller/v1/{device_uuid}/deploymentBase/{software.id}/feedback",
+        f"/DEFAULT/controller/v1/{device_uuid}/deploymentBase/{software.id}/feedback",
         json={
             "id": software.id,
             "status": {

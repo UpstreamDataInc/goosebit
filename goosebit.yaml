@@ -3,6 +3,9 @@
 # Port to host the server on, default:
 #port: 60053 # GOOSE ;)
 
+# Tenant for DDI endpoint
+#tenant: DEFAULT
+
 # Database to be used, default:
 #db_uri: sqlite:///<project root>/db.sqlite3
 #db_ssl_crt: /<project root>/ca-certificate.crt

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
 
 from goosebit.device_manager import DeviceManager, get_device
+from goosebit.settings import config
 from goosebit.settings.schema import DeviceAuthMode
 
 from ..db import Device
@@ -58,7 +59,7 @@ async def validate_device_token(request: Request, dev_id: str):
 
 
 router = APIRouter(
-    prefix="/ddi",
+    prefix=f"/{config.tenant}",
     dependencies=[Depends(log_last_connection), Depends(validate_device_token)],
     tags=["ddi"],
 )

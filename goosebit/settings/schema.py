@@ -48,6 +48,7 @@ class GooseBitSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="GOOSEBIT_")
 
     port: int = 60053  # GOOSE
+    tenant: str = "DEFAULT"
 
     poll_time: str = "00:01:00"
 
