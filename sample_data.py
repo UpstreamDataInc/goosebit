@@ -57,7 +57,7 @@ async def generate_sample_data():
             fake.random_element(software_for_hw1) if hardware == hardware1 else fake.random_element(software_for_hw2)
         )
         await Device.create(
-            uuid=fake.uuid4(),
+            id=fake.uuid4(),
             name=fake.bs(),
             feed=fake.random_element(["dev", "qa", "live"]) if update_mode == UpdateModeEnum.ROLLOUT else "",
             last_state=fake.random_element(

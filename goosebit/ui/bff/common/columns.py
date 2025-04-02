@@ -2,7 +2,7 @@ from .responses import DTColumnDescription
 
 
 class DeviceColumns:
-    uuid = DTColumnDescription(title="UUID", data="uuid", name="uuid", searchable=True, orderable=True)
+    id = DTColumnDescription(title="ID", data="id", name="id", searchable=True, orderable=True)
     name = DTColumnDescription(title="Name", data="name", name="name", searchable=True, orderable=True)
     hw_model = DTColumnDescription(title="Model", data="hw_model")
     hw_revision = DTColumnDescription(title="Revision", data="hw_revision")

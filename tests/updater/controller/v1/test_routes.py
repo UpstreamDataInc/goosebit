@@ -4,7 +4,7 @@ from goosebit.db.models import Hardware, Software
 from goosebit.device_manager import DeviceManager, get_device
 from goosebit.settings import GooseBitSettings
 
-UUID = "221326d9-7873-418e-960c-c074026a3b7c"
+DEVICE_ID = "221326d9-7873-418e-960c-c074026a3b7c"
 
 config = GooseBitSettings()
 
@@ -12,7 +12,7 @@ config = GooseBitSettings()
 async def _api_device_update(async_client, device, update_attribute, update_value):
     response = await async_client.patch(
         f"/ui/bff/devices",
-        json={"devices": [f"{device.uuid}"], update_attribute: update_value},
+        json={"devices": [f"{device.id}"], update_attribute: update_value},
     )
     assert response.status_code == 200
 
@@ -21,7 +21,7 @@ async def _api_device_get(async_client, dev_id):
     response = await async_client.get("/api/v1/devices")
     assert response.status_code == 200
     devices = response.json()["devices"]
-    return next(d for d in devices if d["uuid"] == dev_id)
+    return next(d for d in devices if d["id"] == dev_id)
 
 
 async def _api_rollout_create(async_client, feed, software, paused):
@@ -46,14 +46,14 @@ async def _api_rollouts_get(async_client):
 
 
 async def _poll_first_time(async_client):
-    response = await async_client.get(f"/DEFAULT/controller/v1/{UUID}")
+    response = await async_client.get(f"/DEFAULT/controller/v1/{DEVICE_ID}")
     assert response.status_code == 200
     data = response.json()
     assert "config" in data
     assert data["config"]["polling"]["sleep"] == "00:00:10"
     assert "_links" in data
     config_url = data["_links"]["configData"]["href"]
-    assert config_url == f"http://test/DEFAULT/controller/v1/{UUID}/configData"
+    assert config_url == f"http://test/DEFAULT/controller/v1/{DEVICE_ID}/configData"
     return config_url
 
 
@@ -80,8 +80,8 @@ async def _register(async_client, config_url):
     assert data["message"] == "Updated swupdate data."
 
 
-async def _poll(async_client, device_uuid, software: Software | None, expect_update=True):
-    response = await async_client.get(f"/DEFAULT/controller/v1/{device_uuid}")
+async def _poll(async_client, device_id, software: Software | None, expect_update=True):
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device_id}")
 
     assert response.status_code == 200
     data = response.json()
@@ -90,7 +90,7 @@ async def _poll(async_client, device_uuid, software: Software | None, expect_upd
         assert "deploymentBase" in data["_links"], "expected update, but none available"
         deployment_base = data["_links"]["deploymentBase"]["href"]
         assert software is not None
-        assert deployment_base == f"http://test/DEFAULT/controller/v1/{device_uuid}/deploymentBase/{software.id}"
+        assert deployment_base == f"http://test/DEFAULT/controller/v1/{device_id}/deploymentBase/{software.id}"
         return deployment_base
     else:
         assert data["config"]["polling"]["sleep"] == config.poll_time
@@ -98,7 +98,7 @@ async def _poll(async_client, device_uuid, software: Software | None, expect_upd
         return None
 
 
-async def _retrieve_software_url(async_client, device_uuid, deployment_base, software):
+async def _retrieve_software_url(async_client, device_id, deployment_base, software):
     response = await async_client.get(deployment_base)
     assert response.status_code == 200
     data = response.json()
@@ -107,7 +107,7 @@ async def _retrieve_software_url(async_client, device_uuid, deployment_base, sof
     assert data["id"] == str(software.id)
     assert (
         data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]
-        == f"http://test/DEFAULT/controller/v1/{device_uuid}/download"
+        == f"http://test/DEFAULT/controller/v1/{device_id}/download"
     )
     assert data["deployment"]["chunks"][0]["artifacts"][0]["hashes"]["sha1"] == software.hash
     assert data["deployment"]["chunks"][0]["artifacts"][0]["size"] == software.size
@@ -115,9 +115,9 @@ async def _retrieve_software_url(async_client, device_uuid, deployment_base, sof
     return data["deployment"]["chunks"][0]["artifacts"][0]["_links"]["download"]["href"]
 
 
-async def _feedback(async_client, device_uuid, software, finished, execution, details=""):
+async def _feedback(async_client, device_id, software, finished, execution, details=""):
     response = await async_client.post(
-        f"/DEFAULT/controller/v1/{device_uuid}/deploymentBase/{software.id}/feedback",
+        f"/DEFAULT/controller/v1/{device_id}/deploymentBase/{software.id}/feedback",
         json={
             "id": software.id,
             "status": {
@@ -136,9 +136,9 @@ async def test_register_device(async_client, test_data):
 
     await _register(async_client, config_url)
 
-    await _poll(async_client, UUID, None, False)
+    await _poll(async_client, DEVICE_ID, None, False)
 
-    device_api = await _api_device_get(async_client, UUID)
+    device_api = await _api_device_get(async_client, DEVICE_ID)
     assert device_api["last_state"] == "Registered"
     assert device_api["sw_version"] == "8.8.1-12-g302f635+189128"
     assert device_api["hw_model"] == "smart-gateway-mt7688"
@@ -152,13 +152,13 @@ async def test_rollout_full(async_client, test_data, delete_software):
     software = test_data["software_release"]
     rollout = test_data["rollout_default"]
 
-    deployment_base = await _poll(async_client, device.uuid, software)
+    deployment_base = await _poll(async_client, device.id, software)
 
-    await _retrieve_software_url(async_client, device.uuid, deployment_base, software)
+    await _retrieve_software_url(async_client, device.id, deployment_base, software)
 
     # confirm installation start (in reality: several of similar posts)
-    await _feedback(async_client, device.uuid, software, "none", "proceeding")
-    device_api = await _api_device_get(async_client, device.uuid)
+    await _feedback(async_client, device.id, software, "none", "proceeding")
+    device_api = await _api_device_get(async_client, device.id)
     assert device_api["last_state"] == "Running"
 
     # edge case: remove software during update
@@ -166,8 +166,8 @@ async def test_rollout_full(async_client, test_data, delete_software):
         await Software.delete(software)
 
     # report finished installation
-    await _feedback(async_client, device.uuid, software, "success", "closed")
-    device_api = await _api_device_get(async_client, device.uuid)
+    await _feedback(async_client, device.id, software, "success", "closed")
+    device_api = await _api_device_get(async_client, device.id)
     assert device_api["last_state"] == "Finished"
 
     if not delete_software:
@@ -184,13 +184,13 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
     device = test_data["device_rollout"]
     software = test_data["software_release"]
 
-    deployment_base = await _poll(async_client, device.uuid, software)
+    deployment_base = await _poll(async_client, device.id, software)
 
-    software_url = await _retrieve_software_url(async_client, device.uuid, deployment_base, software)
+    software_url = await _retrieve_software_url(async_client, device.id, deployment_base, software)
 
     # confirm installation start (in reality: several of similar posts)
-    await _feedback(async_client, device.uuid, software, "none", "proceeding")
-    device_api = await _api_device_get(async_client, device.uuid)
+    await _feedback(async_client, device.id, software, "none", "proceeding")
+    device_api = await _api_device_get(async_client, device.id)
     assert device_api["last_state"] == "Running"
 
     # HEAD /api/v1/download/1 HTTP/1.1 (reason not clear)
@@ -203,8 +203,8 @@ async def test_rollout_signalling_download_failure(async_client, test_data):
     assert response.status_code == 200
 
     # report failure
-    await _feedback(async_client, device.uuid, software, "failure", "closed")
-    device_api = await _api_device_get(async_client, device.uuid)
+    await _feedback(async_client, device.id, software, "failure", "closed")
+    device_api = await _api_device_get(async_client, device.id)
     assert device_api["last_state"] == "Error"
 
 
@@ -217,19 +217,19 @@ async def test_rollout_selection(async_client, test_data):
     software_rc = test_data["software_rc"]
     software_release = test_data["software_release"]
 
-    await _poll(async_client, device.uuid, None, False)
+    await _poll(async_client, device.id, None, False)
 
     await _api_rollout_create(async_client, "qa", software_beta, False)
-    await _poll(async_client, device.uuid, software_beta)
+    await _poll(async_client, device.id, software_beta)
 
     await _api_rollout_create(async_client, "live", software_rc, False)
-    await _poll(async_client, device.uuid, software_beta)
+    await _poll(async_client, device.id, software_beta)
 
     await _api_rollout_create(async_client, "qa", software_release, True)
-    await _poll(async_client, device.uuid, software_beta)
+    await _poll(async_client, device.id, software_beta)
 
     await _api_rollout_create(async_client, "qa", software_release, False)
-    await _poll(async_client, device.uuid, software_release)
+    await _poll(async_client, device.id, software_release)
 
 
 @pytest.mark.asyncio
@@ -239,18 +239,18 @@ async def test_latest(async_client, test_data):
 
     await _api_device_update(async_client, device, "software", "latest")
 
-    deployment_base = await _poll(async_client, device.uuid, software)
+    deployment_base = await _poll(async_client, device.id, software)
 
-    await _retrieve_software_url(async_client, device.uuid, deployment_base, software)
+    await _retrieve_software_url(async_client, device.id, deployment_base, software)
 
     # confirm installation start (in reality: several of similar posts)
-    await _feedback(async_client, device.uuid, software, "none", "proceeding")
-    device_api = await _api_device_get(async_client, device.uuid)
+    await _feedback(async_client, device.id, software, "none", "proceeding")
+    device_api = await _api_device_get(async_client, device.id)
     assert device_api["last_state"] == "Running"
 
     # report finished installation
-    await _feedback(async_client, device.uuid, software, "success", "closed")
-    device_api = await _api_device_get(async_client, device.uuid)
+    await _feedback(async_client, device.id, software, "success", "closed")
+    device_api = await _api_device_get(async_client, device.id)
     assert device_api["last_state"] == "Finished"
     assert device_api["sw_version"] == software.version
 
@@ -265,7 +265,7 @@ async def test_latest_with_no_software_available(async_client, test_data):
     device.hardware_id = fake_hardware.id
     await device.save()
 
-    await _poll(async_client, device.uuid, None, False)
+    await _poll(async_client, device.id, None, False)
 
 
 @pytest.mark.asyncio
@@ -274,7 +274,7 @@ async def test_pinned(async_client, test_data):
 
     await _api_device_update(async_client, device, "pinned", True)
 
-    await _poll(async_client, device.uuid, None, False)
+    await _poll(async_client, device.id, None, False)
 
 
 @pytest.mark.asyncio
@@ -284,14 +284,14 @@ async def test_up_to_date(async_client, test_data):
 
     await _api_device_update(async_client, device, "software", "latest")
 
-    device = await get_device(dev_id=device.uuid)
+    device = await get_device(dev_id=device.id)
     await DeviceManager.update_sw_version(device, software.version)
 
-    await _poll(async_client, device.uuid, None, False)
+    await _poll(async_client, device.id, None, False)
 
 
 async def _assert_log_lines(async_client, device, expected_line_count):
-    response = await async_client.get(f"/ui/bff/devices/{device.uuid}/log")
+    response = await async_client.get(f"/ui/bff/devices/{device.id}/log")
     assert response.status_code == 200
 
     log = response.json()["log"]
@@ -312,24 +312,24 @@ async def test_update_logs_and_progress(async_client, test_data):
 
     await _api_device_update(async_client, device, "software", "latest")
 
-    deployment_base = await _poll(async_client, device.uuid, software)
+    deployment_base = await _poll(async_client, device.id, software)
     await _assert_log_lines(async_client, device, 0)
 
-    await _retrieve_software_url(async_client, device.uuid, deployment_base, software)
+    await _retrieve_software_url(async_client, device.id, deployment_base, software)
 
     # confirm installation start (in reality: several of similar posts)
-    await _feedback(async_client, device.uuid, software, "none", "proceeding", "Downloaded 7%")
+    await _feedback(async_client, device.id, software, "none", "proceeding", "Downloaded 7%")
     await _assert_log_lines(async_client, device, 1)
-    device_api = await _api_device_get(async_client, device.uuid)
+    device_api = await _api_device_get(async_client, device.id)
     assert device_api["last_state"] == "Running"
     assert device_api["progress"] == 7
 
-    await _feedback(async_client, device.uuid, software, "none", "proceeding", "Installing Update Chunk Artifacts.")
+    await _feedback(async_client, device.id, software, "none", "proceeding", "Installing Update Chunk Artifacts.")
     await _assert_log_lines(async_client, device, 2)
 
     # report finished installation
-    await _feedback(async_client, device.uuid, software, "success", "closed")
-    device_api = await _api_device_get(async_client, device.uuid)
+    await _feedback(async_client, device.id, software, "success", "closed")
+    device_api = await _api_device_get(async_client, device.id)
     assert device_api["progress"] == 100
     assert device_api["last_state"] == "Finished"
     assert device_api["sw_version"] == software.version
@@ -337,5 +337,5 @@ async def test_update_logs_and_progress(async_client, test_data):
     await _assert_log_lines(async_client, device, 3)
 
     # fake installation start confirmation to check clearing of logs
-    await _feedback(async_client, device.uuid, software, "none", "proceeding", "Downloaded 1%")
+    await _feedback(async_client, device.id, software, "none", "proceeding", "Downloaded 1%")
     await _assert_log_lines(async_client, device, 1)

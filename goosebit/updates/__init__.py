@@ -100,7 +100,7 @@ async def generate_chunk(request: Request, device: Device) -> list:
         href = str(
             request.url_for(
                 "download_artifact",
-                dev_id=device.uuid,
+                dev_id=device.id,
             )
         )
     else:

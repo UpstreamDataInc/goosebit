@@ -37,14 +37,14 @@ async def polling(request: Request, device: Device = Depends(get_device)):
             "href": str(
                 request.url_for(
                     "config_data",
-                    dev_id=device.uuid,
+                    dev_id=device.id,
                 )
             )
         }
-        logger.info(f"Skip: registration required, device={device.uuid}")
+        logger.info(f"Skip: registration required, device={device.id}")
 
     elif device.last_state == UpdateStateEnum.ERROR and not device.force_update:
-        logger.info(f"Skip: device in error state, device={device.uuid}")
+        logger.info(f"Skip: device in error state, device={device.id}")
 
     else:
         # provide update if available. Note: this is also required while in state "running", otherwise swupdate
@@ -55,12 +55,12 @@ async def polling(request: Request, device: Device = Depends(get_device)):
                 "href": str(
                     request.url_for(
                         "deployment_base",
-                        dev_id=device.uuid,
+                        dev_id=device.id,
                         action_id=software.id,
                     )
                 )
             }
-            logger.info(f"Forced: update available, device={device.uuid}")
+            logger.info(f"Forced: update available, device={device.id}")
 
     return {
         "config": {"polling": {"sleep": sleep}},
@@ -71,7 +71,7 @@ async def polling(request: Request, device: Device = Depends(get_device)):
 @router.put("/{dev_id}/configData")
 async def config_data(_: Request, cfg: ConfigDataSchema, device: Device = Depends(get_device)):
     await DeviceManager.update_config_data(device, **cfg.data)
-    logger.info(f"Updating config data, device={device.uuid}")
+    logger.info(f"Updating config data, device={device.id}")
     return {"success": True, "message": "Updated swupdate data."}
 
 
@@ -83,7 +83,7 @@ async def deployment_base(
 ):
     handling_type, software = await DeviceManager.get_update(device)
 
-    logger.info(f"Request deployment base, device={device.uuid}")
+    logger.info(f"Request deployment base, device={device.id}")
 
     return {
         "id": str(action_id),
@@ -102,7 +102,7 @@ async def deployment_feedback(_: Request, data: FeedbackSchema, action_id: int, 
             await DeviceManager.deployment_action_start(device)
             await DeviceManager.update_device_state(device, UpdateStateEnum.RUNNING)
 
-        logger.debug(f"Installation in progress, device={device.uuid}")
+        logger.debug(f"Installation in progress, device={device.id}")
 
     elif data.status.execution == FeedbackStatusExecutionState.CLOSED:
         await DeviceManager.update_force_update(device, False)
@@ -123,14 +123,14 @@ async def deployment_feedback(_: Request, data: FeedbackSchema, action_id: int, 
                 else:
                     # edge case where device update mode got changed while update was running
                     logging.warning(
-                        f"Updating rollout success stats failed, action_id={action_id}, device={device.uuid}"  # noqa: E501
+                        f"Updating rollout success stats failed, action_id={action_id}, device={device.id}"  # noqa: E501
                     )
 
             if reported_software:
                 await DeviceManager.update_sw_version(device, reported_software.version)
 
             software_version = reported_software.version if reported_software else None
-            logger.debug(f"Installation successful, software={software_version}, device={device.uuid}")
+            logger.debug(f"Installation successful, software={software_version}, device={device.id}")
 
         elif data.status.result.finished == FeedbackStatusResultFinished.FAILURE:
             await DeviceManager.update_device_state(device, UpdateStateEnum.ERROR)
@@ -143,20 +143,20 @@ async def deployment_feedback(_: Request, data: FeedbackSchema, action_id: int, 
                 else:
                     # edge case where device update mode got changed while update was running
                     logging.warning(
-                        f"Updating rollout failure stats failed, action_id={action_id}, device={device.uuid}"  # noqa: E501
+                        f"Updating rollout failure stats failed, action_id={action_id}, device={device.id}"  # noqa: E501
                     )
 
             software_version = reported_software.version if reported_software else None
-            logger.debug(f"Installation failed, software={software_version}, device={device.uuid}")
+            logger.debug(f"Installation failed, software={software_version}, device={device.id}")
     else:
-        logging.error(f"Device reported unhandled execution state, state={data.status.execution}, device={device.uuid}")
+        logging.error(f"Device reported unhandled execution state, state={data.status.execution}, device={device.id}")
 
     try:
         log = data.status.details
         if log is not None:
             await DeviceManager.update_log(device, "\n".join(log))
     except AttributeError:
-        logging.warning(f"No details to update device update log, device={device.uuid}")
+        logging.warning(f"No details to update device update log, device={device.id}")
 
     return {"id": str(action_id)}
 

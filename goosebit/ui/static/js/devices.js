@@ -44,13 +44,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         paging: true,
         processing: false,
         serverSide: true,
-        order: { name: "uuid", dir: "asc" },
+        order: { name: "id", dir: "asc" },
         scrollCollapse: true,
         scroller: true,
         scrollY: "65vh",
         stateSave: true,
         select: true,
-        rowId: "uuid",
+        rowId: "id",
         ajax: {
             url: "/ui/bff/devices",
             data: (data) => {
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         text: '<i class="bi bi-file-text"></i>',
                         action: () => {
                             const selectedDevice = dataTable.rows({ selected: true }).data().toArray()[0];
-                            window.location.href = `/ui/logs/${selectedDevice.uuid}`;
+                            window.location.href = `/ui/logs/${selectedDevice.id}`;
                         },
                         className: "buttons-logs",
                         titleAttr: "View Log",
@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 .rows({ selected: true })
                                 .data()
                                 .toArray()
-                                .map((d) => d.uuid);
+                                .map((d) => d.id);
                             await deleteDevices(selectedDevices);
                         },
                         className: "buttons-delete",
@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 .rows({ selected: true })
                                 .data()
                                 .toArray()
-                                .map((d) => d.uuid);
+                                .map((d) => d.id);
                             await forceUpdateDevices(selectedDevices);
                         },
                         className: "buttons-force-update",
@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 .rows({ selected: true })
                                 .data()
                                 .toArray()
-                                .map((d) => d.uuid);
+                                .map((d) => d.id);
                             await pinDevices(selectedDevices);
                         },
                         className: "buttons-pin",
@@ -283,7 +283,7 @@ async function updateDeviceName() {
         .rows({ selected: true })
         .data()
         .toArray()
-        .map((d) => d.uuid);
+        .map((d) => d.id);
     const name = document.getElementById("device-name").value;
 
     try {
@@ -300,7 +300,7 @@ async function updateDeviceRollout() {
         .rows({ selected: true })
         .data()
         .toArray()
-        .map((d) => d.uuid);
+        .map((d) => d.id);
     const feed = document.getElementById("device-selected-feed").value;
     const software = "rollout";
 
@@ -318,7 +318,7 @@ async function updateDeviceManualSoftware() {
         .rows({ selected: true })
         .data()
         .toArray()
-        .map((d) => d.uuid);
+        .map((d) => d.id);
     const feed = null;
     const software = document.getElementById("selected-sw").value;
 
@@ -336,7 +336,7 @@ async function updateDeviceLatest() {
         .rows({ selected: true })
         .data()
         .toArray()
-        .map((d) => d.uuid);
+        .map((d) => d.id);
     const feed = null;
     const software = "latest";
 
@@ -386,12 +386,12 @@ function updateDeviceList() {
         .rows({ selected: true })
         .data()
         .toArray()
-        .map((d) => d.uuid);
+        .map((d) => d.id);
 
     dataTable.ajax.reload(() => {
         dataTable.rows().every(function () {
             const rowData = this.data();
-            if (selectedRows.includes(rowData.uuid)) {
+            if (selectedRows.includes(rowData.id)) {
                 this.select();
             }
         });

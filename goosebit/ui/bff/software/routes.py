@@ -28,7 +28,7 @@ router = APIRouter(prefix="/software")
 )
 async def software_get(
     dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)],
-    uuids: list[str] = Query(default=None),
+    ids: list[str] = Query(default=None),
 ) -> BFFSoftwareResponse:
     filters: list[Q] = []
 
@@ -38,8 +38,8 @@ async def software_get(
 
     query = Software.all().prefetch_related("compatibility")
 
-    if uuids:
-        hardware = await Hardware.filter(devices__uuid__in=uuids).distinct()
+    if ids:
+        hardware = await Hardware.filter(devices__id__in=ids).distinct()
         filters.append(Q(*[Q(compatibility__id=c.id) for c in hardware], join_type="AND"))
 
     return await BFFSoftwareResponse.convert(dt_query, query, search_filter, Q(*filters))

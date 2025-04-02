@@ -57,7 +57,7 @@ class Tag(Model):
 
 
 class Device(Model):
-    uuid = fields.CharField(max_length=255, primary_key=True)
+    id = fields.CharField(max_length=255, primary_key=True)
     name = fields.CharField(max_length=255, null=True)
     assigned_software = fields.ForeignKeyField(
         "models.Software", related_name="assigned_devices", null=True, on_delete=fields.SET_NULL
@@ -134,7 +134,7 @@ class Software(Model):
 
     @classmethod
     async def latest(cls, device: Device) -> Self | None:
-        updates = await cls.filter(compatibility__devices__uuid=device.uuid)
+        updates = await cls.filter(compatibility__devices__id=device.id)
         if len(updates) == 0:
             return None
         return sorted(

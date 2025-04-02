@@ -30,7 +30,7 @@ UpdateModeSchema = enum_factory("UpdateModeSchema", UpdateModeEnum)
 class DeviceSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    uuid: str
+    id: str
     name: str | None
     sw_version: str | None
 
