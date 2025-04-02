@@ -35,6 +35,10 @@ def parse_descriptor(swdesc: libconf.AttrDict[Any, Any | None]):
                 for key2 in element:
                     _append_compatibility(key, element[key2], compatibility)
 
+        if len(compatibility) == 0:
+            # if nothing is specified, assume compatibility with default / default boards
+            compatibility.append({"hw_model": "default", "hw_revision": "default"})
+
         swdesc_attrs["compatibility"] = compatibility
     except KeyError as e:
         logging.warning(f"Parsing swu descriptor failed, error={e}")
