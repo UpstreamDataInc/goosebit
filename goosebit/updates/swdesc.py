@@ -6,10 +6,10 @@ from typing import Any
 
 import httpx
 import libconf
-import semver
 from anyio import AsyncFile, Path, open_file
 
 from goosebit.settings import config
+from goosebit.util.version import Version
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def _append_compatibility(boardname, value, compatibility):
 def parse_descriptor(swdesc: libconf.AttrDict[Any, Any | None]):
     swdesc_attrs = {}
     try:
-        swdesc_attrs["version"] = semver.Version.parse(swdesc["software"]["version"], optional_minor_and_patch=True)
+        swdesc_attrs["version"] = Version.parse(swdesc["software"]["version"])
         compatibility: list[dict[str, str]] = []
         _append_compatibility("default", swdesc["software"], compatibility)
 
