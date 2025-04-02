@@ -19,7 +19,7 @@ router = APIRouter(prefix="/rollouts")
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["rollout"]["read"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["read"]()])],
 )
 async def rollouts_get(dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)]) -> BFFRolloutsResponse:
     def search_filter(search_value):
@@ -34,7 +34,7 @@ router.add_api_route(
     "",
     routes.rollouts_put,
     methods=["POST"],
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["rollout"]["write"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["write"]()])],
     name="bff_rollouts_post",
 )
 
@@ -43,7 +43,7 @@ router.add_api_route(
     "",
     routes.rollouts_patch,
     methods=["PATCH"],
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["rollout"]["write"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["write"]()])],
     name="bff_rollouts_patch",
 )
 
@@ -52,14 +52,14 @@ router.add_api_route(
     "",
     routes.rollouts_delete,
     methods=["DELETE"],
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["rollout"]["delete"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["delete"]()])],
     name="bff_rollouts_delete",
 )
 
 
 @router.get(
     "/columns",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["rollout"]["read"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["read"]()])],
     response_model_exclude_none=True,
 )
 async def devices_get_columns() -> DTColumns:

@@ -23,7 +23,7 @@ router = APIRouter(prefix="/devices", tags=["devices"])
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["device"]["read"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()])],
 )
 async def devices_get(_: Request) -> DevicesResponse:
     devices = await Device.all().prefetch_related("hardware", "assigned_software", "assigned_software__compatibility")
@@ -43,7 +43,7 @@ async def devices_get(_: Request) -> DevicesResponse:
 
 @router.delete(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["device"]["delete"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["delete"]()])],
 )
 async def devices_delete(_: Request, config: DevicesDeleteRequest) -> StatusResponse:
     await DeviceManager.delete_devices(config.devices)
@@ -52,7 +52,7 @@ async def devices_delete(_: Request, config: DevicesDeleteRequest) -> StatusResp
 
 @router.patch(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["device"]["write"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["write"]()])],
 )
 async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusResponse:
     for dev_id in config.devices:
@@ -82,7 +82,7 @@ async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusRespon
 
 @router.put(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["device"]["write"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["write"]()])],
 )
 async def devices_put(_: Request, config: DevicesPutRequest) -> StatusResponse:
     for dev_id in config.devices:

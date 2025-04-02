@@ -61,17 +61,8 @@ SETTING_PERMISSIONS = Permission(
     sub_permissions=[SETTINGS_USERS_PERMISSIONS],
 )
 
-API_PERMISSIONS = Permission(
-    name="api",
-    description="Access to the GooseBit API",
-    sub_permissions=[DEVICE_PERMISSIONS, SOFTWARE_PERMISSIONS, ROLLOUT_PERMISSIONS, SETTING_PERMISSIONS],
-)
-UI_PERMISSIONS = Permission(
-    name="ui",
-    description="Access to the GooseBit UI",
-    sub_permissions=[DEVICE_PERMISSIONS, SOFTWARE_PERMISSIONS, ROLLOUT_PERMISSIONS, SETTING_PERMISSIONS],
-)
-
 GOOSEBIT_PERMISSIONS = Permission(
-    name="goosebit", description="Access to GooseBit", sub_permissions=[API_PERMISSIONS, UI_PERMISSIONS]
+    name="goosebit",
+    description="Access to GooseBit",
+    sub_permissions=[DEVICE_PERMISSIONS, SOFTWARE_PERMISSIONS, ROLLOUT_PERMISSIONS, SETTING_PERMISSIONS],
 )

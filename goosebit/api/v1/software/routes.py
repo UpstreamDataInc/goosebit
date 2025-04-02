@@ -22,7 +22,7 @@ router = APIRouter(prefix="/software", tags=["software"])
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["read"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["read"]()])],
 )
 async def software_get(_: Request) -> SoftwareResponse:
     software = await Software.all().prefetch_related("compatibility")
@@ -31,7 +31,7 @@ async def software_get(_: Request) -> SoftwareResponse:
 
 @router.delete(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["delete"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["delete"]()])],
 )
 async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> StatusResponse:
     success = False
@@ -57,7 +57,7 @@ async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> Stat
 
 @router.post(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["write"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["write"]()])],
 )
 async def post_update(_: Request, file: UploadFile | None = File(None), url: str | None = Form(None)):
     if url is not None:

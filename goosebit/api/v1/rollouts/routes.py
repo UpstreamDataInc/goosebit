@@ -14,7 +14,7 @@ router = APIRouter(prefix="/rollouts", tags=["rollouts"])
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["rollout"]["read"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["read"]()])],
 )
 async def rollouts_get(_: Request) -> RolloutsResponse:
     rollouts = await Rollout.all().prefetch_related("software", "software__compatibility")
@@ -23,7 +23,7 @@ async def rollouts_get(_: Request) -> RolloutsResponse:
 
 @router.post(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["rollout"]["write"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["write"]()])],
 )
 async def rollouts_put(_: Request, rollout: RolloutsPutRequest) -> RolloutsPutResponse:
     software = await Software.filter(id=rollout.software_id)
@@ -39,7 +39,7 @@ async def rollouts_put(_: Request, rollout: RolloutsPutRequest) -> RolloutsPutRe
 
 @router.patch(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["rollout"]["write"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["write"]()])],
 )
 async def rollouts_patch(_: Request, rollouts: RolloutsPatchRequest) -> StatusResponse:
     await Rollout.filter(id__in=rollouts.ids).update(paused=rollouts.paused)
@@ -48,7 +48,7 @@ async def rollouts_patch(_: Request, rollouts: RolloutsPatchRequest) -> StatusRe
 
 @router.delete(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["rollout"]["delete"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["delete"]()])],
 )
 async def rollouts_delete(_: Request, rollouts: RolloutsDeleteRequest) -> StatusResponse:
     await Rollout.filter(id__in=rollouts.ids).delete()

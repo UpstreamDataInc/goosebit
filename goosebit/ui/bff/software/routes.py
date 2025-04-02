@@ -25,7 +25,7 @@ router = APIRouter(prefix="/software")
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["read"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["read"]()])],
 )
 async def software_get(
     dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)],
@@ -50,14 +50,14 @@ router.add_api_route(
     "",
     routes.software_delete,
     methods=["DELETE"],
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["delete"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["delete"]()])],
     name="bff_software_delete",
 )
 
 
 @router.post(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["write"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["write"]()])],
 )
 async def post_update(
     request: Request,
@@ -101,7 +101,7 @@ async def post_update(
 
 @router.get(
     "/columns",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["software"]["read"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["read"]()])],
     response_model_exclude_none=True,
 )
 async def devices_get_columns() -> DTColumns:

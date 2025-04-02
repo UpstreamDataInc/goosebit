@@ -30,7 +30,7 @@ router.include_router(device.router)
 
 @router.get(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["device"]["read"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()])],
 )
 async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)]) -> BFFDeviceResponse:
     def search_filter(search_value: str):
@@ -61,7 +61,7 @@ async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datata
 
 @router.patch(
     "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["device"]["write"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["write"]()])],
 )
 async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusResponse:
     for dev_id in config.devices:
@@ -93,14 +93,14 @@ router.add_api_route(
     "",
     routes.devices_delete,
     methods=["DELETE"],
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["device"]["delete"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["delete"]()])],
     name="bff_devices_delete",
 )
 
 
 @router.get(
     "/columns",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["device"]["read"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()])],
     response_model_exclude_none=True,
 )
 async def devices_get_columns(request: Request) -> DTColumns:
