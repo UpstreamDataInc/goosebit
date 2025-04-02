@@ -25,7 +25,7 @@ async def test_poll_strict_with_no_auth_device_with_no_auth(async_client, test_d
     monkeypatch.setattr(config.device_auth, "enable", True)
     monkeypatch.setattr(config.device_auth, "mode", DeviceAuthMode.STRICT)
 
-    response = await async_client.get(f"/ddi/controller/v1/{device.uuid}")
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
     assert response.status_code == 401
 
 
@@ -35,7 +35,7 @@ async def test_poll_strict_with_no_auth_device_with_auth(async_client, test_data
     monkeypatch.setattr(config.device_auth, "enable", True)
     monkeypatch.setattr(config.device_auth, "mode", DeviceAuthMode.STRICT)
 
-    response = await async_client.get(f"/ddi/controller/v1/{device.uuid}")
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
     assert response.status_code == 401
 
 
@@ -46,7 +46,7 @@ async def test_poll_strict_with_auth_device_with_auth(async_client, test_data, m
     monkeypatch.setattr(config.device_auth, "mode", DeviceAuthMode.STRICT)
 
     response = await async_client.get(
-        f"/ddi/controller/v1/{device.uuid}", headers={"Authorization": f"TargetToken {device.auth_token}"}
+        f"/DEFAULT/controller/v1/{device.uuid}", headers={"Authorization": f"TargetToken {device.auth_token}"}
     )
     assert response.status_code == 200
 
@@ -57,7 +57,7 @@ async def test_poll_lax_with_no_auth_device_with_no_auth(async_client, test_data
     monkeypatch.setattr(config.device_auth, "enable", True)
     monkeypatch.setattr(config.device_auth, "mode", DeviceAuthMode.LAX)
 
-    response = await async_client.get(f"/ddi/controller/v1/{device.uuid}")
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
     assert response.status_code == 200
 
 
@@ -67,7 +67,7 @@ async def test_poll_lax_with_no_auth_device_with_auth(async_client, test_data, m
     monkeypatch.setattr(config.device_auth, "enable", True)
     monkeypatch.setattr(config.device_auth, "mode", DeviceAuthMode.LAX)
 
-    response = await async_client.get(f"/ddi/controller/v1/{device.uuid}")
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
     assert response.status_code == 401
 
 
@@ -78,7 +78,7 @@ async def test_poll_lax_with_auth_device_with_auth(async_client, test_data, monk
     monkeypatch.setattr(config.device_auth, "mode", DeviceAuthMode.LAX)
 
     response = await async_client.get(
-        f"/ddi/controller/v1/{device.uuid}", headers={"Authorization": f"TargetToken {device.auth_token}"}
+        f"/DEFAULT/controller/v1/{device.uuid}", headers={"Authorization": f"TargetToken {device.auth_token}"}
     )
     assert response.status_code == 200
 
@@ -89,7 +89,7 @@ async def test_poll_setup_with_no_auth(async_client, test_data, monkeypatch):
     monkeypatch.setattr(config.device_auth, "enable", True)
     monkeypatch.setattr(config.device_auth, "mode", DeviceAuthMode.SETUP)
 
-    response = await async_client.get(f"/ddi/controller/v1/{device.uuid}")
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
     assert response.status_code == 200
 
     # device should not have changed
@@ -103,11 +103,11 @@ async def test_poll_setup_with_auth_add_device_auth(async_client, test_data, mon
     monkeypatch.setattr(config.device_auth, "enable", True)
     monkeypatch.setattr(config.device_auth, "mode", DeviceAuthMode.SETUP)
 
-    response = await async_client.get(f"/ddi/controller/v1/{device.uuid}")
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
     assert response.status_code == 200
 
     token = "testing123"
-    await async_client.get(f"/ddi/controller/v1/{device.uuid}", headers={"Authorization": f"TargetToken {token}"})
+    await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}", headers={"Authorization": f"TargetToken {token}"})
 
     device_api = await _api_device_get(async_client, device.uuid)
     assert device_api["auth_token"] == token
@@ -123,11 +123,11 @@ async def test_poll_setup_with_auth_update_device_auth(async_client, test_data, 
     monkeypatch.setattr(config.device_auth, "enable", True)
     monkeypatch.setattr(config.device_auth, "mode", DeviceAuthMode.SETUP)
 
-    response = await async_client.get(f"/ddi/controller/v1/{device.uuid}")
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
     assert response.status_code == 200
 
     token = "testing123"
-    await async_client.get(f"/ddi/controller/v1/{device.uuid}", headers={"Authorization": f"TargetToken {token}"})
+    await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}", headers={"Authorization": f"TargetToken {token}"})
 
     device_api = await _api_device_get(async_client, device.uuid)
     assert device_api["auth_token"] == token
@@ -142,10 +142,10 @@ async def test_poll_setup_with_no_auth_no_change(async_client, test_data, monkey
     monkeypatch.setattr(config.device_auth, "enable", True)
     monkeypatch.setattr(config.device_auth, "mode", DeviceAuthMode.SETUP)
 
-    response = await async_client.get(f"/ddi/controller/v1/{device.uuid}")
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
     assert response.status_code == 200
 
-    await async_client.get(f"/ddi/controller/v1/{device.uuid}")
+    await async_client.get(f"/DEFAULT/controller/v1/{device.uuid}")
 
     device_api = await _api_device_get(async_client, device.uuid)
     assert device_api["auth_token"] == device.auth_token
