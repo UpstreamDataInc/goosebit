@@ -36,7 +36,7 @@ Assign specific software to a device manually. Once installed, no further update
 
 #### 2. Automatic Update to Latest Software
 
-Automatically updates the device to the latest compatible software, based on the reported `hw_model` and `hw_revision`. Note: versions are interpreted as [SemVer](https://semver.org) versions.
+Automatically updates the device to the latest compatible software, based on the reported `hw_model` and `hw_revision`.
 
 #### 3. Software Rollout
 
