@@ -12,6 +12,6 @@ router.add_api_route(
     "/log",
     routes.device_logs,
     methods=["GET"],
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["ui"]["device"]["read"]()])],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()])],
     name="bff_device_logs",
 )
