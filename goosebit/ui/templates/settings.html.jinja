@@ -11,7 +11,7 @@
                         role="tab">Users</button>
             </li>
         </ul>
-        <div class="tab-content">
+        <div class="tab-content mb-2">
             <div class="tab-pane fade show active"
                  id="settings-users-panel"
                  role="tabpanel">
@@ -20,5 +20,63 @@
             </div>
         </div>
     </div>
+    {% if compare_permissions(["software.write"], request.user.permissions) %}
+        <div class="modal modal-lg fade" id="create-user-modal">
+            <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Create User</h5>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <form id="create-user-form">
+                        <div class="modal-body">
+                            <div class="row g-3 row-cols-1">
+                                <div id="create-user-alerts"></div>
+                                <div class="col">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Username</span>
+                                        <input class="form-control" type="text" id="create-user-username" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Password</span>
+                                        <input class="form-control" type="text" id="create-user-password" />
+                                    </div>
+                                </div>
+                                <div class="col" id="create-user-permissions"></div>
+                                <div class="col">
+                                    <input class="btn btn-outline-light w-100"
+                                           id="create-user-submit"
+                                           type="submit"
+                                           value="Create User" />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="modal modal-lg fade" id="upload-modal">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        Unavailable
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning m-0" role="alert">You do not have permission to add users.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
     <script src="{{ url_for('static', path='js/settings.js') }}"></script>
 {% endblock content %}
