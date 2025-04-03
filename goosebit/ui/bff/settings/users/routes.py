@@ -44,6 +44,22 @@ router.add_api_route(
     name="bff_settings_users_put",
 )
 
+router.add_api_route(
+    "",
+    routes.settings_users_delete,
+    methods=["DELETE"],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["settings"]["users"]["delete"]()])],
+    name="bff_settings_users_delete",
+)
+
+router.add_api_route(
+    "",
+    routes.settings_users_patch,
+    methods=["PATCH"],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["settings"]["users"]["write"]()])],
+    name="bff_settings_users_patch",
+)
+
 
 @router.get(
     "/columns",
