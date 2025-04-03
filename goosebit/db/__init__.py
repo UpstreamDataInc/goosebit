@@ -11,6 +11,7 @@ logger = getLogger(__name__)
 
 async def init() -> bool:
     await Tortoise.init(config=TORTOISE_CONF)
+    await Tortoise.generate_schemas(safe=True)
     try:
         await Device.first()
     except OperationalError:

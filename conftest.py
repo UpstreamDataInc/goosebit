@@ -11,6 +11,7 @@ from tortoise.contrib.fastapi import RegisterTortoise
 
 from goosebit import app
 from goosebit.db.models import UpdateModeEnum, UpdateStateEnum
+from goosebit.settings import PWD_CXT
 
 # Configure logging
 logging.basicConfig(level=logging.WARN)
@@ -33,10 +34,14 @@ async def clear_cache():
 
 @pytest_asyncio.fixture(scope="function")
 async def test_app():
+    from goosebit.users import create_initial_user
+
     async with RegisterTortoise(
         app=app,
         config=TORTOISE_CONF,
     ):
+        await Tortoise.generate_schemas()
+        await create_initial_user(username="admin@goosebit.local", hashed_pwd=PWD_CXT.hash("admin"))
         yield app
 
 
