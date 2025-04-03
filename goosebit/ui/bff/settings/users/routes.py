@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Security
 from tortoise.expressions import Q
 
+from goosebit.api.v1.settings.users import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 from goosebit.db.models import User
@@ -33,6 +34,15 @@ async def settings_users_get(
     query = User.all()
 
     return await BFFSettingsUsersResponse.convert(dt_query, query, search_filter)
+
+
+router.add_api_route(
+    "",
+    routes.settings_users_put,
+    methods=["POST"],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["settings"]["users"]["write"]()])],
+    name="bff_settings_users_put",
+)
 
 
 @router.get(

@@ -105,6 +105,27 @@ async function post_request(url, object) {
         throw new Error(`POST ${url} failed for ${JSON.stringify(object)}`);
     }
 }
+async function put_request(url, object) {
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(object),
+    });
+
+    if (!response.ok) {
+        const result = await response.json();
+        if (result.detail) {
+            Swal.fire({
+                title: "Warning",
+                text: result.detail,
+                icon: "warning",
+                confirmButtonText: "Understood",
+            });
+        }
+
+        throw new Error(`PUT ${url} failed for ${JSON.stringify(object)}`);
+    }
+}
 async function patch_request(url, object) {
     const response = await fetch(url, {
         method: "PATCH",

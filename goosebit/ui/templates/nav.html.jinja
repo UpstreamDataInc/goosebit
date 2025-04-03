@@ -105,7 +105,8 @@
                         {% endfor %}
                     </div>
                     <div class="navbar-nav d-flex flex-fill justify-content-end">
-                        <a class="nav-link mx-2" href="{{ request.url_for('settings_ui') }}">Settings<i class="bi bi-gear ps-2"></i></a>
+                        <a class="nav-link ps-3 me-2 border-start"
+                           href="{{ request.url_for('settings_ui') }}">Settings<i class="bi bi-gear ps-2"></i></a>
                         <a class="nav-link ps-3 border-start"
                            href="{{ request.url_for('logout') }}">Logout<i class="bi bi-box-arrow-right ps-2"></i></a>
                     </div>
