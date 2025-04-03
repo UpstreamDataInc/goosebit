@@ -67,16 +67,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                         titleAttr: "Add User",
                     },
                     {
-                        text: '<i class="bi bi-pen"></i>',
-                        action: () => {
-                            const selectedUsers = dataTable.rows({ selected: true }).data().toArray();
-                            const selectedUser = selectedUsers[0];
-                            new bootstrap.Modal("#user-edit-modal").show();
-                        },
-                        className: "buttons-edit-user",
-                        titleAttr: "Edit User",
-                    },
-                    {
                         text: '<i class="bi bi-play-fill" ></i>',
                         action: (e, dt) => {
                             const selectedUsers = dt
@@ -84,6 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 .data()
                                 .toArray()
                                 .map((d) => d.username);
+                            enableUsers(selectedUsers, true);
                         },
                         className: "buttons-enable-users",
                         titleAttr: "Enable Users",
@@ -96,6 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 .data()
                                 .toArray()
                                 .map((d) => d.username);
+                            enableUsers(selectedUsers, false);
                         },
                         className: "buttons-disable-users",
                         titleAttr: "Disable Users",
@@ -108,6 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 .data()
                                 .toArray()
                                 .map((d) => d.username);
+                            deleteUsers(selectedUsers);
                         },
                         className: "buttons-delete-users",
                         titleAttr: "Delete Users",
@@ -278,5 +271,26 @@ async function createUser(e) {
         permissions: permissions,
     };
     await post_request("/ui/bff/settings/users", user);
-    updateUsersList();
+    setTimeout(updateUsersList, 50);
+}
+
+async function deleteUsers(usernames) {
+    try {
+        await delete_request("/ui/bff/settings/users", { usernames });
+    } catch (error) {
+        console.error("Users deletion failed:", error);
+    }
+
+    updateBtnState();
+    setTimeout(updateUsersList, 50);
+}
+
+async function enableUsers(usernames, enabled) {
+    try {
+        await patch_request("/ui/bff/settings/users", { usernames, enabled });
+    } catch (error) {
+        console.error(`Users ${enabled ? "enabling" : "disabling"} failed:`, error);
+    }
+
+    setTimeout(updateUsersList, 50);
 }
