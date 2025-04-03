@@ -51,6 +51,12 @@ async def login_user(username: str, password: str) -> str:
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if not user.enabled:
+        raise HTTPException(
+            status_code=401,
+            detail="User has been disabled, please contact your administrator",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     try:
         PWD_CXT.verify(user.hashed_pwd, password)
     except VerifyMismatchError:
@@ -85,10 +91,18 @@ async def redirect_if_unauthenticated(connection: HTTPConnection, user: Annotate
             headers={"location": str(connection.url_for("login_get"))},
             detail="Invalid username",
         )
+    if not user.enabled:
+        raise HTTPException(
+            status_code=302,
+            headers={"location": str(connection.url_for("login_get"))},
+            detail="Disabled user",
+        )
 
 
 async def redirect_if_authenticated(connection: HTTPConnection, user: Annotated[User, Depends(get_current_user)]):
     if user is not None:
+        if not user.enabled:
+            return
         raise HTTPException(
             status_code=302,
             headers={"location": str(connection.url_for("ui_root"))},
@@ -101,6 +115,12 @@ async def validate_current_user(user: Annotated[User, Depends(get_current_user)]
         raise HTTPException(
             status_code=401,
             detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not user.enabled:
+        raise HTTPException(
+            status_code=401,
+            detail="Disabled user",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
