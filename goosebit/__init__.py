@@ -15,10 +15,11 @@ from tortoise.exceptions import ValidationError
 
 from goosebit import api, db, ui, updater, users
 from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
-from goosebit.settings import config
+from goosebit.settings import PWD_CXT, config
 from goosebit.ui.nav import nav
 from goosebit.ui.static import static
 from goosebit.ui.templates import templates
+from goosebit.users import create_initial_user
 
 logger = getLogger(__name__)
 
@@ -103,6 +104,17 @@ async def login_get(request: Request):
 
 @app.post("/login", tags=["login"])
 async def login_post(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    return {"access_token": await login_user(form_data.username, form_data.password), "token_type": "bearer"}
+
+
+@app.get("/setup", include_in_schema=False)
+async def setup_get(request: Request):
+    return templates.TemplateResponse(request, "setup.html.jinja")
+
+
+@app.post("/setup", include_in_schema=False)
+async def setup_post(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    await create_initial_user(form_data.username, PWD_CXT.hash(form_data.password))
     return {"access_token": await login_user(form_data.username, form_data.password), "token_type": "bearer"}
 
 

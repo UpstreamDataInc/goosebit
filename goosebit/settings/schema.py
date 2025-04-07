@@ -52,7 +52,7 @@ class GooseBitSettings(BaseSettings):
 
     secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
 
-    initial_user: InitialUser
+    initial_user: InitialUser | None = Field(default=None)
 
     db_uri: str = f"sqlite:///{GOOSEBIT_ROOT_DIR.joinpath('db.sqlite3')}"
     db_ssl_crt: Path | None = None
