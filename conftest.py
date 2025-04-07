@@ -10,6 +10,7 @@ from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
 
 from goosebit import app
+from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 from goosebit.db.models import UpdateModeEnum, UpdateStateEnum
 from goosebit.settings import PWD_CXT
 
@@ -41,7 +42,7 @@ async def test_app():
         config=TORTOISE_CONF,
     ):
         await Tortoise.generate_schemas()
-        await create_initial_user(username="admin@goosebit.local", hashed_pwd=PWD_CXT.hash("admin"))
+        await create_initial_user(username="testing@goosebit.test", hashed_pwd=PWD_CXT.hash("test"))
         yield app
 
 
@@ -50,7 +51,7 @@ async def async_client(test_app):
     async with AsyncClient(
         transport=ASGITransport(app=test_app), base_url="http://test", follow_redirects=True
     ) as client:
-        login_data = {"username": "admin@goosebit.local", "password": "admin"}
+        login_data = {"username": "testing@goosebit.test", "password": "test"}
         response = await client.post("/login", data=login_data, follow_redirects=True)
         assert response.status_code == 200
 
@@ -71,7 +72,7 @@ async def db():
 
 @pytest_asyncio.fixture(scope="function")
 async def test_data(db):
-    from goosebit.db.models import Device, Hardware, Rollout, Software
+    from goosebit.db.models import Device, Hardware, Rollout, Software, User
 
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -124,6 +125,22 @@ async def test_data(db):
             auth_token="auth_token1",
         )
 
+        user_admin = await User.create(
+            username="admin@goosebit.test",
+            hashed_pwd=PWD_CXT.hash("testadmin"),
+            permissions=[GOOSEBIT_PERMISSIONS()],
+        )
+
+        user_read_only = await User.create(
+            username="read_only@goosebit.test",
+            hashed_pwd=PWD_CXT.hash("testread"),
+            permissions=[
+                GOOSEBIT_PERMISSIONS["device"]["read"](),
+                GOOSEBIT_PERMISSIONS["software"]["read"](),
+                GOOSEBIT_PERMISSIONS["rollout"]["read"](),
+            ],
+        )
+
         yield dict(
             hardware=hardware,
             software_release=software_release,
@@ -134,4 +151,6 @@ async def test_data(db):
             device_assigned=device_assigned,
             device_authentication=device_assigned,
             device_no_authentication=device_rollout,
+            user_admin=user_admin,
+            user_read_only=user_read_only,
         )
