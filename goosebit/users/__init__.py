@@ -6,8 +6,9 @@ from goosebit.settings import PWD_CXT, config
 
 
 async def init():
-    await create_initial_user(username=config.initial_user.username, hashed_pwd=config.initial_user.hashed_pwd)
-    users_count.set(await User.all().count())
+    if config.initial_user is not None:
+        await create_initial_user(username=config.initial_user.username, hashed_pwd=config.initial_user.hashed_pwd)
+        users_count.set(await User.all().count())
 
 
 async def create_user(username: str, password: str, permissions: list[str]) -> User:

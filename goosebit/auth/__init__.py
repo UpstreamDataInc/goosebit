@@ -108,6 +108,21 @@ async def redirect_if_authenticated(connection: HTTPConnection, user: Annotated[
             headers={"location": str(connection.url_for("ui_root"))},
             detail="Already logged in",
         )
+    if await User.all().count() == 0:
+        raise HTTPException(
+            status_code=302,
+            headers={"location": str(connection.url_for("setup_get"))},
+            detail="No users set up",
+        )
+
+
+async def redirect_if_users_exist(connection: HTTPConnection):
+    if await User.all().count() > 0:
+        raise HTTPException(
+            status_code=302,
+            headers={"location": str(connection.url_for("login_get"))},
+            detail="An admin user already exists",
+        )
 
 
 async def validate_current_user(user: Annotated[User, Depends(get_current_user)]):
