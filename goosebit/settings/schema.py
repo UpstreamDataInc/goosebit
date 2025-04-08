@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Annotated
 
 from joserfc.rfc7518.oct_key import OctKey
-from pydantic import BaseModel, BeforeValidator, Field
+from pydantic import BaseModel, BeforeValidator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -13,12 +13,7 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 
-from .const import CURRENT_DIR, GOOSEBIT_ROOT_DIR, LOGGING_DEFAULT, PWD_CXT
-
-
-class InitialUser(BaseModel):
-    username: str
-    hashed_pwd: Annotated[str, BeforeValidator(PWD_CXT.hash)] = Field(validation_alias="password")
+from .const import CURRENT_DIR, GOOSEBIT_ROOT_DIR, LOGGING_DEFAULT
 
 
 class DeviceAuthMode(StrEnum):
@@ -51,8 +46,6 @@ class GooseBitSettings(BaseSettings):
     device_auth: DeviceAuthSettings = DeviceAuthSettings()
 
     secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
-
-    initial_user: InitialUser | None = Field(default=None)
 
     db_uri: str = f"sqlite:///{GOOSEBIT_ROOT_DIR.joinpath('db.sqlite3')}"
     db_ssl_crt: Path | None = None

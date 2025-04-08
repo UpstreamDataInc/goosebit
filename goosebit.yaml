@@ -35,12 +35,6 @@ poll_time: 00:01:00
 # Defaults to a randomized value. If this value is not set, user sessions will not persist when app restarts.
 #secret_key: my_very_top_secret_key123
 
-# User account for the frontend.
-# Optional, if not set the first user to access goosebit will be prompted to create an admin user.
-#initial_user:
-#  username: admin@goosebit.local
-#  password: admin
-
 ## Internal settings that usually don't need to be modified
 metrics:
   prometheus:
