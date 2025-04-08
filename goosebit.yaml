@@ -35,20 +35,6 @@ poll_time: 00:01:00
 # Defaults to a randomized value. If this value is not set, user sessions will not persist when app restarts.
 #secret_key: my_very_top_secret_key123
 
-# User account for the frontend. Available permissions:
-# "software.read", "software.write", "software.delete"
-# "device.read", "device.write", "device.delete"
-# "rollout.read", "rollout.write", "rollout.delete"
-users:
-  - username: admin@goosebit.local
-    password: admin
-    permissions:
-      - "*"
-  - username: ops@goosebit.local
-    password: ops
-    permissions:
-      - "device.read"
-
 ## Internal settings that usually don't need to be modified
 metrics:
   prometheus:

@@ -10,8 +10,9 @@ from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from joserfc import jwt
 from joserfc.errors import BadSignatureError
 
-from goosebit.settings import PWD_CXT, USERS, config
-from goosebit.settings.schema import User
+from goosebit.db.models import User
+from goosebit.settings import PWD_CXT, config
+from goosebit.users import UserManager
 
 logger = logging.getLogger(__name__)
 
@@ -31,23 +32,29 @@ def create_token(username: str) -> str:
     return jwt.encode(header={"alg": "HS256"}, claims={"username": username}, key=config.secret_key)
 
 
-def get_user_from_token(token: str | None) -> User | None:
+async def get_user_from_token(token: str | None) -> User | None:
     if token is None:
         return None
     try:
         token_data = jwt.decode(token, config.secret_key)
         username = token_data.claims["username"]
-        return USERS.get(username)
+        return await UserManager.get_user(username)
     except (BadSignatureError, LookupError, ValueError):
         return None
 
 
-def login_user(username: str, password: str) -> str:
-    user = USERS.get(username)
+async def login_user(username: str, password: str) -> str:
+    user = await UserManager.get_user(username)
     if user is None:
         raise HTTPException(
             status_code=401,
             detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not user.enabled:
+        raise HTTPException(
+            status_code=401,
+            detail="User has been disabled, please contact your administrator",
             headers={"WWW-Authenticate": "Bearer"},
         )
     try:
@@ -61,12 +68,12 @@ def login_user(username: str, password: str) -> str:
     return create_token(user.username)
 
 
-def get_current_user(
+async def get_current_user(
     session_token: Annotated[str | None, Depends(session_auth)] = None,
     oauth2_token: Annotated[str | None, Depends(oauth2_auth)] = None,
 ) -> User | None:
-    session_user = get_user_from_token(session_token)
-    oauth2_user = get_user_from_token(oauth2_token)
+    session_user = await get_user_from_token(session_token)
+    oauth2_user = await get_user_from_token(oauth2_token)
     user = session_user or oauth2_user
     return user
 
@@ -74,32 +81,61 @@ def get_current_user(
 # using | Request because oauth2_auth.__call__ expects is
 async def get_user_from_request(connection: HTTPConnection | Request) -> User | None:
     token = await session_auth(connection) or await oauth2_auth(connection)
-    return get_user_from_token(token)
+    return await get_user_from_token(token)
 
 
-def redirect_if_unauthenticated(connection: HTTPConnection, user: Annotated[User, Depends(get_current_user)]):
+async def redirect_if_unauthenticated(connection: HTTPConnection, user: Annotated[User, Depends(get_current_user)]):
     if user is None:
         raise HTTPException(
             status_code=302,
             headers={"location": str(connection.url_for("login_get"))},
             detail="Invalid username",
         )
+    if not user.enabled:
+        raise HTTPException(
+            status_code=302,
+            headers={"location": str(connection.url_for("login_get"))},
+            detail="Disabled user",
+        )
 
 
-def redirect_if_authenticated(connection: HTTPConnection, user: Annotated[User, Depends(get_current_user)]):
+async def redirect_if_authenticated(connection: HTTPConnection, user: Annotated[User, Depends(get_current_user)]):
     if user is not None:
+        if not user.enabled:
+            return
         raise HTTPException(
             status_code=302,
             headers={"location": str(connection.url_for("ui_root"))},
             detail="Already logged in",
         )
+    if await User.all().count() == 0:
+        raise HTTPException(
+            status_code=302,
+            headers={"location": str(connection.url_for("setup_get"))},
+            detail="No users set up",
+        )
 
 
-def validate_current_user(user: Annotated[User, Depends(get_current_user)]):
+async def redirect_if_users_exist(connection: HTTPConnection):
+    if await User.all().count() > 0:
+        raise HTTPException(
+            status_code=302,
+            headers={"location": str(connection.url_for("login_get"))},
+            detail="An admin user already exists",
+        )
+
+
+async def validate_current_user(user: Annotated[User, Depends(get_current_user)]):
     if user is None:
         raise HTTPException(
             status_code=401,
             detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not user.enabled:
+        raise HTTPException(
+            status_code=401,
+            detail="Disabled user",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
