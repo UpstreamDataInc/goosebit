@@ -2,13 +2,7 @@ from aiocache import caches
 
 from goosebit.api.telemetry.metrics import users_count
 from goosebit.db.models import User
-from goosebit.settings import PWD_CXT, config
-
-
-async def init():
-    if config.initial_user is not None:
-        await create_initial_user(username=config.initial_user.username, hashed_pwd=config.initial_user.hashed_pwd)
-        users_count.set(await User.all().count())
+from goosebit.settings import PWD_CXT
 
 
 async def create_user(username: str, password: str, permissions: list[str]) -> User:
@@ -44,6 +38,7 @@ class UserManager:
                 },
             )
         )[0]
+        users_count.set(await User.all().count())
         return user
 
     @staticmethod
@@ -66,3 +61,4 @@ class UserManager:
         for username in usernames:
             result = await caches.get("default").delete(username)
             assert result == 1, "device has been cached"
+        users_count.set(await User.all().count())
