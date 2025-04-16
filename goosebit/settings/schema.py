@@ -43,6 +43,8 @@ class GooseBitSettings(BaseSettings):
 
     poll_time: str = "00:01:00"
 
+    max_concurrent_updates: int = 1000
+
     device_auth: DeviceAuthSettings = DeviceAuthSettings()
 
     secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
