@@ -50,7 +50,12 @@ async def polling(request: Request, device: Device = Depends(get_device)):
         # provide update if available. Note: this is also required while in state "running", otherwise swupdate
         # won't confirm a successful testing (might be a bug/problem in swupdate)
         handling_type, software = await DeviceManager.get_update(device)
-        if handling_type != HandlingType.SKIP and software is not None:
+        number_of_running = await Device.filter(last_state=UpdateStateEnum.RUNNING).count()
+        if (
+            handling_type != HandlingType.SKIP
+            and software is not None
+            and (number_of_running < config.max_concurrent_updates or device.last_state == UpdateStateEnum.RUNNING)
+        ):
             links["deploymentBase"] = {
                 "href": str(
                     request.url_for(
