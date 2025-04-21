@@ -56,7 +56,7 @@ repos:
       - id: biome-check
         additional_dependencies: ["@biomejs/biome@1.8.3"]
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.4.0"
+    rev: "v3.5.3"
     hooks:
       - id: prettier
         files: \.(html|md|yml|yaml)$
