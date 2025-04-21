@@ -1,16 +1,47 @@
-from fastapi import APIRouter, Depends, Security
-from fastapi.requests import Request
-from fastapi.responses import RedirectResponse
+import logging
 
-from goosebit.auth import redirect_if_unauthenticated, validate_user_permissions
+from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi.requests import HTTPConnection, Request
+from fastapi.responses import RedirectResponse
+from fastapi.security import SecurityScopes
+
+from goosebit.auth import (
+    check_permissions,
+    get_current_user,
+    redirect_if_unauthenticated,
+)
 from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 from goosebit.ui.nav import nav
 
+from ..db.models import User
 from . import bff
 from .templates import templates
 
 router = APIRouter(prefix="/ui", include_in_schema=False)
 router.include_router(bff.router)
+
+logger = logging.getLogger(__name__)
+
+
+def validate_user_permissions_with_nav_redirect(
+    connection: HTTPConnection,
+    security: SecurityScopes,
+    user: User = Depends(get_current_user),
+):
+    if not check_permissions(security.scopes, user.permissions):
+        logger.warning(f"{user.username} does not have sufficient permissions")
+        for item in nav.items:
+            if check_permissions(item.permissions, user.permissions):
+                raise HTTPException(
+                    status_code=302,
+                    headers={"location": str(connection.url_for(item.function))},
+                )
+        raise HTTPException(
+            status_code=403,
+            detail="Not enough permissions",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return connection
 
 
 @router.get("", dependencies=[Depends(redirect_if_unauthenticated)])
@@ -22,7 +53,7 @@ async def ui_root(request: Request):
     "/devices",
     dependencies=[
         Depends(redirect_if_unauthenticated),
-        Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()]),
+        Security(validate_user_permissions_with_nav_redirect, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()]),
     ],
 )
 @nav.route("Devices", permissions=[GOOSEBIT_PERMISSIONS["device"]["read"]()])
@@ -34,7 +65,7 @@ async def devices_ui(request: Request):
     "/software",
     dependencies=[
         Depends(redirect_if_unauthenticated),
-        Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["read"]()]),
+        Security(validate_user_permissions_with_nav_redirect, scopes=[GOOSEBIT_PERMISSIONS["software"]["read"]()]),
     ],
 )
 @nav.route("Software", permissions=[GOOSEBIT_PERMISSIONS["software"]["read"]()])
@@ -46,10 +77,10 @@ async def software_ui(request: Request):
     "/rollouts",
     dependencies=[
         Depends(redirect_if_unauthenticated),
-        Security(validate_user_permissions, scopes=GOOSEBIT_PERMISSIONS["rollout"]["read"]()),
+        Security(validate_user_permissions_with_nav_redirect, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["read"]()]),
     ],
 )
-@nav.route("Rollouts", permissions=GOOSEBIT_PERMISSIONS["rollout"]["read"]())
+@nav.route("Rollouts", permissions=[GOOSEBIT_PERMISSIONS["rollout"]["read"]()])
 async def rollouts_ui(request: Request):
     return templates.TemplateResponse(request, "rollouts.html.jinja", context={"title": "Rollouts"})
 
@@ -58,7 +89,7 @@ async def rollouts_ui(request: Request):
     "/logs/{dev_id}",
     dependencies=[
         Depends(redirect_if_unauthenticated),
-        Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()]),
+        Security(validate_user_permissions_with_nav_redirect, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()]),
     ],
 )
 async def logs_ui(request: Request, dev_id: str):
@@ -69,7 +100,7 @@ async def logs_ui(request: Request, dev_id: str):
     "/settings",
     dependencies=[
         Depends(redirect_if_unauthenticated),
-        Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["settings"]()]),
+        Security(validate_user_permissions_with_nav_redirect, scopes=[GOOSEBIT_PERMISSIONS["settings"]()]),
     ],
 )
 async def settings_ui(request: Request):
