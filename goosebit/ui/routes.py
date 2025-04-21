@@ -103,5 +103,6 @@ async def logs_ui(request: Request, dev_id: str):
         Security(validate_user_permissions_with_nav_redirect, scopes=[GOOSEBIT_PERMISSIONS["settings"]()]),
     ],
 )
+@nav.route("Settings", permissions=[GOOSEBIT_PERMISSIONS["settings"]()], show=False)
 async def settings_ui(request: Request):
     return templates.TemplateResponse(request, "settings.html.jinja", context={"title": "Settings"})
