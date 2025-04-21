@@ -117,7 +117,7 @@ Code is linted using different tools as well
 Best to have pre-commit install git hooks that run all those tools before a commit:
 
 ```bash
-poetry run pre-commit install
+poetry run pre-commit install --hook-type pre-commit --hook-type commit-msg
 ```
 
 To manually apply the hooks to all files use:
