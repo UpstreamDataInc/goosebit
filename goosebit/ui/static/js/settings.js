@@ -169,9 +169,7 @@ function updateBtnState() {
         document.querySelector("button.buttons-enable-users").classList.add("disabled");
     }
     if (dataTable.rows({ selected: true }).count() === 1) {
-        document.querySelector("button.buttons-edit-user").classList.remove("disabled");
     } else {
-        document.querySelector("button.buttons-edit-user").classList.add("disabled");
     }
 }
 
