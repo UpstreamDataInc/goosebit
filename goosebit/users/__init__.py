@@ -60,5 +60,5 @@ class UserManager:
         await User.filter(username__in=usernames).delete()
         for username in usernames:
             result = await caches.get("default").delete(username)
-            assert result == 1, "device has been cached"
+            assert result, "user has been cached"
         users_count.set(await User.all().count())
