@@ -98,15 +98,19 @@
                 <div class="collapse navbar-collapse" id="navbar">
                     <div class="navbar-nav">
                         {% for nav_item in request.nav %}
-                            {% if compare_permissions(nav_item.permissions, request.user.permissions) %}
-                                <a class="nav-link{% if request.url == request.url_for(nav_item.function) %} active{% endif %}"
-                                   href="{{ request.url_for(nav_item.function) }}">{{ nav_item.text }}</a>
+                            {% if nav_item.show %}
+                                {% if compare_permissions(nav_item.permissions, request.user.permissions) %}
+                                    <a class="nav-link{% if request.url == request.url_for(nav_item.function) %} active{% endif %}"
+                                       href="{{ request.url_for(nav_item.function) }}">{{ nav_item.text }}</a>
+                                {% endif %}
                             {% endif %}
                         {% endfor %}
                     </div>
                     <div class="navbar-nav d-flex flex-fill justify-content-end">
-                        <a class="nav-link ps-3 me-2 border-start"
-                           href="{{ request.url_for('settings_ui') }}">Settings<i class="bi bi-gear ps-2"></i></a>
+                        {% if compare_permissions("goosebit.settings", request.user.permissions) %}
+                            <a class="nav-link ps-3 me-2 border-start"
+                               href="{{ request.url_for('settings_ui') }}">Settings<i class="bi bi-gear ps-2"></i></a>
+                        {% endif %}
                         <a class="nav-link ps-3 border-start"
                            href="{{ request.url_for('logout') }}">Logout<i class="bi bi-box-arrow-right ps-2"></i></a>
                     </div>
