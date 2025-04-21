@@ -130,7 +130,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     setInterval(() => {
         updateUsersList();
     }, TABLE_UPDATE_TIME);
-    document.getElementById("create-user-form").addEventListener("submit", createUser);
+    const form = document.getElementById("create-user-form");
+    form.addEventListener("submit", (event) => {
+        const permissionsContainer = document.getElementById("create-user-permissions");
+        const permissions = [
+            ...permissionsContainer.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)'),
+        ].map((checkbox) => checkbox.value);
+        const permissionsValidatorCheckbox = document.getElementById("create-user-permissions-validator");
+        permissionsValidatorCheckbox.checked = permissions.length > 0;
+
+        if (form.checkValidity() === false) {
+            if (permissions.length === 0) {
+                permissionsContainer.classList.add("is-invalid");
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            form.classList.add("was-validated");
+        } else {
+            event.preventDefault();
+            createUser();
+            form.classList.remove("was-validated");
+            permissionsContainer.classList.remove("is-invalid");
+            form.reset();
+            const modal = bootstrap.Modal.getInstance(document.getElementById("create-user-modal"));
+            modal.hide();
+        }
+    });
 });
 
 function updateBtnState() {
@@ -183,7 +208,7 @@ async function createPermissions() {
 
     return `<div class="input-group d-flex">
         <div class="input-group-text p-2 px-3">
-            <input class="form-check-input mt-0" type="checkbox" value="${permissions.value}"  id="${permissions.value}-checkbox" onchange="permissionCheckOnUpdate(this)">
+            <input class="form-check-input mt-0 ignore-validation" type="checkbox" value="${permissions.value}"  id="${permissions.value}-checkbox" onchange="permissionCheckOnUpdate(this)">
         </div>
         <div class="d-flex flex-fill accordion rounded-start-0">
             <div class="accordion-item w-100 rounded-start-0">
@@ -207,7 +232,7 @@ function createPermissionDropdown(permission) {
     if (!permission.sub_permissions) {
         return `<div class="input-group d-flex border-top">
             <div class="input-group-text p-2 px-3 rounded-0 border-0">
-                <input class="form-check-input mt-0" type="checkbox" value="${permission.value}" data-permission-parent="${permission.parent}">
+                <input class="form-check-input mt-0 ignore-validation" type="checkbox" value="${permission.value}" data-permission-parent="${permission.parent}">
             </div>
             <div class="d-flex flex-fill my-auto py-2 p-3 border-start">
                 ${permission.description}
@@ -255,8 +280,7 @@ function permissionCheckOnUpdate(checkbox) {
     }
 }
 
-async function createUser(e) {
-    e.preventDefault();
+async function createUser() {
     const username = document.getElementById("create-user-username").value;
     const password = document.getElementById("create-user-password").value;
 
@@ -265,12 +289,16 @@ async function createUser(e) {
         (checkbox) => checkbox.value,
     );
 
-    user = {
-        username: username,
-        password: password,
-        permissions: permissions,
-    };
-    await post_request("/ui/bff/settings/users", user);
+    try {
+        await post_request("/ui/bff/settings/users", {
+            username: username,
+            password: password,
+            permissions: permissions,
+        });
+    } catch (error) {
+        console.error("User creation failed:", error);
+    }
+
     setTimeout(updateUsersList, 50);
 }
 

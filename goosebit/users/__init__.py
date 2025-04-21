@@ -59,6 +59,5 @@ class UserManager:
     async def delete_users(usernames: list[str]):
         await User.filter(username__in=usernames).delete()
         for username in usernames:
-            result = await caches.get("default").delete(username)
-            assert result, "user has been cached"
+            await caches.get("default").delete(username)
         users_count.set(await User.all().count())
