@@ -1,5 +1,11 @@
 {% extends "nav.html.jinja" %}
 {% block content %}
+    <style>
+        input[type="checkbox"].ignore-validation:valid,
+        input[type="checkbox"].ignore-validation:invalid {
+            border-color: var(--bs-border-color);
+        }
+    </style>
     <div class="container-fluid">
         <ul class="nav nav-underline nav-fill my-2">
             <li class="nav-item" role="presentation">
@@ -20,7 +26,7 @@
             </div>
         </div>
     </div>
-    {% if compare_permissions(["software.write"], request.user.permissions) %}
+    {% if compare_permissions(["settings.write"], request.user.permissions) %}
         <div class="modal modal-lg fade" id="create-user-modal">
             <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-xl">
                 <div class="modal-content">
@@ -31,30 +37,30 @@
                                 data-bs-dismiss="modal"
                                 aria-label="Close"></button>
                     </div>
-                    <form id="create-user-form">
+                    <form id="create-user-form" class="needs-validation" novalidate>
                         <div class="modal-body">
-                            <div class="row g-3 row-cols-1">
-                                <div id="create-user-alerts"></div>
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Username</span>
-                                        <input class="form-control" type="text" id="create-user-username" />
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Password</span>
-                                        <input class="form-control" type="text" id="create-user-password" />
-                                    </div>
-                                </div>
-                                <div class="col" id="create-user-permissions"></div>
-                                <div class="col">
-                                    <input class="btn btn-outline-light w-100"
-                                           id="create-user-submit"
-                                           type="submit"
-                                           value="Create User" />
-                                </div>
+                            <div class="input-group mb-3 has-validation">
+                                <span class="input-group-text">Username</span>
+                                <input class="form-control" type="text" id="create-user-username" required />
+                                <div class="invalid-feedback">Username missing.</div>
                             </div>
+                            <div class="input-group mb-3 has-validation">
+                                <span class="input-group-text">Password</span>
+                                <input class="form-control" type="text" id="create-user-password" required />
+                                <div class="invalid-feedback">Password missing.</div>
+                            </div>
+                            <div class="input-group mb-3 has-validation">
+                                <input type="checkbox"
+                                       id="create-user-permissions-validator"
+                                       required
+                                       style="display:none">
+                                <div class="col" id="create-user-permissions"></div>
+                                <div class="invalid-feedback">Please set at least one permission.</div>
+                            </div>
+                            <input class="btn btn-outline-light w-100"
+                                   id="create-user-submit"
+                                   type="submit"
+                                   value="Create User" />
                         </div>
                     </form>
                 </div>
