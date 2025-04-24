@@ -16,7 +16,8 @@
 # Frequency that devices should check for available updates.
 poll_time: 00:01:00
 
-# max_concurrent_updates: 10
+# Limit the number of updates that run at the same time. Can be used to avoid overloading the update server.
+#max_concurrent_updates: 1000
 
 # Whether to track the IP of the device when it polls.  Useful for debugging, but can be turned off for privacy.
 #track_device_ip: true

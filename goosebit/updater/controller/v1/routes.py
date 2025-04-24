@@ -50,22 +50,19 @@ async def polling(request: Request, device: Device = Depends(get_device)):
         # provide update if available. Note: this is also required while in state "running", otherwise swupdate
         # won't confirm a successful testing (might be a bug/problem in swupdate)
         handling_type, software = await DeviceManager.get_update(device)
-        number_of_running = await Device.filter(last_state=UpdateStateEnum.RUNNING).count()
-        if (
-            handling_type != HandlingType.SKIP
-            and software is not None
-            and (number_of_running < config.max_concurrent_updates or device.last_state == UpdateStateEnum.RUNNING)
-        ):
-            links["deploymentBase"] = {
-                "href": str(
-                    request.url_for(
-                        "deployment_base",
-                        dev_id=device.id,
-                        action_id=software.id,
+        if handling_type != HandlingType.SKIP and software is not None:
+            number_of_running = await Device.filter(last_state=UpdateStateEnum.RUNNING).count()
+            if number_of_running < config.max_concurrent_updates or device.last_state == UpdateStateEnum.RUNNING:
+                links["deploymentBase"] = {
+                    "href": str(
+                        request.url_for(
+                            "deployment_base",
+                            dev_id=device.id,
+                            action_id=software.id,
+                        )
                     )
-                )
-            }
-            logger.info(f"Forced: update available, device={device.id}")
+                }
+                logger.info(f"Forced: update available, device={device.id}")
 
     return {
         "config": {"polling": {"sleep": sleep}},
@@ -128,7 +125,8 @@ async def deployment_feedback(_: Request, data: FeedbackSchema, action_id: int, 
                 else:
                     # edge case where device update mode got changed while update was running
                     logging.warning(
-                        f"Updating rollout success stats failed, action_id={action_id}, device={device.id}"  # noqa: E501
+                        f"Updating rollout success stats failed, action_id={action_id}, device={device.id}"
+                        # noqa: E501
                     )
 
             if reported_software:
@@ -148,7 +146,8 @@ async def deployment_feedback(_: Request, data: FeedbackSchema, action_id: int, 
                 else:
                     # edge case where device update mode got changed while update was running
                     logging.warning(
-                        f"Updating rollout failure stats failed, action_id={action_id}, device={device.id}"  # noqa: E501
+                        f"Updating rollout failure stats failed, action_id={action_id}, device={device.id}"
+                        # noqa: E501
                     )
 
             software_version = reported_software.version if reported_software else None
