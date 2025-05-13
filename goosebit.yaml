@@ -34,6 +34,9 @@ poll_time: 00:01:00
 # Setup mode is designed for users migrating from other services, it makes setting up existing devices easy.
 #  mode: strict
 
+# External device authentication service (to be used with "mode: strict_external"
+#  external_uri: http://example.com/goosebit_auth_device
+
 # Secret key used for parsing user sessions. It is HIGHLY advised to pass this as an environment variable instead.
 # Defaults to a randomized value. If this value is not set, user sessions will not persist when app restarts.
 #secret_key: my_very_top_secret_key123
