@@ -108,7 +108,9 @@ class DeviceManager:
     async def update_update(device: Device, update_mode: UpdateModeEnum, software: Software | None):
         device.assigned_software = software
         device.update_mode = update_mode
-        await DeviceManager.save_device(device, update_fields=["assigned_software_id", "update_mode"])
+        if not update_mode == UpdateModeEnum.ROLLOUT:
+            device.feed = None
+        await DeviceManager.save_device(device, update_fields=["assigned_software_id", "update_mode", "feed"])
 
     @staticmethod
     async def update_name(device: Device, name: str):

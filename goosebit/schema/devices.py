@@ -37,7 +37,7 @@ class DeviceSchema(BaseModel):
     assigned_software: SoftwareSchema | None = Field(exclude=True)
     hardware: HardwareSchema | None = Field(exclude=True)
 
-    feed: str
+    feed: str | None
     progress: int | None
     last_state: Annotated[UpdateStateSchema, BeforeValidator(UpdateStateSchema.convert)]  # type: ignore[valid-type]
     update_mode: Annotated[UpdateModeSchema, BeforeValidator(UpdateModeSchema.convert)]  # type: ignore[valid-type]
