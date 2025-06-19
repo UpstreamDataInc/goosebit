@@ -64,7 +64,7 @@ class Device(Model):
     force_update = fields.BooleanField(default=False)
     sw_version = fields.CharField(max_length=255, null=True)
     hardware = fields.ForeignKeyField("models.Hardware", related_name="devices")
-    feed = fields.CharField(max_length=255, default="default")
+    feed = fields.CharField(max_length=255, default="default", null=True)
     update_mode = fields.IntEnumField(UpdateModeEnum, default=UpdateModeEnum.ROLLOUT)
     last_state = fields.IntEnumField(UpdateStateEnum, default=UpdateStateEnum.UNKNOWN)
     progress = fields.IntField(null=True)
@@ -76,6 +76,10 @@ class Device(Model):
     tags = fields.ManyToManyField("models.Tag", related_name="devices", through="device_tags")
 
     async def save(self, *args, **kwargs):
+        # ensure if using rollout that feed is set
+        if self.update_mode == UpdateModeEnum.ROLLOUT:
+            if self.feed is None:
+                raise ValidationError("Feed must be set in order to use rollout.")
         # Check if the software is compatible with the hardware before saving
         if self.assigned_software and self.hardware:
             # Check if the assigned software is compatible with the hardware

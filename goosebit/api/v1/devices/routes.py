@@ -59,6 +59,8 @@ async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusRespon
         if await Device.get_or_none(id=dev_id) is None:
             raise HTTPException(404, f"Device with ID {dev_id} not found")
         device = await DeviceManager.get_device(dev_id)
+        if config.feed is not None:
+            await DeviceManager.update_feed(device, config.feed)
         if config.software is not None:
             if config.software == "rollout":
                 await DeviceManager.update_update(device, UpdateModeEnum.ROLLOUT, None)
@@ -71,8 +73,6 @@ async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusRespon
             await DeviceManager.update_update(device, UpdateModeEnum.PINNED, None)
         if config.name is not None:
             await DeviceManager.update_name(device, config.name)
-        if config.feed is not None:
-            await DeviceManager.update_feed(device, config.feed)
         if config.force_update is not None:
             await DeviceManager.update_force_update(device, config.force_update)
         if config.auth_token is not None:
@@ -87,6 +87,8 @@ async def devices_patch(_: Request, config: DevicesPatchRequest) -> StatusRespon
 async def devices_put(_: Request, config: DevicesPutRequest) -> StatusResponse:
     for dev_id in config.devices:
         device = await DeviceManager.get_device(dev_id)
+        if config.feed is not None:
+            await DeviceManager.update_feed(device, config.feed)
         if config.software is not None:
             if config.software == "rollout":
                 await DeviceManager.update_update(device, UpdateModeEnum.ROLLOUT, None)
@@ -99,8 +101,6 @@ async def devices_put(_: Request, config: DevicesPutRequest) -> StatusResponse:
             await DeviceManager.update_update(device, UpdateModeEnum.PINNED, None)
         if config.name is not None:
             await DeviceManager.update_name(device, config.name)
-        if config.feed is not None:
-            await DeviceManager.update_feed(device, config.feed)
         if config.force_update is not None:
             await DeviceManager.update_force_update(device, config.force_update)
         if config.auth_token is not None:
