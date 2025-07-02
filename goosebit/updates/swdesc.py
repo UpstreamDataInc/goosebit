@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 def _append_compatibility(boardname, value, compatibility):
+    if not isinstance(value, dict):
+        return
     if "hardware-compatibility" in value:
         for revision in value["hardware-compatibility"]:
             compatibility.append({"hw_model": boardname, "hw_revision": revision})
