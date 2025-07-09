@@ -4,7 +4,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
 
-from joserfc.rfc7518.oct_key import OctKey
+from joserfc.jwk import OctKey
 from pydantic import BaseModel, BeforeValidator
 from pydantic_settings import (
     BaseSettings,
