@@ -1,5 +1,6 @@
 import time
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
 
@@ -56,6 +57,27 @@ async def validate_device_token(request: Request, dev_id: str):
             raise HTTPException(401, "Cannot register a new device in strict mode.")
         if not device.auth_token == device_token:
             raise HTTPException(401, "Device authentication token does not match.")
+    elif request.scope["config"].device_auth.mode == DeviceAuthMode.STRICT_EXTERNAL:
+        if device_token is None:
+            raise HTTPException(401, "Device authentication token is required in strict mode.")
+        # do not create a device in strict mode
+        device = await Device.get_or_none(id=dev_id)
+        if device is None:
+            raise HTTPException(401, "Cannot register a new device in strict mode.")
+        external_request_data = {"device_id": dev_id, "secret": device_token}
+        # Make request to an external service to validate the token
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    request.scope["config"].device_auth.external_uri, json=external_request_data, timeout=5.0
+                )
+                response.raise_for_status()
+                validation_result = response.json()
+
+                if not validation_result.get("valid", False):
+                    raise HTTPException(401, validation_result.get("message", "Token validation failed"))
+        except httpx.HTTPError as e:
+            raise HTTPException(500, f"Error communicating with authentication service: {str(e)}")
 
 
 router = APIRouter(
