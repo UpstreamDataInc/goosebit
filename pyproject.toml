@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = "^0.115.6"
+fastapi = "^0.116.1"
 python-multipart = "^0.0.20"
 jinja2 = "^3.1.5"
 itsdangerous = "^2.2.0"
@@ -22,8 +22,8 @@ opentelemetry-instrumentation-fastapi = "^0.49b1"
 opentelemetry-exporter-prometheus = "^0.49b1"
 aiocache = "^0.12.2"
 httpx = "^0.28.0"
-pydantic-settings = {extras = ["yaml"], version = "^2.7.1"}
-uvicorn = "^0.34.0"
+pydantic-settings = {extras = ["yaml"], version = "^2.10.1"}
+uvicorn = "^0.35.0"
 
 asyncpg = { version = "^0.30.0", optional = true }
 
