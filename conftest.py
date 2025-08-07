@@ -35,9 +35,9 @@ async def clear_cache():
 
 @pytest_asyncio.fixture(scope="function")
 async def test_app():
-    from goosebit.users import create_initial_user
-    from goosebit.storage import init_storage, close_storage
     from goosebit.settings import config
+    from goosebit.storage import close_storage, init_storage
+    from goosebit.users import create_initial_user
 
     async with RegisterTortoise(
         app=app,

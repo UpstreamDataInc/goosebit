@@ -30,5 +30,5 @@ async def download_file(_: Request, file_id: int):
         return StreamingResponse(
             file_stream,
             media_type="application/octet-stream",
-            headers={"Content-Disposition": f"attachment; filename={software.path.name}"}
+            headers={"Content-Disposition": f"attachment; filename={software.path.name}"},
         )

@@ -2,7 +2,12 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
-from fastapi.responses import FileResponse, Response, RedirectResponse, StreamingResponse
+from fastapi.responses import (
+    FileResponse,
+    RedirectResponse,
+    Response,
+    StreamingResponse,
+)
 
 from goosebit.db.models import Device, Software, UpdateStateEnum
 from goosebit.device_manager import DeviceManager, HandlingType, get_device
@@ -200,5 +205,5 @@ async def download_artifact(_: Request, device: Device = Depends(get_device)):
         return StreamingResponse(
             file_stream,
             media_type="application/octet-stream",
-            headers={"Content-Disposition": f"attachment; filename={software.path.name}"}
+            headers={"Content-Disposition": f"attachment; filename={software.path.name}"},
         )
