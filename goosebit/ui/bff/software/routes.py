@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from anyio import Path, open_file
+from anyio import open_file
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Security, UploadFile
 from fastapi.requests import Request
 from tortoise.expressions import Q
