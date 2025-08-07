@@ -36,6 +36,8 @@ async def clear_cache():
 @pytest_asyncio.fixture(scope="function")
 async def test_app():
     from goosebit.users import create_initial_user
+    from goosebit.storage import init_storage, close_storage
+    from goosebit.settings import config
 
     async with RegisterTortoise(
         app=app,
@@ -43,7 +45,13 @@ async def test_app():
     ):
         await Tortoise.generate_schemas()
         await create_initial_user(username="testing@goosebit.test", hashed_pwd=PWD_CXT.hash("test"))
-        yield app
+
+        init_storage(config)
+
+        try:
+            yield app
+        finally:
+            close_storage()
 
 
 @pytest_asyncio.fixture(scope="function")

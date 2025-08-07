@@ -68,3 +68,13 @@ logging:
   root:
     level: INFO
     handlers: [console]
+
+# Storage settings (default backend is filesystem)
+# storage:
+#   backend: s3
+#   s3:
+#     bucket: goosebit
+#     # region: us-east-1
+#     # endpoint_url: http://localhost:9000 # example for self-hosted min.io
+#     access_key_id: minioadmin
+#     secret_access_key: minioadmin

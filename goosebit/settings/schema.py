@@ -34,6 +34,21 @@ class PrometheusSettings(BaseModel):
 class MetricsSettings(BaseModel):
     prometheus: PrometheusSettings = PrometheusSettings()
 
+class StorageType(StrEnum):
+    FILESYSTEM = "filesystem"
+    S3 = "s3"
+
+class S3StorageSettings(BaseModel):
+    bucket: str
+    region: str = "us-east-1"
+    endpoint_url: str | None = None
+    access_key_id: str | None = None
+    secret_access_key: str | None = None
+
+
+class StorageSettings(BaseModel):
+    backend: StorageType = StorageType.FILESYSTEM
+    s3: S3StorageSettings | None = None
 
 class GooseBitSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="GOOSEBIT_")
@@ -53,6 +68,8 @@ class GooseBitSettings(BaseSettings):
     db_ssl_crt: Path | None = None
 
     artifacts_dir: Path = GOOSEBIT_ROOT_DIR.joinpath("artifacts")
+
+    storage: StorageSettings = StorageSettings()
 
     metrics: MetricsSettings = MetricsSettings()
 

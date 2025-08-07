@@ -25,6 +25,7 @@ A simplistic, opinionated remote update server implementing hawkBit™'s [DDI AP
     ```
 
 3. Launch gooseBit:
+
     ```bash
     python main.py
     ```
@@ -140,10 +141,10 @@ The structure of gooseBit is as follows:
 
 - `api`: Files for the API.
 - `ui`: Files for the UI.
-    - `bff`: Backend for frontend API.
-    - `static`: Static files.
-    - `templates`: Jinja2 formatted templates.
-    - `nav`: Navbar handler.
+  - `bff`: Backend for frontend API.
+  - `static`: Static files.
+  - `templates`: Jinja2 formatted templates.
+  - `nav`: Navbar handler.
 - `updater`: DDI API handler and device update manager.
 - `updates`: SWUpdate file parsing.
 - `auth`: Authentication functions and permission handling.
@@ -151,5 +152,6 @@ The structure of gooseBit is as follows:
 - `db`: Database config and initialization.
 - `schema`: Pydantic models used for API type hinting.
 - `settings`: Settings loader and handler.
+- `storage`: Storage for software artifacts.
 - `telemetry`: Telemetry data handlers.
 - `routes`: Routes for a giving endpoint, including the router.
