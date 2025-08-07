@@ -10,8 +10,8 @@ from tortoise.expressions import Q
 
 from goosebit.db.models import Device, Hardware, Software
 from goosebit.device_manager import DeviceManager
+from goosebit.storage import get_storage
 
-from ..settings import config
 from . import swdesc
 
 
@@ -48,11 +48,10 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
         if temp_file is None:
             raise HTTPException(500, "Temporary file missing, cannot parse file information")
         filename = Path(url2pathname(unquote(parsed_uri.path))).name
-        path = Path(config.artifacts_dir).joinpath(update_info["hash"], filename)
-        await path.parent.mkdir(parents=True, exist_ok=True)
-        await temp_file.replace(path)
-        absolute = await path.absolute()
-        uri = absolute.as_uri()
+
+        storage = get_storage()
+        key = f"{update_info['hash']}/{filename}"
+        uri = await storage.store_file(temp_file, key)
 
     # create software
     software = await Software.create(
@@ -96,15 +95,11 @@ async def generate_chunk(request: Request, device: Device) -> list:
     _, software = await DeviceManager.get_update(device)
     if software is None:
         return []
-    if software.local:
-        href = str(
-            request.url_for(
-                "download_artifact",
-                dev_id=device.id,
-            )
-        )
-    else:
-        href = software.uri
+
+    # Always use the download endpoint for consistency, the endpoint
+    # will handle both local and remote files appropriately.
+    href = str(request.url_for("download_artifact", dev_id=device.id))
+
     return [
         {
             "part": "os",

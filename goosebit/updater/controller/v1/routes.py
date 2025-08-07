@@ -2,11 +2,12 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, Response, RedirectResponse, StreamingResponse
 
 from goosebit.db.models import Device, Software, UpdateStateEnum
 from goosebit.device_manager import DeviceManager, HandlingType, get_device
 from goosebit.settings import config
+from goosebit.storage import get_storage
 from goosebit.updates import generate_chunk
 
 from .schema import (
@@ -182,10 +183,22 @@ async def download_artifact(_: Request, device: Device = Depends(get_device)):
     if software is None:
         raise HTTPException(404)
 
-    assert software.local, "device requests local software to download"
+    if software.local:
+        return FileResponse(
+            software.path,
+            media_type="application/octet-stream",
+            filename=software.path.name,
+        )
 
-    return FileResponse(
-        software.path,
-        media_type="application/octet-stream",
-        filename=software.path.name,
-    )
+    storage = get_storage()
+    try:
+        url = await storage.get_download_url(software.uri)
+        return RedirectResponse(url=url)
+    except Exception:
+        # Fallback to streaming if redirect fails.
+        file_stream = storage.get_file_stream(software.uri)
+        return StreamingResponse(
+            file_stream,
+            media_type="application/octet-stream",
+            headers={"Content-Disposition": f"attachment; filename={software.path.name}"}
+        )

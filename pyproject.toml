@@ -26,6 +26,7 @@ pydantic-settings = {extras = ["yaml"], version = "^2.7.1"}
 uvicorn = "^0.34.0"
 
 asyncpg = { version = "^0.30.0", optional = true }
+boto3 = "^1.40.4"
 
 [tool.poetry.extras]
 postgresql = ["asyncpg"]

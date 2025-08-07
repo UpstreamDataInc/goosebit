@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.requests import Request
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 
 from goosebit.db.models import Software
+from goosebit.storage import get_storage
 
 router = APIRouter(prefix="/download", tags=["download"])
 
@@ -18,5 +19,16 @@ async def download_file(_: Request, file_id: int):
             media_type="application/octet-stream",
             filename=software.path.name,
         )
-    else:
-        return RedirectResponse(url=software.uri)
+
+    storage = get_storage()
+    try:
+        url = await storage.get_download_url(software.uri)
+        return RedirectResponse(url=url)
+    except Exception:
+        # Fallback to streaming if redirect fails.
+        file_stream = storage.get_file_stream(software.uri)
+        return StreamingResponse(
+            file_stream,
+            media_type="application/octet-stream",
+            headers={"Content-Disposition": f"attachment; filename={software.path.name}"}
+        )
