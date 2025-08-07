@@ -26,6 +26,7 @@ def init_storage(config: GooseBitSettings) -> None:
     global _storage
     _storage = create_storage(config)
 
+
 def create_storage(config: GooseBitSettings) -> Storage:
     from .filesystem import FilesystemStorage
     from .s3 import S3Storage
@@ -43,17 +44,19 @@ def create_storage(config: GooseBitSettings) -> Storage:
             region=config.region,
             endpoint_url=config.endpoint_url,
             access_key_id=config.access_key_id,
-            secret_access_key=config.secret_access_key
+            secret_access_key=config.secret_access_key,
         )
 
     else:
         raise ValueError(f"Unknown storage backend type: {config.storage.backend}")
+
 
 def get_storage() -> Storage:
     if _storage is None:
         raise RuntimeError("Storage backend not initialized. Call init_storage() first.")
 
     return _storage
+
 
 def close_storage() -> None:
     global _storage

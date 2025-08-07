@@ -68,7 +68,6 @@ logging:
   root:
     level: INFO
     handlers: [console]
-
 # Storage settings (default backend is filesystem)
 # storage:
 #   backend: s3

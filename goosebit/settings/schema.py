@@ -34,9 +34,11 @@ class PrometheusSettings(BaseModel):
 class MetricsSettings(BaseModel):
     prometheus: PrometheusSettings = PrometheusSettings()
 
+
 class StorageType(StrEnum):
     FILESYSTEM = "filesystem"
     S3 = "s3"
+
 
 class S3StorageSettings(BaseModel):
     bucket: str
@@ -49,6 +51,7 @@ class S3StorageSettings(BaseModel):
 class StorageSettings(BaseModel):
     backend: StorageType = StorageType.FILESYSTEM
     s3: S3StorageSettings | None = None
+
 
 class GooseBitSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="GOOSEBIT_")

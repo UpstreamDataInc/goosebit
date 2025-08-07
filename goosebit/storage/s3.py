@@ -8,6 +8,7 @@ from botocore.exceptions import ClientError
 
 from . import Storage
 
+
 class S3Storage(Storage):
     def __init__(
         self,
@@ -15,16 +16,16 @@ class S3Storage(Storage):
         region: str = "us-east-1",
         endpoint_url: str | None = None,
         access_key_id: str | None = None,
-        secret_access_key: str | None = None
+        secret_access_key: str | None = None,
     ):
         self.bucket = bucket
 
         config = Config(
-            region_name = region,
-            connect_timeout = 10,
-            read_timeout = 60,
-            retries = {"max_attempts": 5, "mode": "adaptive"},
-            signature_version = "s3v4",
+            region_name=region,
+            connect_timeout=10,
+            read_timeout=60,
+            retries={"max_attempts": 5, "mode": "adaptive"},
+            signature_version="s3v4",
         )
 
         session_config = {}
@@ -40,13 +41,7 @@ class S3Storage(Storage):
     async def store_file(self, source_path: Path, key: str) -> str:
         try:
             loop = asyncio.get_event_loop()
-            await loop.run_in_executor(
-                None,
-                self.s3_client.upload_file,
-                str(source_path),
-                self.bucket,
-                key
-            )
+            await loop.run_in_executor(None, self.s3_client.upload_file, str(source_path), self.bucket, key)
             return f"s3://{self.bucket}/{key}"
         except ClientError as e:
             raise ValueError(f"S3 upload failed: {e}")
@@ -56,12 +51,7 @@ class S3Storage(Storage):
 
         try:
             loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                self.s3_client.get_object,
-                self.bucket,
-                key
-            )
+            response = await loop.run_in_executor(None, self.s3_client.get_object, self.bucket, key)
 
             body = response["Body"]
             try:
@@ -86,7 +76,7 @@ class S3Storage(Storage):
                 self.s3_client.generate_presigned_url,
                 "get_object",
                 {"Bucket": self.bucket, "Key": key},
-                3600 # 1 hour expiration
+                3600,  # 1 hour expiration
             )
         except ClientError as e:
             raise ValueError(f"Failed to generate presigned URL: {e}")
