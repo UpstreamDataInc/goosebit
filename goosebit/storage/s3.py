@@ -83,6 +83,7 @@ class S3Storage(Storage):
 
     def get_temp_dir(self) -> Path:
         import tempfile
+
         temp_dir = Path(tempfile.gettempdir()).joinpath("goosebit-s3-temp")
         temp_dir.mkdir(parents=True, exist_ok=True)
         return temp_dir
