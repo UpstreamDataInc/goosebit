@@ -26,7 +26,7 @@ async def download_file(_: Request, file_id: int):
         return RedirectResponse(url=url)
     except Exception:
         # Fallback to streaming if redirect fails.
-        file_stream = storage.get_file_stream(software.uri)
+        file_stream = await storage.get_file_stream(software.uri)
         return StreamingResponse(
             file_stream,
             media_type="application/octet-stream",
