@@ -16,7 +16,7 @@ from tortoise.exceptions import ValidationError
 from goosebit import api, db, ui, updater
 from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
 from goosebit.settings import PWD_CXT, config
-from goosebit.storage import close_storage, init_storage
+from goosebit.storage import storage
 from goosebit.ui.nav import nav
 from goosebit.ui.static import static
 from goosebit.ui.templates import templates
@@ -31,14 +31,13 @@ async def lifespan(_: FastAPI):
     if not db_ready:
         logger.exception("DB does not exist, try running `poetry run aerich upgrade`.")
 
-    init_storage(config)
-    logger.debug(f"Initialized storage backend: {config.storage.backend}")
+    async with storage:
+        logger.debug(f"Initialized storage backend: {config.storage.backend}")
 
-    if db_ready:
-        yield
+        if db_ready:
+            yield
 
     await db.close()
-    close_storage()
 
 
 app = FastAPI(

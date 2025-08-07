@@ -8,7 +8,7 @@ import httpx
 import libconf
 from anyio import AsyncFile, Path, open_file
 
-from goosebit.storage import get_storage
+from goosebit.storage import storage
 from goosebit.util.version import Version
 
 logger = logging.getLogger(__name__)
@@ -77,7 +77,6 @@ async def parse_file(file: Path):
 async def parse_remote(url: str):
     async with httpx.AsyncClient() as c:
         file = await c.get(url)
-        storage = get_storage()
         temp_dir = Path(storage.get_temp_dir())
         tmp_file_path = temp_dir.joinpath("".join(random.choices(string.ascii_lowercase, k=12)) + ".tmp")
         try:

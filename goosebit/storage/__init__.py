@@ -1,67 +1,66 @@
-from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import AsyncIterable
 
+from goosebit.settings import config
 from goosebit.settings.schema import GooseBitSettings, StorageType
+from goosebit.storage.base import StorageProtocol
+
+from .filesystem import FilesystemStorageBackend
+from .s3 import S3StorageBackend
 
 
-class Storage(ABC):
-    @abstractmethod
-    async def store_file(self, source_path: Path, key: str) -> str:
-        pass
+class GoosebitStorage:
+    def __init__(self, config: GooseBitSettings):
+        self.config = config
+        self._backend: StorageProtocol | None = None
 
-    @abstractmethod
-    async def get_file_stream(self, uri: str) -> AsyncGenerator[bytes, None]:
-        pass
+    def _create_backend(self) -> StorageProtocol:
 
-    @abstractmethod
+        if self.config.storage.backend == StorageType.FILESYSTEM:
+            return FilesystemStorageBackend(base_path=self.config.artifacts_dir)
+
+        elif self.config.storage.backend == StorageType.S3:
+            if self.config.storage.s3 is None:
+                return FilesystemStorageBackend(base_path=self.config.artifacts_dir)
+
+            s3_config = self.config.storage.s3
+            return S3StorageBackend(
+                bucket=s3_config.bucket,
+                region=s3_config.region,
+                endpoint_url=s3_config.endpoint_url,
+                access_key_id=s3_config.access_key_id,
+                secret_access_key=s3_config.secret_access_key,
+            )
+
+        else:
+            raise ValueError(f"Unknown storage backend type: {self.config.storage.backend}")
+
+    async def __aenter__(self) -> "GoosebitStorage":
+        self._backend = self._create_backend()
+        return self
+
+    async def __aexit__(self, *_) -> None:
+        self._backend = None
+
+    @property
+    def backend(self) -> StorageProtocol:
+        if self._backend is None:
+            raise RuntimeError("Storage backend not initialized. Use async context manager.")
+        return self._backend
+
+    async def store_file(self, source_path: Path, dest_path: Path) -> str:
+        return await self.backend.store_file(source_path, dest_path)
+
+    async def get_file_stream(self, uri: str) -> AsyncIterable[bytes]:
+        async for chunk in self.backend.get_file_stream(uri):  # type: ignore[attr-defined]
+            yield chunk
+
     async def get_download_url(self, uri: str) -> str:
-        pass
+        return await self.backend.get_download_url(uri)
 
-    @abstractmethod
     def get_temp_dir(self) -> Path:
-        pass
+        return self.backend.get_temp_dir()
 
 
-_storage: Storage | None = None
-
-
-def init_storage(config: GooseBitSettings) -> None:
-    global _storage
-    _storage = create_storage(config)
-
-
-def create_storage(config: GooseBitSettings) -> Storage:
-    from .filesystem import FilesystemStorage
-    from .s3 import S3Storage
-
-    if config.storage.backend == StorageType.FILESYSTEM:
-        return FilesystemStorage(base_path=config.artifacts_dir)
-
-    elif config.storage.backend == StorageType.S3:
-        if config.storage.s3 is None:
-            return FilesystemStorage(base_path=config.artifacts_dir)
-
-        config = config.storage.s3
-        return S3Storage(
-            bucket=config.bucket,
-            region=config.region,
-            endpoint_url=config.endpoint_url,
-            access_key_id=config.access_key_id,
-            secret_access_key=config.secret_access_key,
-        )
-
-    else:
-        raise ValueError(f"Unknown storage backend type: {config.storage.backend}")
-
-
-def get_storage() -> Storage:
-    if _storage is None:
-        raise RuntimeError("Storage backend not initialized. Call init_storage() first.")
-
-    return _storage
-
-
-def close_storage() -> None:
-    global _storage
-    _storage = None
+# Init the module-level storage instance
+storage = GoosebitStorage(config)

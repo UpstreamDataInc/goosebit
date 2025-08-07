@@ -11,7 +11,7 @@ from goosebit.api.v1.software import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 from goosebit.db.models import Hardware, Rollout, Software
-from goosebit.storage import get_storage
+from goosebit.storage import storage
 from goosebit.ui.bff.common.requests import DataTableRequest
 from goosebit.ui.bff.common.util import parse_datatables_query
 from goosebit.updates import create_software_update
@@ -81,7 +81,6 @@ async def post_update(
         await create_software_update(url, None)
     else:
         # local file
-        storage = get_storage()
         temp_dir = Path(storage.get_temp_dir())
 
         try:
