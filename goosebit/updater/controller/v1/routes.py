@@ -201,7 +201,7 @@ async def download_artifact(_: Request, device: Device = Depends(get_device)):
         return RedirectResponse(url=url)
     except Exception:
         # Fallback to streaming if redirect fails.
-        file_stream = storage.get_file_stream(software.uri)
+        file_stream = await storage.get_file_stream(software.uri)
         return StreamingResponse(
             file_stream,
             media_type="application/octet-stream",

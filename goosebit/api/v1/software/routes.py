@@ -13,6 +13,7 @@ from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 from goosebit.db.models import Rollout, Software
 from goosebit.storage import get_storage
 from goosebit.updates import create_software_update
+from goosebit.util.path import validate_filename
 
 from .requests import SoftwareDeleteRequest
 from .responses import SoftwareResponse
@@ -75,7 +76,10 @@ async def post_update(_: Request, file: UploadFile | None = File(None), url: str
         # local file
         storage = get_storage()
         temp_dir = Path(storage.get_temp_dir())
-        file_path = temp_dir.joinpath(file.filename)
+        try:
+            file_path = await validate_filename(file.filename, temp_dir)
+        except ValueError as e:
+            raise HTTPException(400, f"Invalid filename: {e}")
         tmp_file_path = temp_dir.joinpath("".join(random.choices(string.ascii_lowercase, k=12)) + ".tmp")
         file_absolute_path = await file_path.absolute()
         try:
