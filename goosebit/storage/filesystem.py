@@ -1,28 +1,29 @@
 import shutil
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import AsyncIterable
 from urllib.parse import urlparse
 
 import httpx
+from anyio import Path as AnyioPath
 from anyio import open_file
 
-from . import Storage
+from .base import StorageProtocol
 
 
-class FilesystemStorage(Storage):
+class FilesystemStorageBackend(StorageProtocol):
     def __init__(self, base_path: Path):
         self.base_path = Path(base_path)
         self.base_path.mkdir(parents=True, exist_ok=True)
 
-    async def store_file(self, source_path: Path, key: str) -> str:
-        dest_path = self._validate_key(key)
-        dest_path.parent.mkdir(parents=True, exist_ok=True)
+    async def store_file(self, source_path: Path, dest_path: Path) -> str:
+        final_dest_path = self._validate_dest_path(dest_path)
+        final_dest_path.parent.mkdir(parents=True, exist_ok=True)
 
-        shutil.copy2(source_path, dest_path)
+        shutil.copy2(source_path, final_dest_path)
 
-        return dest_path.resolve().as_uri()
+        return final_dest_path.resolve().as_uri()
 
-    async def get_file_stream(self, uri: str) -> AsyncGenerator[bytes, None]:
+    async def get_file_stream(self, uri: str) -> AsyncIterable[bytes]:  # type: ignore[override]
         parsed = urlparse(uri)
 
         if parsed.scheme in ("http", "https"):
@@ -75,23 +76,24 @@ class FilesystemStorage(Storage):
 
         return Path(parsed.path)
 
-    def _validate_key(self, key: str) -> Path:
-        if not key or not isinstance(key, str):
-            raise ValueError("Key must be a non-empty string")
+    def _validate_dest_path(self, dest_path: Path) -> Path:
+        if not isinstance(dest_path, (Path, AnyioPath)):
+            raise ValueError("Destination path must be a Path object")
 
-        key_path = Path(key.strip())
+        if isinstance(dest_path, AnyioPath):
+            dest_path = Path(str(dest_path))
 
-        if key_path.is_absolute():
-            raise ValueError("Key cannot be an absolute path")
+        if dest_path.is_absolute():
+            raise ValueError("Destination path cannot be absolute")
 
-        dest_path = self.base_path / key_path
+        final_dest_path = self.base_path / dest_path
 
-        resolved_dest = dest_path.resolve()
+        resolved_dest = final_dest_path.resolve()
         resolved_base = self.base_path.resolve()
 
         try:
             resolved_dest.relative_to(resolved_base)
         except ValueError:
-            raise ValueError("Key contains invalid path traversal components")
+            raise ValueError("Destination path contains invalid path traversal components")
 
-        return dest_path
+        return final_dest_path

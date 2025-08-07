@@ -10,7 +10,7 @@ from tortoise.expressions import Q
 
 from goosebit.db.models import Device, Hardware, Software
 from goosebit.device_manager import DeviceManager
-from goosebit.storage import get_storage
+from goosebit.storage import storage
 
 from . import swdesc
 
@@ -49,9 +49,8 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
             raise HTTPException(500, "Temporary file missing, cannot parse file information")
         filename = Path(url2pathname(unquote(parsed_uri.path))).name
 
-        storage = get_storage()
-        key = f"{update_info['hash']}/{filename}"
-        uri = await storage.store_file(temp_file, key)
+        dest_path = Path(update_info["hash"]) / filename
+        uri = await storage.store_file(temp_file, dest_path)
 
     # create software
     software = await Software.create(

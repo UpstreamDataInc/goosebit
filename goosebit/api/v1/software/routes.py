@@ -11,7 +11,7 @@ from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 from goosebit.db.models import Rollout, Software
-from goosebit.storage import get_storage
+from goosebit.storage import storage
 from goosebit.updates import create_software_update
 from goosebit.util.path import validate_filename
 
@@ -74,7 +74,6 @@ async def post_update(_: Request, file: UploadFile | None = File(None), url: str
         software = await create_software_update(url, None)
     elif file is not None:
         # local file
-        storage = get_storage()
         temp_dir = Path(storage.get_temp_dir())
         try:
             file_path = await validate_filename(file.filename, temp_dir)

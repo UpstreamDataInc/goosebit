@@ -1,15 +1,16 @@
 import asyncio
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import AsyncIterable
+from urllib.parse import urlparse
 
 from boto3.session import Session
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
-from . import Storage
+from .base import StorageProtocol
 
 
-class S3Storage(Storage):
+class S3StorageBackend(StorageProtocol):
     def __init__(
         self,
         bucket: str,
@@ -38,7 +39,9 @@ class S3Storage(Storage):
 
         self.s3_client = session.client("s3", config=config, endpoint_url=endpoint_url)
 
-    async def store_file(self, source_path: Path, key: str) -> str:
+    async def store_file(self, source_path: Path, dest_path: Path) -> str:
+        key = str(dest_path).replace("\\", "/").lstrip("/")  # Convert path to S3 key
+
         try:
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, self.s3_client.upload_file, str(source_path), self.bucket, key)
@@ -46,7 +49,7 @@ class S3Storage(Storage):
         except ClientError as e:
             raise ValueError(f"S3 upload failed: {e}")
 
-    async def get_file_stream(self, uri: str) -> AsyncGenerator[bytes, None]:
+    async def get_file_stream(self, uri: str) -> AsyncIterable[bytes]:  # type: ignore[override]
         key = self._extract_key_from_uri(uri)
 
         try:
@@ -67,19 +70,27 @@ class S3Storage(Storage):
             raise ValueError(f"S3 download failed: {e}")
 
     async def get_download_url(self, uri: str) -> str:
-        key = self._extract_key_from_uri(uri)
-
         try:
-            loop = asyncio.get_event_loop()
-            return await loop.run_in_executor(
-                None,
-                self.s3_client.generate_presigned_url,
-                "get_object",
-                {"Bucket": self.bucket, "Key": key},
-                3600,  # 1 hour expiration
-            )
-        except ClientError as e:
-            raise ValueError(f"Failed to generate presigned URL: {e}")
+            key = self._extract_key_from_uri(uri)
+
+            try:
+                loop = asyncio.get_event_loop()
+                return await loop.run_in_executor(
+                    None,
+                    self.s3_client.generate_presigned_url,
+                    "get_object",
+                    {"Bucket": self.bucket, "Key": key},
+                    3600,  # 1 hour expiration
+                )
+            except ClientError as e:
+                raise ValueError(f"Failed to generate presigned URL: {e}")
+        except ValueError:
+            # fallback for remote URL files
+            parsed = urlparse(uri)
+            if parsed.scheme in ("http", "https"):
+                return uri
+            else:
+                raise ValueError(f"Unsupported URI scheme '{parsed.scheme}' for S3 backend: {uri}")
 
     def get_temp_dir(self) -> Path:
         import tempfile
