@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from anyio import open_file
+from anyio import Path, open_file
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Security, UploadFile
 from fastapi.requests import Request
 from tortoise.expressions import Q
@@ -15,6 +15,7 @@ from goosebit.storage import get_storage
 from goosebit.ui.bff.common.requests import DataTableRequest
 from goosebit.ui.bff.common.util import parse_datatables_query
 from goosebit.updates import create_software_update
+from goosebit.util.path import validate_filename
 
 from ..common.columns import SoftwareColumns
 from ..common.responses import DTColumns
@@ -81,10 +82,14 @@ async def post_update(
     else:
         # local file
         storage = get_storage()
-        temp_dir = storage.get_temp_dir()
-        file = temp_dir.joinpath(filename)
+        temp_dir = Path(storage.get_temp_dir())
 
-        temp_file = file.with_suffix(".tmp")
+        try:
+            file_path = await validate_filename(filename, temp_dir)
+        except ValueError as e:
+            raise HTTPException(400, f"Invalid filename: {e}")
+
+        temp_file = file_path.with_suffix(".tmp")
         if init:
             await temp_file.unlink(missing_ok=True)
 
@@ -93,7 +98,7 @@ async def post_update(
 
         if done:
             try:
-                absolute = await file.absolute()
+                absolute = await file_path.absolute()
                 await create_software_update(absolute.as_uri(), temp_file)
             finally:
                 await temp_file.unlink(missing_ok=True)
