@@ -18,6 +18,10 @@ class Storage(ABC):
     async def get_download_url(self, uri: str) -> str:
         pass
 
+    @abstractmethod
+    def get_temp_dir(self) -> Path:
+        pass
+
 
 _storage: Storage | None = None
 

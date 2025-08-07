@@ -11,7 +11,7 @@ from goosebit.api.v1.software import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 from goosebit.db.models import Hardware, Rollout, Software
-from goosebit.settings import config
+from goosebit.storage import get_storage
 from goosebit.ui.bff.common.requests import DataTableRequest
 from goosebit.ui.bff.common.util import parse_datatables_query
 from goosebit.updates import create_software_update
@@ -80,9 +80,9 @@ async def post_update(
         await create_software_update(url, None)
     else:
         # local file
-        artifacts_dir = Path(config.artifacts_dir)
-        file = artifacts_dir.joinpath(filename)
-        await artifacts_dir.mkdir(parents=True, exist_ok=True)
+        storage = get_storage()
+        temp_dir = storage.get_temp_dir()
+        file = temp_dir.joinpath(filename)
 
         temp_file = file.with_suffix(".tmp")
         if init:

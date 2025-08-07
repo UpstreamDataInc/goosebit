@@ -62,6 +62,11 @@ class FilesystemStorage(Storage):
         else:
             raise ValueError(f"Unsupported URI scheme '{parsed.scheme}' for filesystem backend: {uri}")
 
+    def get_temp_dir(self) -> Path:
+        temp_dir = self.base_path / "tmp"
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        return temp_dir
+
     def _extract_path_from_uri(self, uri: str) -> Path:
         parsed = urlparse(uri)
 
