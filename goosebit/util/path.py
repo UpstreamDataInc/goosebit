@@ -11,12 +11,12 @@ async def validate_filename(filename: str, temp_dir: Path) -> Path:
 
     # Check for dangerous patterns that could indicate path traversal
     # This includes both Unix (..) and Windows (..\) style traversal
-    dangerous_patterns = ['../', '..\\', '../', '..\\']
+    dangerous_patterns = ["../", "..\\", "../", "..\\"]
     if any(pattern in filename for pattern in dangerous_patterns):
         raise ValueError("Filename contains invalid path traversal components")
 
     # Check for Windows drive letters (C:, D:, etc.)
-    if len(filename) >= 2 and filename[1] == ':' and filename[0].isalpha():
+    if len(filename) >= 2 and filename[1] == ":" and filename[0].isalpha():
         raise ValueError("Filename cannot contain Windows drive letters")
 
     # Create a path from the filename
