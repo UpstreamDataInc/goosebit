@@ -15,7 +15,7 @@ class FilesystemStorage(Storage):
         self.base_path.mkdir(parents=True, exist_ok=True)
 
     async def store_file(self, source_path: Path, key: str) -> str:
-        dest_path = self.base_path / key
+        dest_path = self._validate_key(key)
         dest_path.parent.mkdir(parents=True, exist_ok=True)
 
         shutil.copy2(source_path, dest_path)
@@ -74,3 +74,24 @@ class FilesystemStorage(Storage):
             raise ValueError(f"Expected file:// URI, got: {uri}")
 
         return Path(parsed.path)
+
+    def _validate_key(self, key: str) -> Path:
+        if not key or not isinstance(key, str):
+            raise ValueError("Key must be a non-empty string")
+
+        key_path = Path(key.strip())
+
+        if key_path.is_absolute():
+            raise ValueError("Key cannot be an absolute path")
+
+        dest_path = self.base_path / key_path
+
+        resolved_dest = dest_path.resolve()
+        resolved_base = self.base_path.resolve()
+
+        try:
+            resolved_dest.relative_to(resolved_base)
+        except ValueError:
+            raise ValueError("Key contains invalid path traversal components")
+
+        return dest_path
