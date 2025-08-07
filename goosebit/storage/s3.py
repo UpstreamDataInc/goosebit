@@ -81,6 +81,12 @@ class S3Storage(Storage):
         except ClientError as e:
             raise ValueError(f"Failed to generate presigned URL: {e}")
 
+    def get_temp_dir(self) -> Path:
+        import tempfile
+        temp_dir = Path(tempfile.gettempdir()).joinpath("goosebit-s3-temp")
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        return temp_dir
+
     def _extract_key_from_uri(self, uri: str) -> str:
         if not uri.startswith(f"s3://{self.bucket}/"):
             raise ValueError(f"Invalid S3 URI for bucket {self.bucket}: {uri}")
