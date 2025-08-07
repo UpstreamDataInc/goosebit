@@ -12,7 +12,7 @@ from .s3 import S3StorageBackend
 class GoosebitStorage:
     def __init__(self, config: GooseBitSettings):
         self.config = config
-        self._backend: StorageProtocol | None = None
+        self._backend: StorageProtocol = self._create_backend()
 
     def _create_backend(self) -> StorageProtocol:
 
@@ -34,13 +34,6 @@ class GoosebitStorage:
 
         else:
             raise ValueError(f"Unknown storage backend type: {self.config.storage.backend}")
-
-    async def __aenter__(self) -> "GoosebitStorage":
-        self._backend = self._create_backend()
-        return self
-
-    async def __aexit__(self, *_) -> None:
-        self._backend = None
 
     @property
     def backend(self) -> StorageProtocol:
