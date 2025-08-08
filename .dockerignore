@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.pytest_cache/
+htmlcov/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Poetry
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+docs/
+!README.md
+mkdocs.yml
+
+# Tests
+tests/
+conftest.py
+test_*.py
+*_test.py
+
+# Development files
+.pre-commit-config.yaml
+docker/
+artifacts/tmp/
+.mypy_cache/
+
+# Database
+db.sqlite3
+*.db
+
+# Logs
+*.log
