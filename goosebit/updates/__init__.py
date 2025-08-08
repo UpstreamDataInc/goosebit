@@ -49,7 +49,7 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
             raise HTTPException(500, "Temporary file missing, cannot parse file information")
         filename = Path(url2pathname(unquote(parsed_uri.path))).name
 
-        dest_path = Path(update_info["hash"]) / filename
+        dest_path = Path(update_info["hash"]).joinpath(filename)
         uri = await storage.store_file(temp_file, dest_path)
 
     # create software
