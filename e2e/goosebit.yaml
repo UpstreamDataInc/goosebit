@@ -1,0 +1,79 @@
+## Settings to adjust for each installation
+
+# Port to host the server on, default:
+#port: 60053 # GOOSE ;)
+
+# Tenant for DDI endpoint
+#tenant: DEFAULT
+
+# Database to be used, default:
+#db_uri: sqlite:///<project root>/db.sqlite3
+#db_ssl_crt: /<project root>/ca-certificate.crt
+
+# Path to the directory containing artifact files, default:
+#artifacts_dir: /<project root>/artifacts
+
+# Frequency that devices should check for available updates.
+poll_time: 00:00:05
+
+# Limit the number of updates that run at the same time. Can be used to avoid overloading the update server.
+#max_concurrent_updates: 1000
+
+# Whether to track the IP of the device when it polls.  Useful for debugging, but can be turned off for privacy.
+#track_device_ip: true
+
+# Device authentication settings
+# Token-based device authentication
+#device_auth:
+#  enable: false
+
+# The auth mode, one of:
+# - strict: Strict mode, all devices must have keys, and all keys must be set via the API.
+# - lax: Lax mode, devices which have keys must use them, but devices without keys do not require them.
+# - setup: Setup mode, any devices polling with an auth token that don't have one will save it.
+# Setup mode is designed for users migrating from other services, it makes setting up existing devices easy.
+#  mode: strict
+
+# Secret key used for parsing user sessions. It is HIGHLY advised to pass this as an environment variable instead.
+# Defaults to a randomized value. If this value is not set, user sessions will not persist when app restarts.
+#secret_key: my_very_top_secret_key123
+
+## Internal settings that usually don't need to be modified
+metrics:
+  prometheus:
+    enable: false
+logging:
+  version: 1
+  formatters:
+    simple:
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  handlers:
+    console:
+      class: logging.StreamHandler
+      formatter: simple
+      level: DEBUG
+  loggers:
+    tortoise:
+      handlers: [console]
+      level: WARNING
+      propagate: yes
+    aiosqlite:
+      handlers: [console]
+      level: WARNING
+      propagate: yes
+    multipart:
+      handlers: [console]
+      level: INFO
+      propagate: yes
+  root:
+    level: DEBUG
+    handlers: [console]
+# Storage settings (default backend is filesystem)
+storage:
+  backend: s3
+  s3:
+    bucket: goosebit
+    # region: us-east-1
+    endpoint_url: http://172.20.5.100:9000 # example for self-hosted min.io
+    access_key_id: minioadmin
+    secret_access_key: minioadmin

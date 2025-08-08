@@ -1,0 +1,62 @@
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 3s
+      timeout: 5s
+      retries: 3
+    networks:
+      goosebit_network:
+        ipv4_address: 172.20.5.100
+
+  goosebit:
+    container_name: goosebit
+    build:
+      context: ..
+      dockerfile: e2e/Dockerfile
+    ports:
+      - "60053:60053"
+    environment:
+      - GOOSEBIT_DATABASE_URL=sqlite:///app/db/db.sqlite3
+    depends_on:
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:60053"]
+      interval: 3s
+      timeout: 5s
+      retries: 3
+    networks:
+      goosebit_network:
+        ipv4_address: 172.20.5.102
+
+  swupdate:
+    container_name: swupdate
+    build:
+      context: ./swupdate
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      goosebit:
+        condition: service_healthy
+    networks:
+      goosebit_network:
+        ipv4_address: 172.20.5.103
+
+networks:
+  goosebit_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.5.0/24
