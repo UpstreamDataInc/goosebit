@@ -21,8 +21,8 @@ services:
   goosebit:
     container_name: goosebit
     build:
-      context: ..
-      dockerfile: e2e/Dockerfile
+      context: ../..
+      dockerfile: e2e/s3/Dockerfile
     ports:
       - "60053:60053"
     environment:
