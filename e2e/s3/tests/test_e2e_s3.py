@@ -37,13 +37,13 @@ def _compose_cmd() -> list[str]:
 
 def compose_up_build():
     cmd = _compose_cmd() + ["up", "-d", "--build"]
-    print("Running:", " ".join(cmd), flush=True)
+    print("\nRunning:", " ".join(cmd), flush=True)
     subprocess.run(cmd, check=True)
 
 
 def compose_down():
     cmd = _compose_cmd() + ["down", "-v"]
-    print("Running:", " ".join(cmd), flush=True)
+    print("\nRunning:", " ".join(cmd), flush=True)
     subprocess.run(cmd, check=True)
 
 
@@ -127,7 +127,7 @@ def ensure_minio_bucket():
         s3.meta.client.head_bucket(Bucket=MINIO_BUCKET)
         print(f"MinIO bucket '{MINIO_BUCKET}' exists")
     except ClientError:
-        print(f"Creating MinIO bucket '{MINIO_BUCKET}'...")
+        print(f"\nCreating MinIO bucket '{MINIO_BUCKET}'...\n")
         bucket.create(CreateBucketConfiguration={"LocationConstraint": "us-east-1"})
 
 
