@@ -48,10 +48,8 @@ WORKDIR /app
 # Copy application code
 COPY . .
 
-# Create docker-specific aerich config
-RUN printf '[tool.aerich]\ntortoise_orm = "goosebit.db.config.TORTOISE_CONF"\nlocation = "/app/goosebit/db/migrations"\n' > /aerich.toml
-
-RUN mv /app/e2e/goosebit.yaml /app/goosebit.yaml
+RUN mv /app/e2e/s3/aerich.toml /aerich.toml
+RUN mv /app/e2e/s3/goosebit.yaml /app/goosebit.yaml
 
 # Expose the application port
 EXPOSE 60053
