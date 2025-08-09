@@ -19,12 +19,14 @@ from .const import CURRENT_DIR, GOOSEBIT_ROOT_DIR, LOGGING_DEFAULT
 class DeviceAuthMode(StrEnum):
     SETUP = "setup"  # setup mode, any devices polling with an auth token that don't have one will save it
     STRICT = "strict"  # all devices must have keys, and all keys must be set up with the API
+    STRICT_EXTERNAL = "strict_external"  # all devices must have keys, keys must be validated by external service
     LAX = "lax"  # devices may or may not use keys, but device with keys set must poll with them
 
 
 class DeviceAuthSettings(BaseModel):
     enable: bool = False
     mode: DeviceAuthMode = DeviceAuthMode.STRICT
+    external_uri: str | None = None
 
 
 class PrometheusSettings(BaseModel):
