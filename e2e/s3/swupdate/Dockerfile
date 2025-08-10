@@ -1,4 +1,4 @@
-FROM ubuntu:latest AS build
+FROM ubuntu:plucky AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -52,7 +52,7 @@ RUN mkdir -p /app && apt update && apt install -y build-essential \
 
 WORKDIR /app
 
-RUN git clone https://github.com/sbabic/swupdate --depth 1
+RUN git clone https://github.com/sbabic/swupdate && cd swupdate && git reset --hard cad85ea
 
 COPY config /app/swupdate/.config
 
@@ -60,12 +60,12 @@ RUN cd swupdate/scripts/basic && gcc fixdep.c -o fixdep
 
 RUN cd swupdate && make
 
-FROM ubuntu:latest AS image
+FROM ubuntu:plucky AS image
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install required packages
-RUN apt-get update && apt-get install -y libubootenv0.1 libjson-c5 liblua5.2-0 libcurl4 libconfig9 libarchive13 libzmq5 liburiparser1 libwebsockets19t64 supervisor \
+RUN apt update && apt install -y libubootenv0.1 libjson-c5 liblua5.2-0 libcurl4 libconfig11 libarchive13 libzmq5 liburiparser1 libwebsockets19t64 supervisor \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
