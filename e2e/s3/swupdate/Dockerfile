@@ -1,4 +1,4 @@
-FROM ubuntu:plucky AS build
+FROM ubuntu:noble AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -60,12 +60,12 @@ RUN cd swupdate/scripts/basic && gcc fixdep.c -o fixdep
 
 RUN cd swupdate && make
 
-FROM ubuntu:plucky AS image
+FROM ubuntu:noble AS image
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install required packages
-RUN apt update && apt install -y libubootenv0.1 libjson-c5 liblua5.2-0 libcurl4 libconfig11 libarchive13 libzmq5 liburiparser1 libwebsockets19t64 supervisor \
+RUN apt update && apt install -y libubootenv0.1 libjson-c5 liblua5.2-0 libcurl4 libconfig9 libarchive13 libzmq5 liburiparser1 libwebsockets19t64 supervisor \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
