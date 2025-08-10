@@ -52,7 +52,7 @@ RUN mkdir -p /app && apt update && apt install -y build-essential \
 
 WORKDIR /app
 
-RUN git clone https://github.com/sbabic/swupdate && cd swupdate && git reset --hard cad85ea
+RUN git clone https://github.com/sbabic/swupdate && cd swupdate && git reset --hard cad85ea38ccd53bb5174c2f5fa3fb31a8d469a39
 
 COPY config /app/swupdate/.config
 
