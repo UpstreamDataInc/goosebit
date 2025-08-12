@@ -2,7 +2,9 @@
 name = "goosebit"
 version = "0.2.5"
 description = ""
-authors = [{ name = "Upstream Data", email = "brett@upstreamdata.ca" }]
+authors = [
+    {name = "Brett Rowan", email = "121075405+b-rowan@users.noreply.github.com"}
+]
 readme = "README.md"
 requires-python = "^3.11"
 dependencies = [
@@ -48,7 +50,7 @@ pytest-asyncio = "^0.26.0"
 pytest-md-report = "^0.6.2"
 pytest_httpserver = "^1.1.0"
 
-[tool.poetry.group.example_plugin.dependencies]
+[tool.poetry.group.goosebit_simple_stats.dependencies]
 goosebit-simple-stats = {path = "plugins/goosebit_simple_stats", develop = true}
 
 [project.scripts]

@@ -2,21 +2,21 @@
 
 [[package]]
 name = "aerich"
-version = "0.9.1"
+version = "0.8.2"
 description = "A database migrations tool for Tortoise ORM."
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "aerich-0.9.1-py3-none-any.whl", hash = "sha256:6ff34a2104454d03f7473dc99e7ad51f405a909c261126a1b8a52d44ca7b4cbc"},
-    {file = "aerich-0.9.1.tar.gz", hash = "sha256:629afbef5902635c41f410dd05def984c02e05e62d8a2020210a29a4aae19001"},
+    {file = "aerich-0.8.2-py3-none-any.whl", hash = "sha256:c1000cebd8525a1310a0cf0ea7d9a03cc2529413f182e90f08a6c6f4f61edcda"},
+    {file = "aerich-0.8.2.tar.gz", hash = "sha256:0ed2b15bb017785d17323329e5448b4b12fcfec08a20932626c12aa59a8378d6"},
 ]
 
 [package.dependencies]
 asyncclick = ">=8.1.7,<9.0.0"
 dictdiffer = ">=0.9.0,<1.0.0"
 pydantic = ">=2.0.2,<2.1.0 || >2.1.0,<2.7.0 || >2.7.0,<3.0.0"
-tortoise-orm = ">=0.24.0,<1.0.0"
+tortoise-orm = {version = ">=0.21.0,<1.0.0", markers = "python_version < \"4.0\""}
 
 [package.extras]
 asyncmy = ["asyncmy (>=0.2.9) ; python_version < \"4.0\""]
@@ -335,18 +335,18 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.40.7"
+version = "1.40.8"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "boto3-1.40.7-py3-none-any.whl", hash = "sha256:8727cac601a679d2885dc78b8119a0548bbbe04e49b72f7d94021a629154c080"},
-    {file = "boto3-1.40.7.tar.gz", hash = "sha256:61b15f70761f1eadd721c6ba41a92658f003eaaef09500ca7642f5ae68ec8945"},
+    {file = "boto3-1.40.8-py3-none-any.whl", hash = "sha256:9f55edd8e2eb5cd86e1c972b5250f9ab0a9555f84632506a2ed131e4a82ea23a"},
+    {file = "boto3-1.40.8.tar.gz", hash = "sha256:62959010dfd3d24157f73a8183fca7619ec97fb42ac400477006f7ecb9548d06"},
 ]
 
 [package.dependencies]
-botocore = ">=1.40.7,<1.41.0"
+botocore = ">=1.40.8,<1.41.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.13.0,<0.14.0"
 
@@ -355,14 +355,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.40.7"
+version = "1.40.8"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "botocore-1.40.7-py3-none-any.whl", hash = "sha256:a06956f3d7222e80ef6ae193608f358c3b7898e1a2b88553479d8f9737fbb03e"},
-    {file = "botocore-1.40.7.tar.gz", hash = "sha256:33793696680cf3a0c4b5ace4f9070c67c4d4fcb19c999fd85cfee55de3dcf913"},
+    {file = "botocore-1.40.8-py3-none-any.whl", hash = "sha256:7f0327e08d7c061aaa03e32459e56bcf6daa29cd946e95b1c06be14d61a9a94d"},
+    {file = "botocore-1.40.8.tar.gz", hash = "sha256:954fa6e36020ebf58898de80a8f864ba13b74dc26994cf20ccfff2966724b0b9"},
 ]
 
 [package.dependencies]
@@ -845,12 +845,12 @@ version = "0.1.0"
 description = ""
 optional = false
 python-versions = ">=3.11,<4.0"
-groups = ["example_plugin"]
+groups = ["goosebit_simple_stats"]
 files = []
 develop = true
 
 [package.dependencies]
-goosebit = {path = "../../../goosebit", develop = true}
+goosebit = "*"
 
 [package.source]
 type = "directory"
@@ -2441,14 +2441,14 @@ standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.6.3)
 
 [[package]]
 name = "virtualenv"
-version = "20.33.1"
+version = "20.34.0"
 description = "Virtual Python Environment builder"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "virtualenv-20.33.1-py3-none-any.whl", hash = "sha256:07c19bc66c11acab6a5958b815cbcee30891cd1c2ccf53785a28651a0d8d8a67"},
-    {file = "virtualenv-20.33.1.tar.gz", hash = "sha256:1b44478d9e261b3fb8baa5e74a0ca3bc0e05f21aa36167bf9cbf850e542765b8"},
+    {file = "virtualenv-20.34.0-py3-none-any.whl", hash = "sha256:341f5afa7eee943e4984a9207c025feedd768baff6753cd660c857ceb3e36026"},
+    {file = "virtualenv-20.34.0.tar.gz", hash = "sha256:44815b2c9dee7ed86e387b842a84f20b93f7f417f95886ca1996a72a4138eb1a"},
 ]
 
 [package.dependencies]
@@ -2638,4 +2638,4 @@ postgresql = ["asyncpg"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "9478cea2f12996994aa5539d2ef34acc2361658113e4e5dd3f0affaf8c2ba160"
+content-hash = "3db55be22f7e17864e174a8070a77d4472ce536fceaa4dec5e216c34eb004b87"
