@@ -15,8 +15,7 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      goosebit_network:
-        ipv4_address: 172.20.5.100
+      - goosebit_network
 
   goosebit:
     container_name: goosebit
@@ -36,8 +35,7 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      goosebit_network:
-        ipv4_address: 172.20.5.102
+      - goosebit_network
 
   swupdate:
     container_name: swupdate
@@ -50,13 +48,8 @@ services:
       goosebit:
         condition: service_healthy
     networks:
-      goosebit_network:
-        ipv4_address: 172.20.5.103
+      - goosebit_network
 
 networks:
   goosebit_network:
     driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.20.5.0/24
