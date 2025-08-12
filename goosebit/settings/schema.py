@@ -2,10 +2,10 @@ import os
 import secrets
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional
 
 from joserfc.jwk import OctKey
-from pydantic import BaseModel, BeforeValidator
+from pydantic import BaseModel, BeforeValidator, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -26,9 +26,16 @@ class DeviceAuthMode(StrEnum):
 class DeviceAuthSettings(BaseModel):
     enable: bool = False
     mode: DeviceAuthMode = DeviceAuthMode.STRICT
-    external_url: str | None = None
-    external_mode: Literal["bearer", "json"] | None = None
+    external_url: Optional[str] = None
+    external_mode: Literal["bearer", "json"] = "json"
     external_json_key: str = "token"
+
+    @model_validator(mode="after")
+    def validate_external_mode_config(self):
+        if self.mode == DeviceAuthMode.EXTERNAL:
+            if self.external_url is None:
+                raise ValueError("External URL is required when using external authentication mode")
+        return self
 
 
 class PrometheusSettings(BaseModel):

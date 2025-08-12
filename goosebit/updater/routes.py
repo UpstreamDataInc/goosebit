@@ -60,12 +60,7 @@ async def validate_device_token(request: Request, dev_id: str):
     elif request.scope["config"].device_auth.mode == DeviceAuthMode.EXTERNAL:
         if device_token is None:
             raise HTTPException(401, "Device authentication token is required in external mode.")
-        # do not create a device in external mode
-        device = await Device.get_or_none(id=dev_id)
-        if device is None:
-            raise HTTPException(401, "Cannot register a new device in external mode.")
 
-        # check the token with external service
         try:
             async with httpx.AsyncClient() as client:
                 if request.scope["config"].device_auth.external_mode == "bearer":
@@ -83,12 +78,14 @@ async def validate_device_token(request: Request, dev_id: str):
                         json=json,
                     )
                 else:
-                    raise HTTPException(500, "Unsupported external mode.")
+                    raise HTTPException(500, "Unsupported external mode")
 
                 if response.status_code != 200:
                     raise HTTPException(401, "Device authentication token is invalid.")
         except httpx.RequestError as e:
-            raise HTTPException(500, f"Error communicating with authentication service: {str(e)}")
+            raise HTTPException(401, f"Error communicating with authentication service: {str(e)}")
+        except Exception as e:
+            raise HTTPException(401, f"Error: {str(e)}")
 
 
 router = APIRouter(
