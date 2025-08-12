@@ -10,8 +10,8 @@ from tortoise.expressions import Q
 
 from goosebit.db.models import Device, Hardware, Software
 from goosebit.device_manager import DeviceManager
-from goosebit.storage import storage
 from goosebit.schema.updates import UpdateChunk, UpdateChunkArtifact
+from goosebit.storage import storage
 
 from . import swdesc
 
