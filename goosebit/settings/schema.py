@@ -2,7 +2,7 @@ import os
 import secrets
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, Literal, Optional
+from typing import Annotated
 
 from joserfc.jwk import OctKey
 from pydantic import BaseModel, BeforeValidator, model_validator
@@ -23,11 +23,16 @@ class DeviceAuthMode(StrEnum):
     LAX = "lax"  # devices may or may not use keys, but device with keys set must poll with them
 
 
+class ExternalAuthMode(StrEnum):
+    BEARER = "bearer"  # validate token with external service using Bearer token
+    JSON = "json"  # validate token with external service using JSON payload
+
+
 class DeviceAuthSettings(BaseModel):
     enable: bool = False
     mode: DeviceAuthMode = DeviceAuthMode.STRICT
-    external_url: Optional[str] = None
-    external_mode: Literal["bearer", "json"] = "json"
+    external_url: str | None = None
+    external_mode: ExternalAuthMode = ExternalAuthMode.JSON
     external_json_key: str = "token"
 
     @model_validator(mode="after")
@@ -35,6 +40,8 @@ class DeviceAuthSettings(BaseModel):
         if self.mode == DeviceAuthMode.EXTERNAL:
             if self.external_url is None:
                 raise ValueError("External URL is required when using external authentication mode")
+            if self.external_mode == ExternalAuthMode.JSON and not self.external_json_key:
+                raise ValueError("External JSON key is required when using JSON mode")
         return self
 
 
