@@ -12,12 +12,12 @@ async def lifespan(_: FastAPI):
     yield
 
 
-example_plugin_router = APIRouter(lifespan=lifespan)
-example_plugin_router.include_router(ui.router)
-example_plugin_router.include_router(api.router)
+simple_stats_router = APIRouter(lifespan=lifespan)
+simple_stats_router.include_router(ui.router)
+simple_stats_router.include_router(api.router)
 
 config = PluginSchema(
-    router=example_plugin_router,
+    router=simple_stats_router,
     static_files=ui.static,
     templates=ui.templates,
 )

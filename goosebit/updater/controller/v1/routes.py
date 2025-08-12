@@ -107,7 +107,7 @@ async def deployment_base(
 ):
     handling_type, software = await DeviceManager.get_update(device)
 
-    logger.info(f"Request deployment base, device={device.uuid}")
+    logger.info(f"Request deployment base, device={device.id}")
     if not handling_type == HandlingType.SKIP:
         return {
             "id": str(action_id),

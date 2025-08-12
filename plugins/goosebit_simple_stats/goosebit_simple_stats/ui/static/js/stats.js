@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    const cardData = await get_request("/plugins/example_plugin/ui/bff/example");
+    const cardData = await get_request("/plugins/goosebit_simple_stats/ui/bff/stats");
 
     if (Number.isInteger(cardData.device_count)) {
         deviceCountCard = document.getElementById("device-count-card");
