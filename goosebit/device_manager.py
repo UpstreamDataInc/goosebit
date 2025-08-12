@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from enum import StrEnum
+from typing import Optional
 
 from aiocache import caches
 
@@ -227,3 +228,7 @@ class DeviceManager:
 
 async def get_device(dev_id: str) -> Device:
     return await DeviceManager.get_device(dev_id)
+
+
+async def get_device_or_none(dev_id: str) -> Optional[Device]:
+    return await Device.get_or_none(id=dev_id)
