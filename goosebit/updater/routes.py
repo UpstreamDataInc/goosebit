@@ -6,7 +6,7 @@ from fastapi.requests import Request
 
 from goosebit.device_manager import DeviceManager, get_device_or_none
 from goosebit.settings import config
-from goosebit.settings.schema import DeviceAuthMode
+from goosebit.settings.schema import DeviceAuthMode, ExternalAuthMode
 
 from ..db import Device
 from . import controller
@@ -70,22 +70,17 @@ async def validate_device_token(request: Request, dev_id: str):
 
         try:
             async with httpx.AsyncClient() as client:
-                if request.scope["config"].device_auth.external_mode == "bearer":
+                if request.scope["config"].device_auth.external_mode == ExternalAuthMode.BEARER:
                     response = await client.post(
                         request.scope["config"].device_auth.external_url,
                         headers={"Authorization": f"Bearer {device_token}"},
                     )
-                elif request.scope["config"].device_auth.external_mode == "json":
-                    if request.scope["config"].device_auth.external_json_key is None:
-                        raise HTTPException(500, "External JSON key is required for JSON mode.")
-
+                elif request.scope["config"].device_auth.external_mode == ExternalAuthMode.JSON:
                     json = {request.scope["config"].device_auth.external_json_key: device_token}
                     response = await client.post(
                         request.scope["config"].device_auth.external_url,
                         json=json,
                     )
-                else:
-                    raise HTTPException(500, "Unsupported external mode")
 
                 if response.status_code != 200:
                     raise HTTPException(401, "Device authentication token is invalid.")
