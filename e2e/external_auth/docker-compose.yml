@@ -26,6 +26,8 @@ services:
       - "60053:60053"
     environment:
       - GOOSEBIT_DATABASE_URL=sqlite:///app/db/db.sqlite3
+    volumes:
+      - ../docker/goosebit/goosebit-external-auth.yaml:/app/goosebit.yaml:ro
     depends_on:
       authserver:
         condition: service_healthy
