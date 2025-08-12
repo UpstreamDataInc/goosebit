@@ -1,8 +1,8 @@
-# gooseBit Plugin Example
+# gooseBit Simple Stats Plugin
 
 A simple example plugin for testing and understanding gooseBit's plugin system.
 
-This example plugin sets up a page which shows software count and/or device count.
+This plugin sets up a page which shows software count and/or device count.
 
 ## Setup
 
