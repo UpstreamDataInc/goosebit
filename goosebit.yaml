@@ -29,13 +29,21 @@ poll_time: 00:01:00
 
 # The auth mode, one of:
 # - strict: Strict mode, all devices must have keys, and all keys must be set via the API.
+# - external: All devices must have keys, keys must be validated by external auth service.
 # - lax: Lax mode, devices which have keys must use them, but devices without keys do not require them.
 # - setup: Setup mode, any devices polling with an auth token that don't have one will save it.
 # Setup mode is designed for users migrating from other services, it makes setting up existing devices easy.
 #  mode: strict
 
-# External device authentication service (to be used with "mode: strict_external"
-#  external_uri: http://example.com/goosebit_auth_device
+#  The external URL to validate tokens (to be used with "mode: external")
+#  external_url: http://localhost:8000/auth
+
+#  External mode, one of: bearer, json (to be used with "mode: external")
+#  external_mode: json
+
+#  The external JSON key to use when performing POST request.
+#  If not specified, "token" is used by default (to be used with "external_mode: json")
+#  external_json_key: token
 
 # Secret key used for parsing user sessions. It is HIGHLY advised to pass this as an environment variable instead.
 # Defaults to a randomized value. If this value is not set, user sessions will not persist when app restarts.
