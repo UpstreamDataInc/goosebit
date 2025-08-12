@@ -26,7 +26,7 @@ poll_time: 00:00:05
 device_auth:
   enable: true
   mode: external
-  external_url: http://172.20.5.100:8000/api/v1/auth
+  external_url: http://minio:8000/api/v1/auth
   external_mode: json
   external_json_key: token
 
