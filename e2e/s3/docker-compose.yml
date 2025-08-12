@@ -14,9 +14,6 @@ services:
       interval: 3s
       timeout: 5s
       retries: 3
-    networks:
-      - goosebit_network
-
   goosebit:
     container_name: goosebit
     build:
@@ -34,9 +31,6 @@ services:
       interval: 3s
       timeout: 5s
       retries: 3
-    networks:
-      - goosebit_network
-
   swupdate:
     container_name: swupdate
     build:
@@ -47,9 +41,3 @@ services:
     depends_on:
       goosebit:
         condition: service_healthy
-    networks:
-      - goosebit_network
-
-networks:
-  goosebit_network:
-    driver: bridge
