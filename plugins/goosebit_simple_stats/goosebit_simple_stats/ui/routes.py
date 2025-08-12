@@ -21,4 +21,4 @@ router.include_router(bff.router)
 )
 @nav.route("Stats", permissions=["stats.read"])
 async def stats_ui(request: Request):
-    return templates.TemplateResponse(request, "stats.html.jinja", context={"title": "Example"})
+    return templates.TemplateResponse(request, "stats.html.jinja", context={"title": "Simple Stats"})
