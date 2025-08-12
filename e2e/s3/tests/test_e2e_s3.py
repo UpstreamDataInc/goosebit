@@ -1,5 +1,4 @@
 import os
-import subprocess
 import sys
 import time
 from pathlib import Path
@@ -10,65 +9,51 @@ import httpx
 import pytest
 from botocore.exceptions import ClientError
 
+from e2e.utils import compose_down, compose_up_build
+
 BASE_URL = os.getenv("E2E_BASE_URL", "http://localhost:60053")
 MINIO_URL = os.getenv("E2E_MINIO_URL", "http://localhost:9000")
 MINIO_BUCKET = os.getenv("E2E_MINIO_BUCKET", "goosebit")
 MINIO_ACCESS_KEY = os.getenv("E2E_MINIO_ACCESS_KEY", "minioadmin")
 MINIO_SECRET_KEY = os.getenv("E2E_MINIO_SECRET_KEY", "minioadmin")
 
-
-# ---------------------
-# Docker Compose helpers
-# ---------------------
+COMPOSE_FILE = Path(__file__).resolve().parents[1] / "docker-compose.yml"
 
 
-def _compose_cmd() -> list[str]:
-    """Return a docker compose command list (v2 or fallback to docker-compose)."""
-    compose_file = str(Path(__file__).resolve().parents[1] / "docker-compose.yml")
-    # Try `docker compose`
-    try:
-        subprocess.run(["docker", "compose", "version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return ["docker", "compose", "-f", compose_file]
-    except Exception:
-        pass
-    # Fallback `docker-compose`
-    return ["docker-compose", "-f", compose_file]
+def _compose_up_build():
+    compose_up_build(COMPOSE_FILE)
 
 
-def compose_up_build():
-    cmd = _compose_cmd() + ["up", "-d", "--build"]
-    print("\nRunning:", " ".join(cmd), flush=True)
-    subprocess.run(cmd, check=True)
-
-
-def compose_down():
-    cmd = _compose_cmd() + ["down", "-v"]
-    print("\nRunning:", " ".join(cmd), flush=True)
-    subprocess.run(cmd, check=True)
+def _compose_down():
+    compose_down(COMPOSE_FILE, remove_orphans=True)
 
 
 # ---------------------
-# Pytest session-scoped fixtures
+# Pytest module-scoped fixtures
 # ---------------------
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def compose_lifecycle():
-    # Bring up compose once for the whole session
-    compose_up_build()
+    # Ensure a clean slate for this module, then bring up compose
+    try:
+        _compose_down()
+    except Exception as e:  # noqa: BLE001
+        print("pre-clean compose down ignored:", e, file=sys.stderr)
+    _compose_up_build()
     try:
         yield
     finally:
-        # Always tear down at the end of session
+        # Always tear down at the end of module
         try:
-            compose_down()
+            _compose_down()
         except Exception as e:  # noqa: BLE001
             print("compose down failed:", e, file=sys.stderr)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def ensure_services_ready(compose_lifecycle):
-    # Wait for services once per session
+    # Wait for services once per module
     ok, err = wait_for_service(f"{BASE_URL}/docs", timeout_seconds=180)
     assert ok, f"goosebit not ready: {err}"
     ok, err = wait_for_service(f"{MINIO_URL}/minio/health/live", timeout_seconds=180)
