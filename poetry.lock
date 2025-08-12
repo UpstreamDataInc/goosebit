@@ -2,21 +2,21 @@
 
 [[package]]
 name = "aerich"
-version = "0.8.2"
+version = "0.9.1"
 description = "A database migrations tool for Tortoise ORM."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "aerich-0.8.2-py3-none-any.whl", hash = "sha256:c1000cebd8525a1310a0cf0ea7d9a03cc2529413f182e90f08a6c6f4f61edcda"},
-    {file = "aerich-0.8.2.tar.gz", hash = "sha256:0ed2b15bb017785d17323329e5448b4b12fcfec08a20932626c12aa59a8378d6"},
+    {file = "aerich-0.9.1-py3-none-any.whl", hash = "sha256:6ff34a2104454d03f7473dc99e7ad51f405a909c261126a1b8a52d44ca7b4cbc"},
+    {file = "aerich-0.9.1.tar.gz", hash = "sha256:629afbef5902635c41f410dd05def984c02e05e62d8a2020210a29a4aae19001"},
 ]
 
 [package.dependencies]
 asyncclick = ">=8.1.7,<9.0.0"
 dictdiffer = ">=0.9.0,<1.0.0"
 pydantic = ">=2.0.2,<2.1.0 || >2.1.0,<2.7.0 || >2.7.0,<3.0.0"
-tortoise-orm = {version = ">=0.21.0,<1.0.0", markers = "python_version < \"4.0\""}
+tortoise-orm = ">=0.24.0,<1.0.0"
 
 [package.extras]
 asyncmy = ["asyncmy (>=0.2.9) ; python_version < \"4.0\""]
@@ -2638,4 +2638,4 @@ postgresql = ["asyncpg"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "4e5ff02a33acece271115302e39157e58e99feecaadc9cfd1947a048146d25bc"
+content-hash = "9478cea2f12996994aa5539d2ef34acc2361658113e4e5dd3f0affaf8c2ba160"
