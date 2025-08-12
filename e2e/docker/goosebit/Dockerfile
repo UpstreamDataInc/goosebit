@@ -48,8 +48,8 @@ WORKDIR /app
 # Copy application code
 COPY . .
 
-RUN mv /app/e2e/s3/aerich.toml /aerich.toml
-RUN mv /app/e2e/s3/goosebit.yaml /app/goosebit.yaml
+RUN mv /app/e2e/docker/goosebit/aerich.toml /aerich.toml
+RUN mv /app/e2e/docker/goosebit/goosebit.yaml /app/goosebit.yaml
 
 # Expose the application port
 EXPOSE 60053
