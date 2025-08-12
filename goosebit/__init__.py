@@ -64,6 +64,9 @@ app.mount("/static", static, name="static")
 Instrumentor.instrument_app(app)
 
 for plugin in plugins.load():
+    if plugin.middleware is not None:
+        logger.info(f"Adding middleware for plugin: {plugin.name}")
+        app.add_middleware(plugin.middleware)
     if plugin.router is not None:
         logger.info(f"Adding routing handler for plugin: {plugin.name}")
         app.include_router(router=plugin.router, prefix=plugin.url_prefix)
