@@ -14,7 +14,6 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from tortoise.exceptions import ValidationError
 
 from goosebit import api, db, plugins, ui, updater
-from goosebit.api.telemetry import metrics
 from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
 from goosebit.device_manager import DeviceManager
 from goosebit.settings import PWD_CXT, config
