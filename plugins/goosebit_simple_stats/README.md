@@ -10,7 +10,7 @@ This example plugin sets up a page which shows software count and/or device coun
 
 1. Load the plugin into poetry env (in goosebit):
     ```bash
-    poetry install --with example_plugin
+    poetry install --with goosebit_simple_stats
     ```
 
 ### Configuration
@@ -19,12 +19,12 @@ This example plugin sets up a page which shows software count and/or device coun
     - Uncomment the lines:
         ```yaml
         plugins:
-            - example_plugin
+            - goosebit_simple_stats
         ```
 2. Configure the plugin:
     - Uncomment the lines (choose which data you want to show):
         ```yaml
-        example_plugin_show:
+        simple_stats_show:
             - device_count
             - software_count
         ```
