@@ -51,10 +51,10 @@ poll_time: 00:01:00
 
 # A list of installed plugins that you want to enable in goosebit
 #plugins:
-#  - example_plugin
+#  - goosebit_simple_stats
 
 # A required setting in case you want to test the example plugin
-#example_plugin_show:
+#simple_stats_show:
 #  - device_count
 #  - software_count
 

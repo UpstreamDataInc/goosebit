@@ -13,12 +13,12 @@ router.include_router(bff.router)
 
 
 @router.get(
-    "/example",
+    "/stats",
     dependencies=[
         Depends(redirect_if_unauthenticated),
-        Security(validate_user_permissions, scopes=["example.read"]),
+        Security(validate_user_permissions, scopes=["stats.read"]),
     ],
 )
-@nav.route("Example", permissions="example.read")
-async def example_ui(request: Request):
-    return templates.TemplateResponse(request, "example.html.jinja", context={"title": "Example"})
+@nav.route("Stats", permissions=["stats.read"])
+async def stats_ui(request: Request):
+    return templates.TemplateResponse(request, "stats.html.jinja", context={"title": "Example"})

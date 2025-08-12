@@ -1,5 +1,5 @@
 [project]
-name = "example-plugin"
+name = "goosebit-simple-stats"
 version = "0.1.0"
 description = ""
 authors = [
@@ -9,14 +9,14 @@ readme = "README.md"
 requires-python = ">=3.11,<4.0"
 
 [tool.poetry.dependencies]
-goosebit = {path = "../../goosebit", develop = true}
+goosebit = {path = "../../../goosebit", develop = true}
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [project.entry-points.'goosebit.plugins']
-example_plugin = "example_plugin"
+goosebit_simple_stats = "goosebit_simple_stats"
 
 [tool.djlint]
 ignore = "H030,H031,H021"

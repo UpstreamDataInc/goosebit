@@ -49,7 +49,7 @@ pytest-md-report = "^0.6.2"
 pytest_httpserver = "^1.1.0"
 
 [tool.poetry.group.example_plugin.dependencies]
-example-plugin = {path = "example_plugin", develop = true}
+goosebit-simple-stats = {path = "plugins/goosebit_simple_stats", develop = true}
 
 [project.scripts]
 generate-sample-data = "sample_data:main"
