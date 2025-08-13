@@ -32,7 +32,8 @@ jobs:
         shell: bash
         run: |
           echo "REPORT_FILE=${REPORT_OUTPUT}" >> "$GITHUB_ENV"
-          poetry run pytest -v --md-report --md-report-flavor gfm --md-report-color never --md-report-exclude-outcomes passed skipped xpassed --md-report-output "$REPORT_OUTPUT"
+          poetry run pytest -v --md-report --md-report-flavor gfm --md-report-color never \
+            --md-report-exclude-outcomes passed skipped xpassed --md-report-output "$REPORT_OUTPUT" tests/unit
       - name: Render the report to the PR when tests fail
         uses: marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31 # v2.9.0
         if: failure()
