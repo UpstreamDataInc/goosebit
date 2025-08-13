@@ -1,0 +1,56 @@
+services:
+  authserver:
+    container_name: authserver
+    build:
+      context: ../docker/auth_server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - AUTH_TOKEN=3edbb7d0ef83daa4fa688620512204cb # gitleaks:allow
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 3s
+      timeout: 5s
+      retries: 3
+    networks:
+      - goosebit_network
+
+  goosebit:
+    container_name: goosebit
+    build:
+      context: ../..
+      dockerfile: e2e/docker/goosebit/Dockerfile
+    ports:
+      - "60053:60053"
+    environment:
+      - GOOSEBIT_DATABASE_URL=sqlite:///app/db/db.sqlite3
+    volumes:
+      - ../docker/goosebit/goosebit-external-auth-bearer.yaml:/app/goosebit.yaml:ro
+    depends_on:
+      authserver:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:60053"]
+      interval: 3s
+      timeout: 5s
+      retries: 3
+    networks:
+      - goosebit_network
+
+  swupdate:
+    container_name: swupdate
+    build:
+      context: ../docker/swupdate
+      dockerfile: Dockerfile
+    environment:
+      - AUTH_TOKEN=3edbb7d0ef83daa4fa688620512204cb # gitleaks:allow
+    depends_on:
+      goosebit:
+        condition: service_healthy
+    networks:
+      - goosebit_network
+
+networks:
+  goosebit_network:
+    driver: bridge
