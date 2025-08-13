@@ -2,17 +2,16 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Tuple
 
 import httpx
 import pytest
 
-from e2e.utils import compose_down, compose_up_build
+from e2e.utils import auth_token, compose_down, compose_up_build, wait_for_service
 
 BASE_URL = os.getenv("E2E_BASE_URL", "http://localhost:60053")
 AUTH_SERVICE_BASE_URL = os.getenv("AUTH_SERVICE_BASE_URL", "http://localhost:8000")
 
-COMPOSE_FILE = Path(__file__).resolve().parents[1] / "docker-compose.yml"
+COMPOSE_FILE = Path(__file__).resolve().parents[1].joinpath("docker-compose.yml")
 
 
 def _compose_up_build():
@@ -21,11 +20,6 @@ def _compose_up_build():
 
 def _compose_down():
     compose_down(COMPOSE_FILE, remove_orphans=True)
-
-
-# ---------------------
-# Pytest module-scoped fixtures
-# ---------------------
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -57,42 +51,6 @@ def ensure_services_ready(compose_lifecycle):
     return True
 
 
-# ---------------------
-# HTTP helpers
-# ---------------------
-
-
-def wait_for_service(url: str, timeout_seconds: int = 120) -> Tuple[bool, str]:
-    deadline = time.time() + timeout_seconds
-    last_err = ""
-    while time.time() < deadline:
-        try:
-            with httpx.Client(timeout=5.0) as client:
-                r = client.get(url)
-                if r.status_code == 200:
-                    return True, ""
-                last_err = f"status={r.status_code} body_prefix={r.text[:120]}"
-        except Exception as e:  # noqa: BLE001
-            last_err = str(e)
-        time.sleep(1.0)
-    return False, last_err
-
-
-def _auth_token(client: httpx.Client) -> str:
-    creds = {"username": "admin@goosebit.local", "password": "admin"}
-    setup_resp = client.post("/setup", data=creds, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    if setup_resp.status_code == 200:
-        return setup_resp.json()["access_token"]
-    login_resp = client.post("/login", data=creds, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    assert login_resp.status_code == 200, login_resp.text
-    return login_resp.json()["access_token"]
-
-
-# ---------------------
-# External Auth Tests
-# ---------------------
-
-
 def test_e2e_external_auth_smoke_and_health(ensure_services_ready):
     """Smoke test for external auth setup and goosebit endpoints"""
 
@@ -101,7 +59,7 @@ def test_e2e_external_auth_smoke_and_health(ensure_services_ready):
         assert health_resp.status_code == 200, f"Health check for auth service failed {health_resp.text}"
 
     with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=10.0) as client:
-        token = _auth_token(client)
+        token = auth_token(client)
 
         # Verify docs endpoint works
         health_resp = client.get("/docs")
@@ -116,7 +74,7 @@ def test_e2e_device_registration_with_external_auth(ensure_services_ready):
     """Test device registration with external authentication - verify device state is REGISTERED not UNKNOWN"""
 
     with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=20.0) as client:
-        token = _auth_token(client)
+        token = auth_token(client)
 
         deadline = time.time() + 20
         dev_id = None
