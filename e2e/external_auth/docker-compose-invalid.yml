@@ -44,7 +44,7 @@ services:
       context: ../docker/swupdate
       dockerfile: Dockerfile
     environment:
-      - AUTH_TOKEN=3edbb7d0ef83daa4fa688620512204cb # gitleaks:allow
+      - AUTH_TOKEN=fffffffffffffffff # gitleaks:allow
     depends_on:
       goosebit:
         condition: service_healthy

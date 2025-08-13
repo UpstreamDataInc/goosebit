@@ -2,14 +2,13 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Tuple
 
 import boto3
 import httpx
 import pytest
 from botocore.exceptions import ClientError
 
-from e2e.utils import compose_down, compose_up_build
+from e2e.utils import auth_token, compose_down, compose_up_build, wait_for_service
 
 BASE_URL = os.getenv("E2E_BASE_URL", "http://localhost:60053")
 MINIO_URL = os.getenv("E2E_MINIO_URL", "http://localhost:9000")
@@ -17,7 +16,7 @@ MINIO_BUCKET = os.getenv("E2E_MINIO_BUCKET", "goosebit")
 MINIO_ACCESS_KEY = os.getenv("E2E_MINIO_ACCESS_KEY", "minioadmin")
 MINIO_SECRET_KEY = os.getenv("E2E_MINIO_SECRET_KEY", "minioadmin")
 
-COMPOSE_FILE = Path(__file__).resolve().parents[1] / "docker-compose.yml"
+COMPOSE_FILE = Path(__file__).resolve().parents[1].joinpath("docker-compose.yml")
 
 
 def _compose_up_build():
@@ -26,11 +25,6 @@ def _compose_up_build():
 
 def _compose_down():
     compose_down(COMPOSE_FILE, remove_orphans=True)
-
-
-# ---------------------
-# Pytest module-scoped fixtures
-# ---------------------
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -60,42 +54,6 @@ def ensure_services_ready(compose_lifecycle):
     assert ok, f"minio not ready: {err}"
     ensure_minio_bucket()
     return True
-
-
-# ---------------------
-# HTTP helpers
-# ---------------------
-
-
-def wait_for_service(url: str, timeout_seconds: int = 120) -> Tuple[bool, str]:
-    deadline = time.time() + timeout_seconds
-    last_err = ""
-    while time.time() < deadline:
-        try:
-            with httpx.Client(timeout=5.0) as client:
-                r = client.get(url)
-                if r.status_code == 200:
-                    return True, ""
-                last_err = f"status={r.status_code} body_prefix={r.text[:120]}"
-        except Exception as e:  # noqa: BLE001
-            last_err = str(e)
-        time.sleep(1.0)
-    return False, last_err
-
-
-def _auth_token(client: httpx.Client) -> str:
-    creds = {"username": "admin@goosebit.local", "password": "admin"}
-    setup_resp = client.post("/setup", data=creds, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    if setup_resp.status_code == 200:
-        return setup_resp.json()["access_token"]
-    login_resp = client.post("/login", data=creds, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    assert login_resp.status_code == 200, login_resp.text
-    return login_resp.json()["access_token"]
-
-
-# ---------------------
-# MinIO helpers
-# ---------------------
 
 
 def ensure_minio_bucket():
@@ -165,7 +123,7 @@ def _ensure_artifact_and_rollout(client: httpx.Client, token: str, feed: str = "
 
 def test_e2e_smoke_setup_login_and_basic_routes(ensure_services_ready):
     with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=20.0) as client:
-        token = _auth_token(client)
+        token = auth_token(client)
 
         # Protected API
         api_resp = client.get("/api/v1/devices", headers={"Authorization": f"Bearer {token}"})
@@ -185,7 +143,7 @@ def test_e2e_smoke_setup_login_and_basic_routes(ensure_services_ready):
 
 def test_e2e_artifact_upload_and_minio_presence(ensure_services_ready):
     with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=20.0) as client:
-        token = _auth_token(client)
+        token = auth_token(client)
         sw, _ = _ensure_artifact(client, token)
 
         # Verify artifact presence in MinIO when applicable
@@ -219,7 +177,7 @@ def test_e2e_device_update_rollout_to_version(ensure_services_ready):
     assert ok, f"Service not ready: {err}"
 
     with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=20.0) as client:
-        token = _auth_token(client)
+        token = auth_token(client)
 
         # Ensure we have an artifact and rollout prepared
         _, target_version = _ensure_artifact_and_rollout(client, token)
