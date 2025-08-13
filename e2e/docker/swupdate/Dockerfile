@@ -1,78 +1,33 @@
-FROM ubuntu:noble AS build
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN mkdir -p /app && apt update && apt install -y build-essential \
-    automake \
-    cmake \
-    curl \
-    libzmq3-dev \
-    liblua5.2-dev \
-    libluajit-5.1-dev \
-    libconfig-dev \
-    libarchive-dev \
-    libbtrfsutil-dev \
-    libjson-c-dev \
-    libyaml-dev \
-    zlib1g-dev \
-    git \
-    uuid \
-    uuid-dev \
-    liblzo2-dev \
-    libsystemd-dev \
-    libsystemd0 \
-    check \
-    librsync2 \
-    librsync-dev \
-    libext2fs-dev \
-    liburiparser-dev \
-    doxygen \
-    graphviz \
-    autoconf-archive \
-    linux-headers-generic \
-    libmbedtls-dev \
-    libcmocka-dev \
-    libfdisk-dev \
-    libwebsockets-dev \
-    libgpiod-dev \
-    libcurl4-openssl-dev \
-    libpci-dev \
-    gawk \
-    cpio \
-    meson \
-    ninja-build \
-    libzstd-dev \
-    wget \
-    python3 \
-    libebgenv-dev \
-    libmtd-dev \
-    libubi-dev \
-    libubootenv-dev \
-    libzck-dev
+FROM alpine:3.22 AS build
 
 WORKDIR /app
 
-RUN git clone https://github.com/sbabic/swupdate && cd swupdate && git reset --hard cad85ea38ccd53bb5174c2f5fa3fb31a8d469a39
+RUN apk add --no-cache alpine-sdk python3 cmake zlib-dev linux-headers bsd-compat-headers yaml-dev json-c-dev curl-dev libconfig-dev \
+    libarchive-dev openssl-dev mtd-utils-dev xz-dev zstd-dev zeromq-dev libwebsockets-dev uriparser-dev lua5.2-dev
+
+RUN ln -s /usr/lib/lua5.2/liblua.so /usr/lib/liblua.so
+
+RUN git clone https://github.com/sbabic/libubootenv && cd libubootenv && git reset --hard 5e6d8b6318be809ac5a8989756ade45ece88ca7e && \
+    mkdir -p build && cd build && cmake .. && make && make install
+
+RUN git clone https://github.com/sbabic/swupdate && cd swupdate && git reset --hard cad85ea38ccd53bb5174c2f5fa3fb31a8d469a39 && \
+    cd scripts/basic && gcc fixdep.c -o fixdep
 
 COPY config /app/swupdate/.config
 
-RUN cd swupdate/scripts/basic && gcc fixdep.c -o fixdep
+RUN cd /app/swupdate && make
 
-RUN cd swupdate && make
+FROM alpine:3.22 AS image
 
-FROM ubuntu:noble AS image
+RUN apk add --no-cache yaml json-c lua5.2-libs libcurl libconfig libarchive mtd-utils xz zstd zeromq libwebsockets uriparser \
+    supervisor openssl bash
 
-ENV DEBIAN_FRONTEND=noninteractive
+COPY --from=build /usr/local/lib/libubootenv.so.0.3.6 /usr/local/lib/libubootenv.so.0
 
-# Install required packages
-RUN apt update && apt install -y libubootenv0.1 libjson-c5 liblua5.2-0 libcurl4 libconfig9 libarchive13 libzmq5 liburiparser1 libwebsockets19t64 supervisor \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN mkdir -p /var/log/swupdate /var/log/myscript /etc/supervisor/conf.d
+RUN mkdir -p /var/log/swupdate /var/log/myscript /var/log/supervisor
 COPY --from=build /app/swupdate/swupdate /usr/bin/swupdate
 COPY swupdate.cfg /etc/swupdate.cfg
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY supervisord.conf /etc/supervisord.conf
 COPY myscript.py /usr/local/bin/myscript.py
 COPY hwrevision /etc/hwrevision
 COPY sw-versions /etc/sw-versions
