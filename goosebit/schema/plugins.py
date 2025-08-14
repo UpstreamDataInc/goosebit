@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Awaitable, Callable
+from typing import Any, Awaitable, Callable, Type
 
 from fastapi import APIRouter
 from fastapi.requests import Request
@@ -33,6 +33,7 @@ class PluginSchema(BaseModel):
     name: str = Field(
         default_factory=get_module_name
     )  # get the name of the package this was initialized in (plugin package)
+    middleware: Type[Any] | None = None  # ASGI middleware class
     router: APIRouter | None = None
     db_model_path: str | None = None
     static_files: StaticFiles | None = None

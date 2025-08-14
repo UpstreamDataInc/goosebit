@@ -1,0 +1,20 @@
+[project]
+name = "goosebit-forwarded-header"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Ezra Buehler", email = "ezra.buehler@husqvarnagroup.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dependencies = ["goosebit"]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project.entry-points.'goosebit.plugins']
+goosebit_forwarded_header = "goosebit_forwarded_header"
+
+[tool.poetry.dependencies]
+goosebit = {develop = true}

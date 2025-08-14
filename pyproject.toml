@@ -53,6 +53,9 @@ pytest_httpserver = "^1.1.0"
 [tool.poetry.group.goosebit_simple_stats.dependencies]
 goosebit-simple-stats = {path = "plugins/goosebit_simple_stats", develop = true}
 
+[tool.poetry.group.goosebit_forwarded_header.dependencies]
+goosebit-forwarded-header = {path = "plugins/goosebit_forwarded_header", develop = true}
+
 [project.scripts]
 generate-sample-data = "sample_data:main"
 
