@@ -59,7 +59,6 @@ test_*.py
 
 # Development files
 .pre-commit-config.yaml
-docker/
 artifacts/tmp/
 .mypy_cache/
 
