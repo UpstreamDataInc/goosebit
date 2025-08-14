@@ -3,6 +3,7 @@ volumes:
 
 services:
   postgres-dev:
+    container_name: goosebit-postgres-dev
     image: postgres:16.3
     environment:
       POSTGRES_USER: db_user
@@ -18,6 +19,7 @@ services:
       - "5432:5432"
 
   goosebit-dev:
+    container_name: goosebit-dev
     build:
       context: ..
       dockerfile: docker/dev.dockerfile

@@ -167,3 +167,28 @@ The structure of gooseBit is as follows:
 - `storage`: Storage for software artifacts.
 - `telemetry`: Telemetry data handlers.
 - `routes`: Routes for a giving endpoint, including the router.
+
+## Development with Docker (and PostgreSQL)
+
+### Running the Containers
+
+```bash
+docker compose -f docker/docker-compose-dev.yml up --build
+```
+
+### Applying the Migrations
+
+```bash
+docker exec goosebit-dev python -m aerich upgrade
+```
+
+### Using the Interactive Debugger
+
+Place `breakpoint()` before the code you want to debug. The server will reload automatically.
+Then, connect to remote PDB (when the breakpoint has been hit):
+
+```bash
+telnet localhost 4444
+```
+
+To exit the debugger, press `Ctrl + ]` and then `q`.
