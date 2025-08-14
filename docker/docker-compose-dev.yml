@@ -1,0 +1,36 @@
+volumes:
+  db:
+
+services:
+  postgres-dev:
+    image: postgres:16.3
+    environment:
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: db_pw
+      POSTGRES_DB: goosebit
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U db_user -d goosebit
+      interval: 4s
+      timeout: 2s
+    ports:
+      - "5432:5432"
+
+  goosebit-dev:
+    build:
+      context: ..
+      dockerfile: docker/dev.dockerfile
+    volumes:
+      - ..:/src
+    working_dir: /src
+    environment:
+      GOOSEBIT_DB_URI: postgres://db_user:db_pw@postgres-dev:5432/goosebit
+      GOOSEBIT_ARTIFACTS_DIR: /artifacts
+      PYTHONBREAKPOINT: remote_pdb.set_trace
+      REMOTE_PDB_HOST: 0.0.0.0
+      REMOTE_PDB_PORT: 4444
+    ports:
+      - "60053:60053"
+      - "4444:4444"
+    command: sh -c "pip install -e . && uvicorn --host 0.0.0.0 --port 60053 --reload goosebit:app"

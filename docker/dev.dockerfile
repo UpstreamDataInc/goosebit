@@ -8,6 +8,7 @@ RUN addgroup -g 1000 goosebit && \
     chown goosebit:goosebit /artifacts && \
     pip install --no-cache-dir \
         gunicorn \
+        remote-pdb \
         /tmp/src[postgresql] && \
     rm -rf /tmp/src
 
