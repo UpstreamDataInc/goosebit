@@ -5,7 +5,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from e2e.utils import auth_token, compose_down, compose_up_build, wait_for_service
+from tests.e2e.utils import auth_token, compose_down, compose_up_build, wait_for_service
 
 BASE_URL = os.getenv("E2E_BASE_URL", "http://localhost:60053")
 AUTH_SERVICE_BASE_URL = os.getenv("AUTH_SERVICE_BASE_URL", "http://localhost:8000")

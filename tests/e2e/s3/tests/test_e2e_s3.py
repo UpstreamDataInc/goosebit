@@ -8,7 +8,7 @@ import httpx
 import pytest
 from botocore.exceptions import ClientError
 
-from e2e.utils import auth_token, compose_down, compose_up_build, wait_for_service
+from tests.e2e.utils import auth_token, compose_down, compose_up_build, wait_for_service
 
 BASE_URL = os.getenv("E2E_BASE_URL", "http://localhost:60053")
 MINIO_URL = os.getenv("E2E_MINIO_URL", "http://localhost:9000")

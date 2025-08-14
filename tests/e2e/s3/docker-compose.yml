@@ -1,46 +1,43 @@
 services:
-  authserver:
-    container_name: authserver
-    build:
-      context: ../docker/auth_server
-      dockerfile: Dockerfile
+  minio:
+    image: minio/minio:latest
+    container_name: minio
     ports:
-      - "8000:8000"
+      - "9000:9000"
+      - "9001:9001"
     environment:
-      - AUTH_TOKEN=3edbb7d0ef83daa4fa688620512204cb # gitleaks:allow
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 3s
       timeout: 5s
       retries: 3
-
   goosebit:
     container_name: goosebit
     build:
-      context: ../..
-      dockerfile: e2e/docker/goosebit/Dockerfile
+      context: ../../..
+      dockerfile: tests/e2e/docker/goosebit/Dockerfile
     ports:
       - "60053:60053"
     environment:
       - GOOSEBIT_DATABASE_URL=sqlite:///app/db/db.sqlite3
-    volumes:
-      - ../docker/goosebit/goosebit-external-auth.yaml:/app/goosebit.yaml:ro
     depends_on:
-      authserver:
+      minio:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:60053"]
       interval: 3s
       timeout: 5s
       retries: 3
-
   swupdate:
     container_name: swupdate
     build:
       context: ../docker/swupdate
       dockerfile: Dockerfile
-    environment:
-      - AUTH_TOKEN=3edbb7d0ef83daa4fa688620512204cb # gitleaks:allow
+    ports:
+      - "8000:8000"
     depends_on:
       goosebit:
         condition: service_healthy

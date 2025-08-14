@@ -30,4 +30,4 @@ jobs:
         run: poetry install --with tests
 
       - name: Run tests
-        run: poetry run pytest -v e2e/
+        run: poetry run pytest -v tests/e2e/
