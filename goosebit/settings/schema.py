@@ -72,7 +72,7 @@ class StorageSettings(BaseModel):
 
 
 class GooseBitSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="GOOSEBIT_", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="GOOSEBIT_", extra="ignore", env_nested_delimiter="__")
 
     port: int = 60053  # GOOSE
     tenant: str = "DEFAULT"
