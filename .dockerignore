@@ -52,6 +52,7 @@ mkdocs.yml
 
 # Tests
 tests/
+!tests/e2e/docker/
 conftest.py
 test_*.py
 *_test.py

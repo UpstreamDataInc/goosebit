@@ -13,12 +13,11 @@ services:
       interval: 3s
       timeout: 5s
       retries: 3
-
   goosebit:
     container_name: goosebit
     build:
-      context: ../..
-      dockerfile: e2e/docker/goosebit/Dockerfile
+      context: ../../..
+      dockerfile: tests/e2e/docker/goosebit/Dockerfile
     ports:
       - "60053:60053"
     environment:
@@ -33,14 +32,13 @@ services:
       interval: 3s
       timeout: 5s
       retries: 3
-
   swupdate:
     container_name: swupdate
     build:
       context: ../docker/swupdate
       dockerfile: Dockerfile
     environment:
-      - AUTH_TOKEN=fffffffffffffffff # gitleaks:allow
+      - AUTH_TOKEN=3edbb7d0ef83daa4fa688620512204cb # gitleaks:allow
     depends_on:
       goosebit:
         condition: service_healthy
