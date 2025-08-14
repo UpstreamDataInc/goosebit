@@ -129,10 +129,22 @@ poetry run pre-commit run --all-files
 
 ### Testing
 
-Tests are implemented using pytest. To run all tests
+Tests are implemented using pytest. You can run all the tests with:
 
 ```bash
 poetry run pytest
+```
+
+To run only the unit tests:
+
+```bash
+poetry run pytest tests/unit
+```
+
+To run only the end-to-end tests:
+
+```bash
+poetry run pytest tests/e2e
 ```
 
 ### Structure
