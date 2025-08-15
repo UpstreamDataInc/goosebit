@@ -23,6 +23,11 @@ services:
       GOOSEBIT_SECRET_KEY: 1a7090da4fbe9c72f888a4772302eac3
       GOOSEBIT_ARTIFACTS_DIR: /artifacts
       FORWARDED_ALLOW_IPS: "*"
+      GOOSEBIT_LOGGING__VERSION: 1
+      GOOSEBIT_LOGGING__ROOT__LEVEL: DEBUG
+      GOOSEBIT_LOGGING__HANDLERS__CONSOLE__LEVEL: DEBUG
+      GOOSEBIT_LOGGING__HANDLERS__CONSOLE__CLASS: logging.StreamHandler
+      GOOSEBIT_LOGGING__ROOT__HANDLERS: '["console"]'
     volumes:
       - artifacts:/artifacts
     depends_on:
