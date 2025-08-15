@@ -8,27 +8,34 @@
 
 A simplistic, opinionated remote update server implementing hawkBit™'s [DDI API](https://eclipse.dev/hawkbit/apis/ddi_api/).
 
-## Quick Start
+## Deployment
 
-### Installation
+### Docker Compose Demo
 
-1. Install dependencies using [Poetry](https://python-poetry.org/):
+The Docker Compose demo [docker/demo/docker-compose.yml] may serve as inspiration for a containerized (cloud) deployment.
+It uses PostgreSQL as the database and NGINX as a reverse proxy.
 
-    ```txt
-    poetry install
-    ```
+> [!WARNING]
+> Do not use the demo (as-is) in production!
 
-2. Create the database:
+Make sure you have [Docker](https://www.docker.com/get-started/) (and Docker Compose) installed.
+Then run:
 
-    ```txt
-    poetry run aerich upgrade
-    ```
+### Configuration
 
-3. Launch gooseBit:
+gooseBit can be configured with a YAML configuration file or by setting environment variables.
+For the different options an their defaults, see [goosebit.yaml].
+The environment variable corresponding to e.g. the `artifacts_dir` setting in YAML would be `GOOSEBIT_ARTIFACTS_DIR`.
 
-    ```txt
-    python main.py
-    ```
+[goosebit.yaml]: https://github.com/UpstreamDataInc/goosebit/blob/master/goosebit.yaml
+
+```txt
+docker compose -f docker/demo/docker-compose.yml up
+```
+
+Visit gooseBit at: https://localhost
+
+[docker/demo/docker-compose.yml]: https://github.com/UpstreamDataInc/goosebit/blob/master/docker/docker-compose-dev.yml
 
 ## Assumptions
 
@@ -73,23 +80,47 @@ Devices can be pinned to their current software version, preventing any updates 
 
 While updates are in progress, gooseBit captures real-time logs, which are accessible through the device repository.
 
-## Development
+## Development with Poetry
 
-### Database
+### Initial Setup
 
-Create or upgrade database
+Install Poetry as described [here](https://python-poetry.org/docs/#installation).
+
+Then, to install gooseBit's dependencies, run:
+
+```txt
+poetry install
+```
+
+Initialize the database:
 
 ```txt
 poetry run aerich upgrade
 ```
 
-After a model change create the migration
+Launch gooseBit:
+
+```txt
+poetry run python -m goosebit
+```
+
+The service is now available at: http://localhost:60053
+
+### Database
+
+Initialize or migrate database:
+
+```txt
+poetry run aerich upgrade
+```
+
+After a model change create the migration:
 
 ```txt
 poetry run aerich migrate
 ```
 
-To seed some sample data (attention: drops all current data) use
+To seed some sample data (attention: drops all current data) use:
 
 ```txt
 poetry run generate-sample-data
