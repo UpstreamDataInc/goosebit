@@ -4,6 +4,7 @@ volumes:
 
 services:
   postgres:
+    container_name: goosebit-demo-postgres
     image: postgres:16.3
     environment:
       POSTGRES_USER: db_user
@@ -17,6 +18,7 @@ services:
       timeout: 2s
 
   goosebit:
+    container_name: goosebit-demo
     image: upstreamdata/goosebit
     environment:
       GOOSEBIT_DB_URI: postgres://db_user:db_pw@postgres:5432/goosebit
@@ -35,6 +37,7 @@ services:
         condition: service_healthy
 
   nginx:
+    container_name: goosebit-demo-nginx
     image: nginx:1.27.0-alpine
     ports:
       - "443:443"
