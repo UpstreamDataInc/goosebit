@@ -8,27 +8,58 @@
 
 A simplistic, opinionated remote update server implementing hawkBit™'s [DDI API](https://eclipse.dev/hawkbit/apis/ddi_api/).
 
-## Quick Start
+## Deployment
 
-### Installation
+### Docker Compose Demo
 
-1. Install dependencies using [Poetry](https://python-poetry.org/):
+The Docker Compose demo [docker/demo/docker-compose.yml] may serve as inspiration for a containerized (cloud) deployment.
+It uses PostgreSQL as the database and NGINX as a reverse proxy.
 
-    ```txt
-    poetry install
-    ```
+> [!WARNING]
+> Do not use the demo (as-is) in production!
 
-2. Create the database:
+Make sure you have [Docker](https://www.docker.com/get-started/) (and Docker Compose) installed.
+Then run:
 
-    ```txt
-    poetry run aerich upgrade
-    ```
+```txt
+docker compose -f docker/demo/docker-compose.yml up
+```
 
-3. Launch gooseBit:
+Visit gooseBit at: https://localhost
 
-    ```txt
-    python main.py
-    ```
+[docker/demo/docker-compose.yml]: https://github.com/UpstreamDataInc/goosebit/blob/master/docker/docker-compose-dev.yml
+
+### Configuration
+
+gooseBit can be configured through a configuration file (`/etc/goosebit.yaml`) or by setting environment variables.
+For the available options and their defaults, see [goosebit.yaml].
+The environment variable corresponding to e.g. the `poll_time` YAML setting would be `GOOSEBIT_POLL_TIME`.
+Environment variables for nested settings are constructed using `__` as the separator:
+
+```txt
+GOOSEBIT_DEVICE_AUTH__ENABLE=true
+```
+
+Alternatively, a JSON string can be assigned:
+
+```txt
+GOOSEBIT_DEVICE_AUTH='{"enable": true}'
+```
+
+[goosebit.yaml]: https://github.com/UpstreamDataInc/goosebit/blob/master/goosebit.yaml
+
+### Database
+
+By default, SQLite is used as the database. For more sophisticated setups, PostgreSQL is supported.
+To use PostgreSQL, set `db_uri` or the `GOSSEBIT_DB_URI` environment variable to something like:
+
+```txt
+postgres://user:password@host:5432/db_name
+```
+
+### Artifact Storage
+
+The software packages managed by gooseBit are either stored on the local filesystem (`artifacts_dir` setting) or an S3-compatible object storage.
 
 ## Assumptions
 
@@ -73,23 +104,47 @@ Devices can be pinned to their current software version, preventing any updates 
 
 While updates are in progress, gooseBit captures real-time logs, which are accessible through the device repository.
 
-## Development
+## Development with Poetry
 
-### Database
+### Initial Setup
 
-Create or upgrade database
+Install Poetry as described [here](https://python-poetry.org/docs/#installation).
+
+Then, to install gooseBit's dependencies, run:
+
+```txt
+poetry install
+```
+
+Initialize the database:
 
 ```txt
 poetry run aerich upgrade
 ```
 
-After a model change create the migration
+Launch gooseBit:
+
+```txt
+poetry run python -m goosebit
+```
+
+The service is now available at: http://localhost:60053
+
+### Database
+
+Initialize or migrate database:
+
+```txt
+poetry run aerich upgrade
+```
+
+After a model change create the migration:
 
 ```txt
 poetry run aerich migrate
 ```
 
-To seed some sample data (attention: drops all current data) use
+To seed some sample data (attention: drops all current data) use:
 
 ```txt
 poetry run generate-sample-data
