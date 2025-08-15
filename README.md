@@ -177,11 +177,13 @@ docker exec goosebit-dev python -m aerich upgrade
 
 ### Using the Interactive Debugger
 
+You might need [rlwrap](https://github.com/hanslub42/rlwrap) to fix readline support.
+
 Place `breakpoint()` before the code you want to debug. The server will reload automatically.
 Then, connect to remote PDB (when the breakpoint has been hit):
 
 ```txt
-telnet localhost 4444
+rlwrap telnet localhost 4444
 ```
 
 To exit the debugger, press `Ctrl + ]` and then `q`.
