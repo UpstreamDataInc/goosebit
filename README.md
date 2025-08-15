@@ -14,19 +14,19 @@ A simplistic, opinionated remote update server implementing hawkBit™'s [DDI AP
 
 1. Install dependencies using [Poetry](https://python-poetry.org/):
 
-    ```bash
+    ```txt
     poetry install
     ```
 
 2. Create the database:
 
-    ```bash
+    ```txt
     poetry run aerich upgrade
     ```
 
 3. Launch gooseBit:
 
-    ```bash
+    ```txt
     python main.py
     ```
 
@@ -79,19 +79,19 @@ While updates are in progress, gooseBit captures real-time logs, which are acces
 
 Create or upgrade database
 
-```bash
+```txt
 poetry run aerich upgrade
 ```
 
 After a model change create the migration
 
-```bash
+```txt
 poetry run aerich migrate
 ```
 
 To seed some sample data (attention: drops all current data) use
 
-```bash
+```txt
 poetry run generate-sample-data
 ```
 
@@ -110,13 +110,13 @@ Code is linted using different tools as well
 
 Best to have pre-commit install git hooks that run all those tools before a commit:
 
-```bash
+```txt
 poetry run pre-commit install
 ```
 
 To manually apply the hooks to all files use:
 
-```bash
+```txt
 poetry run pre-commit run --all-files
 ```
 
@@ -124,19 +124,19 @@ poetry run pre-commit run --all-files
 
 Tests are implemented using pytest. You can run all the tests with:
 
-```bash
+```txt
 poetry run pytest
 ```
 
 To run only the unit tests:
 
-```bash
+```txt
 poetry run pytest tests/unit
 ```
 
 To run only the end-to-end tests:
 
-```bash
+```txt
 poetry run pytest tests/e2e
 ```
 
@@ -165,13 +165,13 @@ The structure of gooseBit is as follows:
 
 ### Running the Containers
 
-```bash
+```txt
 docker compose -f docker/docker-compose-dev.yml up --build
 ```
 
 ### Applying the Migrations
 
-```bash
+```txt
 docker exec goosebit-dev python -m aerich upgrade
 ```
 
@@ -180,7 +180,7 @@ docker exec goosebit-dev python -m aerich upgrade
 Place `breakpoint()` before the code you want to debug. The server will reload automatically.
 Then, connect to remote PDB (when the breakpoint has been hit):
 
-```bash
+```txt
 telnet localhost 4444
 ```
 
