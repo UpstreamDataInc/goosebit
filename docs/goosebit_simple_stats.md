@@ -1,0 +1,1 @@
+../plugins/goosebit_simple_stats/README.md
