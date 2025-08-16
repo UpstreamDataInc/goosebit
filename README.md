@@ -140,27 +140,6 @@ To run only the end-to-end tests:
 poetry run pytest tests/e2e
 ```
 
-### Structure
-
-The structure of gooseBit is as follows:
-
-- `api`: Files for the API.
-- `ui`: Files for the UI.
-    - `bff`: Backend for frontend API.
-    - `static`: Static files.
-    - `templates`: Jinja2 formatted templates.
-    - `nav`: Navbar handler.
-- `updater`: DDI API handler and device update manager.
-- `updates`: SWUpdate file parsing.
-- `auth`: Authentication functions and permission handling.
-- `models`: Database models.
-- `db`: Database config and initialization.
-- `schema`: Pydantic models used for API type hinting.
-- `settings`: Settings loader and handler.
-- `storage`: Storage for software artifacts.
-- `telemetry`: Telemetry data handlers.
-- `routes`: Routes for a giving endpoint, including the router.
-
 ## Development with Docker (and PostgreSQL)
 
 ### Running the Containers
@@ -187,3 +166,26 @@ rlwrap telnet localhost 4444
 ```
 
 To exit the debugger, press `Ctrl + ]` and then `q`.
+
+## Architecture
+
+### Structure
+
+The structure of gooseBit is as follows:
+
+- `api`: Files for the API.
+- `ui`: Files for the UI.
+    - `bff`: Backend for frontend API.
+    - `static`: Static files.
+    - `templates`: Jinja2 formatted templates.
+    - `nav`: Navbar handler.
+- `updater`: DDI API handler and device update manager.
+- `updates`: SWUpdate file parsing.
+- `auth`: Authentication functions and permission handling.
+- `models`: Database models.
+- `db`: Database config and initialization.
+- `schema`: Pydantic models used for API type hinting.
+- `settings`: Settings loader and handler.
+- `storage`: Storage for software artifacts.
+- `telemetry`: Telemetry data handlers.
+- `routes`: Routes for a giving endpoint, including the router.
