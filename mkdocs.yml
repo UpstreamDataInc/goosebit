@@ -25,5 +25,5 @@ markdown_extensions:
   - pymdownx.superfences
 nav:
   - Home: index.md
-  - Quick Start: quick_start.md
-  - Development: development.md
+  - Simple Stats Plugin: goosebit_simple_stats.md
+  - Forwarded HTTP Header Plugin: goosebit_forwarded_header.md

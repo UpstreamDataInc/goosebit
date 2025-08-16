@@ -1,6 +1,6 @@
 # gooseBit
 
-<img src="docs/img/goosebit-logo.png" style="width: 100px; height: 100px; display: block;">
+<img src="https://upstreamdatainc.github.io/goosebit/img/goosebit-logo.png" style="width: 100px; height: 100px; display: block;">
 
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/UpstreamDataInc/goosebit/badge)](https://scorecard.dev/viewer/?uri=github.com/UpstreamDataInc/goosebit)
 
