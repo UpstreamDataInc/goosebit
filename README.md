@@ -8,34 +8,34 @@
 
 A simplistic, opinionated remote update server implementing hawkBit™'s [DDI API](https://eclipse.dev/hawkbit/apis/ddi_api/).
 
-## Quick Start
+## Deployment
 
-### Installation
+### Docker Compose Demo
 
-1. Install dependencies using [Poetry](https://python-poetry.org/):
+The Docker Compose demo [docker/demo/docker-compose.yml] may serve as inspiration for a containerized (cloud) deployment.
+It uses PostgreSQL as the database and NGINX as a reverse proxy.
 
-    ```bash
-    poetry install
-    ```
+> [!WARNING]
+> Do not use the demo (as-is) in production!
 
-2. Create the database:
+Make sure you have [Docker](https://www.docker.com/get-started/) (and Docker Compose) installed.
+Then run:
 
-    ```bash
-    poetry run aerich upgrade
-    ```
+### Configuration
 
-3. Launch gooseBit:
+gooseBit can be configured with a YAML configuration file or by setting environment variables.
+For the different options an their defaults, see [goosebit.yaml].
+The environment variable corresponding to e.g. the `artifacts_dir` setting in YAML would be `GOOSEBIT_ARTIFACTS_DIR`.
 
-    ```bash
-    python main.py
-    ```
+[goosebit.yaml]: https://github.com/UpstreamDataInc/goosebit/blob/master/goosebit.yaml
 
-### Initial Configuration
+```txt
+docker compose -f docker/demo/docker-compose.yml up
+```
 
-Before running gooseBit for the first time, update the default credentials in `settings.yaml`. The default login for testing purposes is:
+Visit gooseBit at: https://localhost
 
-- **Username:** `admin@goosebit.local`
-- **Password:** `admin`
+[docker/demo/docker-compose.yml]: https://github.com/UpstreamDataInc/goosebit/blob/master/docker/docker-compose-dev.yml
 
 ## Assumptions
 
@@ -80,25 +80,49 @@ Devices can be pinned to their current software version, preventing any updates 
 
 While updates are in progress, gooseBit captures real-time logs, which are accessible through the device repository.
 
-## Development
+## Development with Poetry
 
-### Database
+### Initial Setup
 
-Create or upgrade database
+Install Poetry as described [here](https://python-poetry.org/docs/#installation).
 
-```bash
+Then, to install gooseBit's dependencies, run:
+
+```txt
+poetry install
+```
+
+Initialize the database:
+
+```txt
 poetry run aerich upgrade
 ```
 
-After a model change create the migration
+Launch gooseBit:
 
-```bash
+```txt
+poetry run python -m goosebit
+```
+
+The service is now available at: http://localhost:60053
+
+### Database
+
+Initialize or migrate database:
+
+```txt
+poetry run aerich upgrade
+```
+
+After a model change create the migration:
+
+```txt
 poetry run aerich migrate
 ```
 
-To seed some sample data (attention: drops all current data) use
+To seed some sample data (attention: drops all current data) use:
 
-```bash
+```txt
 poetry run generate-sample-data
 ```
 
@@ -117,13 +141,13 @@ Code is linted using different tools as well
 
 Best to have pre-commit install git hooks that run all those tools before a commit:
 
-```bash
+```txt
 poetry run pre-commit install
 ```
 
 To manually apply the hooks to all files use:
 
-```bash
+```txt
 poetry run pre-commit run --all-files
 ```
 
@@ -131,21 +155,50 @@ poetry run pre-commit run --all-files
 
 Tests are implemented using pytest. You can run all the tests with:
 
-```bash
+```txt
 poetry run pytest
 ```
 
 To run only the unit tests:
 
-```bash
+```txt
 poetry run pytest tests/unit
 ```
 
 To run only the end-to-end tests:
 
-```bash
+```txt
 poetry run pytest tests/e2e
 ```
+
+## Development with Docker (and PostgreSQL)
+
+### Running the Containers
+
+```txt
+docker compose -f docker/docker-compose-dev.yml up --build
+```
+
+### Applying the Migrations
+
+```txt
+docker exec goosebit-dev python -m aerich upgrade
+```
+
+### Using the Interactive Debugger
+
+You might need [rlwrap](https://github.com/hanslub42/rlwrap) to fix readline support.
+
+Place `breakpoint()` before the code you want to debug. The server will reload automatically.
+Then, connect to remote PDB (when the breakpoint has been hit):
+
+```txt
+rlwrap telnet localhost 4444
+```
+
+To exit the debugger, press `Ctrl + ]` and then `q`.
+
+## Architecture
 
 ### Structure
 
@@ -167,28 +220,3 @@ The structure of gooseBit is as follows:
 - `storage`: Storage for software artifacts.
 - `telemetry`: Telemetry data handlers.
 - `routes`: Routes for a giving endpoint, including the router.
-
-## Development with Docker (and PostgreSQL)
-
-### Running the Containers
-
-```bash
-docker compose -f docker/docker-compose-dev.yml up --build
-```
-
-### Applying the Migrations
-
-```bash
-docker exec goosebit-dev python -m aerich upgrade
-```
-
-### Using the Interactive Debugger
-
-Place `breakpoint()` before the code you want to debug. The server will reload automatically.
-Then, connect to remote PDB (when the breakpoint has been hit):
-
-```bash
-telnet localhost 4444
-```
-
-To exit the debugger, press `Ctrl + ]` and then `q`.
