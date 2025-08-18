@@ -53,8 +53,8 @@ class S3StorageBackend(StorageProtocol):
         key = self._extract_key_from_uri(uri)
 
         try:
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(None, self.s3_client.get_object, self.bucket, key)
+            loop = asyncio.get_running_loop()
+            response = await loop.run_in_executor(None, lambda: self.s3_client.get_object(Bucket=self.bucket, Key=key))
 
             body = response["Body"]
             try:
@@ -70,27 +70,11 @@ class S3StorageBackend(StorageProtocol):
             raise ValueError(f"S3 download failed: {e}")
 
     async def get_download_url(self, uri: str) -> str:
-        try:
-            key = self._extract_key_from_uri(uri)
-
-            try:
-                loop = asyncio.get_event_loop()
-                return await loop.run_in_executor(
-                    None,
-                    self.s3_client.generate_presigned_url,
-                    "get_object",
-                    {"Bucket": self.bucket, "Key": key},
-                    3600,  # 1 hour expiration
-                )
-            except ClientError as e:
-                raise ValueError(f"Failed to generate presigned URL: {e}")
-        except ValueError:
-            # fallback for remote URL files
-            parsed = urlparse(uri)
-            if parsed.scheme in ("http", "https"):
-                return uri
-            else:
-                raise ValueError(f"Unsupported URI scheme '{parsed.scheme}' for S3 backend: {uri}")
+        parsed = urlparse(uri)
+        if parsed.scheme in ("http", "https"):
+            return uri
+        else:
+            raise ValueError(f"Fallback to streaming as S3 service might not be exposed externally: {uri}")
 
     def get_temp_dir(self) -> Path:
         import tempfile
