@@ -23,7 +23,7 @@ async def download_file(_: Request, file_id: int):
     try:
         url = await storage.get_download_url(software.uri)
         return RedirectResponse(url=url)
-    except Exception:
+    except ValueError:
         # Fallback to streaming if redirect fails.
         file_stream = storage.get_file_stream(software.uri)
         return StreamingResponse(
