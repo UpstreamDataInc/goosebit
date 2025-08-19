@@ -217,3 +217,80 @@ def test_e2e_device_update_rollout_to_version(ensure_services_ready):
             f"Device {dev_id} did not finish update to {target_version}. "
             f"initial={initial_version}, observed={observed_version}"
         )
+
+
+def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready):
+    with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=20.0) as client:
+        token = auth_token(client)
+
+        # Upload a fresh artifact with different version than previous one
+        # so it's not referenced by any rollout
+        swu_path = Path(__file__).resolve().parents[1] / "update-v1.1.0.swu"
+        assert swu_path.exists(), f"Missing test artifact: {swu_path}"
+        with swu_path.open("rb") as f:
+            files = {"file": (swu_path.name, f, "application/octet-stream")}
+            up_resp = client.post("/api/v1/software", files=files, headers={"Authorization": f"Bearer {token}"})
+        assert up_resp.status_code == 200, up_resp.text
+        sw_id = up_resp.json()["id"]
+
+        # Find the uploaded item and its S3 key
+        list_resp = client.get("/api/v1/software", headers={"Authorization": f"Bearer {token}"})
+        assert list_resp.status_code == 200
+        items = list_resp.json().get("software", [])
+        sw = next(x for x in items if x["id"] == sw_id)
+        sw_name = sw.get("name")
+        assert (
+            sw_name and isinstance(sw_name, str) and sw_name.startswith(f"s3://{MINIO_BUCKET}/")
+        ), f"Artifact is not stored on S3/minio as expected, name={sw_name}"
+        key = sw_name.replace(f"s3://{MINIO_BUCKET}/", "")
+
+        s3c = boto3.client(
+            "s3",
+            endpoint_url=MINIO_URL,
+            aws_access_key_id=MINIO_ACCESS_KEY,
+            aws_secret_access_key=MINIO_SECRET_KEY,
+        )
+
+        # Sanity: it should exist before delete
+        precheck_deadline = time.time() + 20
+        last_exc = None
+        while time.time() < precheck_deadline:
+            try:
+                s3c.head_object(Bucket=MINIO_BUCKET, Key=key)
+                break
+            except ClientError as e:
+                last_exc = e
+                time.sleep(1.0)
+        else:
+            raise AssertionError(
+                f"Object not found in MinIO before delete bucket={MINIO_BUCKET}, key={key}: {last_exc}"
+            )
+
+        del_resp = client.request(
+            "DELETE",
+            "/api/v1/software",
+            json={"software_ids": [sw_id]},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        if del_resp.status_code != 200:
+            print(f"Delete failed with status {del_resp.status_code}: {del_resp.text}")
+        assert del_resp.status_code == 200, f"Delete failed: {del_resp.status_code} - {del_resp.text}"
+
+        # Poll until object is gone from MinIO
+        deadline = time.time() + 30
+        deleted = False
+        last_exc = None
+        while time.time() < deadline:
+            try:
+                s3c.head_object(Bucket=MINIO_BUCKET, Key=key)
+                # Still exists, wait and retry
+                time.sleep(1.0)
+            except ClientError as e:
+                last_exc = e
+                code = str(e.response.get("Error", {}).get("Code", ""))
+                status = int(e.response.get("ResponseMetadata", {}).get("HTTPStatusCode", 0))
+                if status == 404 or code in ("404", "NotFound", "NoSuchKey"):
+                    deleted = True
+                    break
+                time.sleep(1.0)
+        assert deleted, f"S3 object still present after delete bucket={MINIO_BUCKET}, key={key}. Last error: {last_exc}"
