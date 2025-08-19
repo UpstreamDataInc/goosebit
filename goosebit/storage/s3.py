@@ -92,7 +92,7 @@ class S3StorageBackend(StorageProtocol):
 
         try:
             loop = asyncio.get_event_loop()
-            await loop.run_in_executor(None, self.s3_client.delete_object, self.bucket, key)
+            await loop.run_in_executor(None, lambda: self.s3_client.delete_object(Bucket=self.bucket, Key=key))
             return True
         except ClientError as e:
             raise ValueError(f"S3 delete failed: {e}")
