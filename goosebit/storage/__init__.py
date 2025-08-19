@@ -54,6 +54,9 @@ class GoosebitStorage:
     def get_temp_dir(self) -> Path:
         return self.backend.get_temp_dir()
 
+    async def delete_file(self, uri: str) -> bool:
+        return await self.backend.delete_file(uri)
+
 
 # Init the module-level storage instance
 storage = GoosebitStorage(config)

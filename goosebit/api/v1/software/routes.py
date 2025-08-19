@@ -46,10 +46,11 @@ async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> Stat
         if rollout_count > 0:
             raise HTTPException(409, "Software is referenced by rollout")
 
-        if software.local:
-            path = software.path
-            if await path.exists():
-                await path.unlink()
+        if software.uri:
+            try:
+                await storage.delete_file(software.uri)
+            except ValueError:
+                pass
 
         await software.delete()
         success = True

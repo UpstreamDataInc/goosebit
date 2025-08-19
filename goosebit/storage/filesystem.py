@@ -68,6 +68,18 @@ class FilesystemStorageBackend(StorageProtocol):
         temp_dir.mkdir(parents=True, exist_ok=True)
         return temp_dir
 
+    async def delete_file(self, uri: str) -> bool:
+        parsed = urlparse(uri)
+
+        if parsed.scheme == "file":
+            file_path = self._extract_path_from_uri(uri)
+            if file_path.exists():
+                file_path.unlink()
+                return True
+            return False
+        else:
+            raise ValueError(f"Cannot delete remote file: {uri}")
+
     def _extract_path_from_uri(self, uri: str) -> Path:
         parsed = urlparse(uri)
 

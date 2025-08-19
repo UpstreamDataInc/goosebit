@@ -83,6 +83,20 @@ class S3StorageBackend(StorageProtocol):
         temp_dir.mkdir(parents=True, exist_ok=True)
         return temp_dir
 
+    async def delete_file(self, uri: str) -> bool:
+        parsed = urlparse(uri)
+        if parsed.scheme != "s3":
+            raise ValueError(f"Cannot delete remote file: {uri}")
+
+        key = self._extract_key_from_uri(uri)
+
+        try:
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, self.s3_client.delete_object, self.bucket, key)
+            return True
+        except ClientError as e:
+            raise ValueError(f"S3 delete failed: {e}")
+
     def _extract_key_from_uri(self, uri: str) -> str:
         if not uri.startswith(f"s3://{self.bucket}/"):
             raise ValueError(f"Invalid S3 URI for bucket {self.bucket}: {uri}")
