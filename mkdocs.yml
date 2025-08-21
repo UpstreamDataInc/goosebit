@@ -21,6 +21,8 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Switch to auto mode
+markdown_extensions:
+  - pymdownx.superfences
 nav:
   - Home: index.md
   - Quick Start: quick_start.md
