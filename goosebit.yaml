@@ -49,9 +49,10 @@ poll_time: 00:01:00
 # Defaults to a randomized value. If this value is not set, user sessions will not persist when app restarts.
 #secret_key: my_very_top_secret_key123
 
-# A list of installed plugins that you want to enable in goosebit
+# A list of installed plugins that you want to enable in gooseBit
 #plugins:
 #  - goosebit_simple_stats
+#  - goosebit_forwarded_header
 
 # A required setting in case you want to test the example plugin
 #simple_stats_show:
