@@ -25,10 +25,22 @@ jobs:
         with:
           generate_release_notes: true
 
-      - name: Build using Poetry and publish to PyPI
+      - name: Build goosebit package and push to PyPI
         uses: JRubics/poetry-publish@7100bd02517e9f82452e6247849042f6c74dde04 # v2.0
         with:
           pypi_token: ${{ secrets.PYPI_API_KEY }}
+
+      - name: Build goosebit-simple-stats package and push to PyPI
+        uses: JRubics/poetry-publish@7100bd02517e9f82452e6247849042f6c74dde04 # v2.0
+        with:
+          pypi_token: ${{ secrets.PYPI_API_KEY }}
+          package_directory: "plugins/goosebit_simple_stats"
+
+      - name: Build goosebit-forwarded-header package and push to PyPI
+        uses: JRubics/poetry-publish@7100bd02517e9f82452e6247849042f6c74dde04 # v2.0
+        with:
+          pypi_token: ${{ secrets.PYPI_API_KEY }}
+          package_directory: "plugins/goosebit_forwarded_header"
 
   docker:
     needs: pypi
