@@ -6,7 +6,7 @@ authors = [
     {name = "Brett Rowan", email = "121075405+b-rowan@users.noreply.github.com"}
 ]
 readme = "README.md"
-requires-python = "^3.11"
+requires-python = ">=3.11,<4.0"
 dependencies = [
     "fastapi (>=0.115.10,<0.116.0)",
     "python-multipart (>=0.0.20,<0.0.21)",

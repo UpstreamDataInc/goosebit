@@ -849,6 +849,9 @@ groups = ["goosebit_forwarded_header"]
 files = []
 develop = true
 
+[package.dependencies]
+goosebit = "*"
+
 [package.source]
 type = "directory"
 url = "plugins/goosebit_forwarded_header"
@@ -2651,5 +2654,5 @@ postgresql = ["asyncpg"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = "^3.11"
-content-hash = "57967535a175fbaf65206ecfe4179e24316a30021948b73bce79dd246c06596a"
+python-versions = ">=3.11,<4.0"
+content-hash = "4ded73b574ca01c70a9ae6aad453cc5d326790b9620ef0f1710c8d37b9bed3a7"
