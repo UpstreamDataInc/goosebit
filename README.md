@@ -27,7 +27,7 @@ docker compose -f docker/demo/docker-compose.yml up
 
 Visit gooseBit at: [https://localhost](https://localhost)
 
-[docker/demo/docker-compose.yml]: https://github.com/UpstreamDataInc/goosebit/blob/master/docker/docker-compose-dev.yml
+[docker/demo/docker-compose.yml]: https://github.com/UpstreamDataInc/goosebit/blob/master/docker/demo/docker-compose.yml
 
 ### Configuration
 
