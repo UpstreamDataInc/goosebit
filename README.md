@@ -25,7 +25,7 @@ Then run:
 docker compose -f docker/demo/docker-compose.yml up
 ```
 
-Visit gooseBit at: https://localhost
+Visit gooseBit at: [https://localhost](https://localhost)
 
 [docker/demo/docker-compose.yml]: https://github.com/UpstreamDataInc/goosebit/blob/master/docker/docker-compose-dev.yml
 
@@ -128,7 +128,7 @@ Launch gooseBit:
 poetry run python -m goosebit
 ```
 
-The service is now available at: http://localhost:60053
+The service is now available at: [http://localhost:60053](http://localhost:60053)
 
 ### Database
 
