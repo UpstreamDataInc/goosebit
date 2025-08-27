@@ -26,6 +26,8 @@ jobs:
         with:
           pypi_token: ${{ secrets.PYPI_API_KEY }}
           poetry_publish_options: ${{ github.event_name == 'pull_request' && '--dry-run' || '' }}
+          repository_name: "testpypi"
+          repository_url: "https://test.pypi.org/legacy/"
 
       - name: Build goosebit-simple-stats package and push to PyPI
         uses: JRubics/poetry-publish@7100bd02517e9f82452e6247849042f6c74dde04 # v2.0
@@ -33,6 +35,8 @@ jobs:
           pypi_token: ${{ secrets.PYPI_API_KEY }}
           poetry_publish_options: --skip-existing ${{ github.event_name == 'pull_request' && '--dry-run' || '' }}
           package_directory: plugins/goosebit_simple_stats
+          repository_name: "testpypi"
+          repository_url: "https://test.pypi.org/legacy/"
 
       - name: Build goosebit-forwarded-header package and push to PyPI
         uses: JRubics/poetry-publish@7100bd02517e9f82452e6247849042f6c74dde04 # v2.0
@@ -40,6 +44,8 @@ jobs:
           pypi_token: ${{ secrets.PYPI_API_KEY }}
           poetry_publish_options: --skip-existing ${{ github.event_name == 'pull_request' && '--dry-run' || '' }}
           package_directory: plugins/goosebit_forwarded_header
+          repository_name: "testpypi"
+          repository_url: "https://test.pypi.org/legacy/"
 
   docker:
     needs: pypi
