@@ -4,31 +4,27 @@ A simple example plugin for testing and understanding gooseBit's plugin system.
 
 This plugin sets up a page which shows software count and/or device count.
 
-## Setup
+## Installation
 
-### Installation
+E.g. in Dockerfile, install with pip:
 
-1. Load the plugin into poetry env (in goosebit):
+```txt
+pip install goosebit-simple-stats
+```
 
-    ```txt
-    poetry install --with goosebit_simple_stats
-    ```
+## Configuration
 
-### Configuration
+Enable the plugin in `goosebit.yaml`:
 
-1. Enable the plugin in `goosebit.yaml`:
+```yaml
+plugins:
+  - goosebit_simple_stats
+```
 
-    ```yaml
-    plugins:
-        - goosebit_simple_stats
-    ```
+Configure which data to show:
 
-2. Configure the plugin:
-
-    ```yaml
-    simple_stats_show:
-        - device_count
-        - software_count
-    ```
-
-3. Run gooseBit as normal.
+```yaml
+simple_stats_show:
+  - device_count
+  - software_count
+```
