@@ -2,6 +2,7 @@ useTabs: false
 tabWidth: 4
 overrides:
   - files:
+      - "**/*.md"
       - "**/*.yaml"
       - "**/*.yml"
     options:
