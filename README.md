@@ -230,10 +230,10 @@ The structure of gooseBit is as follows:
 
 - `api`: Files for the API.
 - `ui`: Files for the UI.
-    - `bff`: Backend for frontend API.
-    - `static`: Static files.
-    - `templates`: Jinja2 formatted templates.
-    - `nav`: Navbar handler.
+  - `bff`: Backend for frontend API.
+  - `static`: Static files.
+  - `templates`: Jinja2 formatted templates.
+  - `nav`: Navbar handler.
 - `updater`: DDI API handler and device update manager.
 - `updates`: SWUpdate file parsing.
 - `auth`: Authentication functions and permission handling.
