@@ -6,23 +6,19 @@ support the feature (yet): [uvicorn#2237]
 
 [uvicorn#2237]: https://github.com/encode/uvicorn/issues/2237
 
-## Setup
+## Installation
 
-### Installation
+E.g. in Dockerfile, install with pip:
 
-1. Load the plugin into poetry env (in goosebit):
+```txt
+pip install goosebit-forwarded-header
+```
 
-    ```txt
-    poetry install --with goosebit_forwarded_header
-    ```
+## Configuration
 
-### Configuration
+Enable the plugin in `goosebit.yaml`:
 
-1. Enable the plugin in `goosebit.yaml`:
-
-    ```yaml
-    plugins:
-        - goosebit_forwarded_header
-    ```
-
-2. Run gooseBit as normal.
+```yaml
+plugins:
+  - goosebit_forwarded_header
+```
