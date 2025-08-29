@@ -1,6 +1,7 @@
 name: Release
 
 on:
+  pull_request:
   push:
     tags:
       - "v*.*.*"
@@ -20,27 +21,29 @@ jobs:
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Build goosebit package and push to PyPI
+      - name: Build goosebit package ${{ github.event_name != 'pull_request' && 'and push to PyPI' || '' }}
         uses: JRubics/poetry-publish@7100bd02517e9f82452e6247849042f6c74dde04 # v2.0
         with:
-          pypi_token: ${{ secrets.PYPI_API_KEY }}
+          pypi_token: ${{ github.event_name == 'pull_request' && 'none' || secrets.PYPI_API_KEY }}
+          poetry_publish_options: ${{ github.event_name == 'pull_request' && '--dry-run' || '' }}
 
-      - name: Build goosebit-simple-stats package and push to PyPI
+      - name: Build goosebit-simple-stats package ${{ github.event_name != 'pull_request' && 'and push to PyPI' || '' }}
         uses: JRubics/poetry-publish@7100bd02517e9f82452e6247849042f6c74dde04 # v2.0
         with:
-          pypi_token: ${{ secrets.PYPI_API_KEY }}
-          poetry_publish_options: --skip-existing
+          pypi_token: ${{ github.event_name == 'pull_request' && 'none' || secrets.PYPI_API_KEY }}
+          poetry_publish_options: --skip-existing ${{ github.event_name == 'pull_request' && '--dry-run' || '' }}
           package_directory: plugins/goosebit_simple_stats
 
-      - name: Build goosebit-forwarded-header package and push to PyPI
+      - name: Build goosebit-forwarded-header package ${{ github.event_name != 'pull_request' && 'and push to PyPI' || '' }}
         uses: JRubics/poetry-publish@7100bd02517e9f82452e6247849042f6c74dde04 # v2.0
         with:
-          pypi_token: ${{ secrets.PYPI_API_KEY }}
-          poetry_publish_options: --skip-existing
+          pypi_token: ${{ github.event_name == 'pull_request' && 'none' || secrets.PYPI_API_KEY }}
+          poetry_publish_options: --skip-existing ${{ github.event_name == 'pull_request' && '--dry-run' || '' }}
           package_directory: plugins/goosebit_forwarded_header
 
   docker:
     needs: pypi
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       packages: write
