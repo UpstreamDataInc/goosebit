@@ -8,15 +8,21 @@ support the feature (yet): [uvicorn#2237]
 
 ## Installation
 
-E.g. in Dockerfile, install with pip:
+When using a Docker image, the plugin can be installed as follows:
 
-```txt
-pip install goosebit-forwarded-header
+```dockerfile
+FROM upstreamdata/goosebit
+
+USER root
+
+RUN pip install --no-cache-dir goosebit-forwarded-header
+
+USER goosebit
 ```
 
 ## Configuration
 
-Enable the plugin in `goosebit.yaml`:
+Enable the plugin in `goosebit.yaml` (or set the corresponding environment variable):
 
 ```yaml
 plugins:
