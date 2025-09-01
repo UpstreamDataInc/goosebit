@@ -1,7 +1,7 @@
 [project]
 name = "goosebit-simple-stats"
 version = "0.1.0"
-description = ""
+description = "gooseBit plugin showing some basic statistics"
 authors = [
     {name = "Brett Rowan", email = "121075405+b-rowan@users.noreply.github.com"}
 ]
