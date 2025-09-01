@@ -1,7 +1,7 @@
 [project]
 name = "goosebit-forwarded-header"
 version = "0.1.0"
-description = ""
+description = "gooseBit plugin for Forwarded HTTP header (RFC 7239) support"
 authors = [
     {name = "Ezra Buehler", email = "ezra.buehler@husqvarnagroup.com"}
 ]
