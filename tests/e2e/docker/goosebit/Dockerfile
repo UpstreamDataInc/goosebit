@@ -63,4 +63,5 @@ ENV PYTHONUNBUFFERED=1
 ENV GUNICORN_CMD_ARGS="--workers 1 --enable-stdio-inheritance"
 
 # Default command: run database migrations and start the server
-CMD ["sh", "-c", "poetry run aerich upgrade && gunicorn --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:60053 goosebit:app"]
+SHELL ["/bin/sh", "-c"]
+CMD poetry run aerich upgrade && gunicorn --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:60053 goosebit:app

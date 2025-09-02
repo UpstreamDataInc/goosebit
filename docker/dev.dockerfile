@@ -24,5 +24,6 @@ USER goosebit
 # https://github.com/UpstreamDataInc/goosebit/issues/125
 ENV GUNICORN_CMD_ARGS="--workers 1 --enable-stdio-inheritance"
 
+SHELL ["/bin/sh", "-c"]
 CMD aerich --config /aerich.toml upgrade && \
     gunicorn --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:60053 goosebit:app </dev/null
