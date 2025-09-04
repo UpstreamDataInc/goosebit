@@ -63,7 +63,10 @@ The software packages managed by gooseBit are either stored on the local filesys
 
 ## Assumptions
 
-- Devices use [SWUpdate](https://swupdate.org) for managing software updates.
+- Devices use [SWUpdate](https://swupdate.org) or [RAUC](https://github.com/rauc/rauc) + [RAUC hawkBit Updater](https://github.com/rauc/rauc-hawkbit-updater) for managing software updates.
+- Devices send certain attributes (`sw_version`, `hw_model`, `hw_revision`).
+- Semantic versions are used.
+- With RAUC and multiple hardware revisions, `compatible` in `manifest.raucm` is set to something like `my-board-rev4.2` or `Some Board 2b`.
 
 ## Features
 
@@ -78,7 +81,7 @@ The registry tracks each device's status, including the last online timestamp, i
 
 ### Software Repository
 
-Software packages (`*.swu` files) can be hosted directly on the gooseBit server or on an external server. gooseBit parses the software metadata to determine compatibility with specific hardware models and revisions.
+Software packages (`*.swu`/`*.raucb` files) can be hosted directly on the gooseBit server or on an external server. gooseBit parses the software metadata to determine compatibility with specific hardware models and revisions.
 
 ### Device Update Modes
 
@@ -235,7 +238,7 @@ The structure of gooseBit is as follows:
   - `templates`: Jinja2 formatted templates.
   - `nav`: Navbar handler.
 - `updater`: DDI API handler and device update manager.
-- `updates`: SWUpdate file parsing.
+- `updates`: SWUpdate/RAUC file parsing.
 - `auth`: Authentication functions and permission handling.
 - `models`: Database models.
 - `db`: Database config and initialization.
