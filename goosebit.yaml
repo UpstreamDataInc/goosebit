@@ -10,6 +10,16 @@
 #db_uri: sqlite:///<project root>/db.sqlite3
 #db_ssl_crt: /<project root>/ca-certificate.crt
 
+# Storage settings (default backend is "filesystem")
+#storage:
+#  backend: s3
+#  s3:
+#    bucket: goosebit
+#    region: us-east-1
+#    endpoint_url: http://localhost:9000 # example for self-hosted min.io
+#    access_key_id: minioadmin
+#    secret_access_key: minioadmin
+
 # Path to the directory containing artifact files, default:
 #artifacts_dir: /<project root>/artifacts
 
@@ -89,12 +99,3 @@ logging:
   root:
     level: INFO
     handlers: [console]
-# Storage settings (default backend is filesystem)
-# storage:
-#   backend: s3
-#   s3:
-#     bucket: goosebit
-#     # region: us-east-1
-#     # endpoint_url: http://localhost:9000 # example for self-hosted min.io
-#     access_key_id: minioadmin
-#     secret_access_key: minioadmin
