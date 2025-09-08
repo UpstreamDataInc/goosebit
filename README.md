@@ -64,7 +64,7 @@ The software packages managed by gooseBit are either stored on the local filesys
 ## Assumptions
 
 - Devices use [SWUpdate](https://swupdate.org) or [RAUC](https://rauc.io) + [RAUC hawkBit Updater](https://rauc-hawkbit-updater.readthedocs.io) for managing software updates.
-- Devices send certain attributes (`sw_version`, `hw_model`, `hw_revision`).
+- Devices send certain attributes (`sw_version`, `hw_boardname`, `hw_revision`).
 - Semantic versions are used.
 - With RAUC and multiple hardware revisions, `compatible` in `manifest.raucm` is set to something like `my-board-rev4.2` or `Some Board 2b`.
 
@@ -74,7 +74,7 @@ The software packages managed by gooseBit are either stored on the local filesys
 
 When a device connects to gooseBit for the first time, it is automatically added to the device registry. The server will then request the device's configuration data, including:
 
-- `hw_model` and `hw_revision`: Used to match compatible software.
+- `hw_boardname` and `hw_revision`: Used to match compatible software.
 - `sw_version`: Indicates the currently installed software version.
 
 The registry tracks each device's status, including the last online timestamp, installed software version, update state, and more.
