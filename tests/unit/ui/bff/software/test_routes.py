@@ -8,9 +8,9 @@ async def test_list_software_version_asc(async_client, test_data):
     assert response.status_code == 200
     software = response.json()["data"]
     assert len(software) == 3
-    assert software[0]["version"] == test_data["software_release"].version
-    assert software[1]["version"] == test_data["software_beta"].version
-    assert software[2]["version"] == test_data["software_rc"].version
+    assert software[0]["version"] == test_data["software_beta"].version
+    assert software[1]["version"] == test_data["software_rc"].version
+    assert software[2]["version"] == test_data["software_release"].version
 
 
 @pytest.mark.asyncio
@@ -20,6 +20,6 @@ async def test_list_software_version_desc(async_client, test_data):
     assert response.status_code == 200
     software = response.json()["data"]
     assert len(software) == 3
-    assert software[0]["version"] == test_data["software_rc"].version
-    assert software[1]["version"] == test_data["software_beta"].version
-    assert software[2]["version"] == test_data["software_release"].version
+    assert software[0]["version"] == test_data["software_release"].version
+    assert software[1]["version"] == test_data["software_rc"].version
+    assert software[2]["version"] == test_data["software_beta"].version
