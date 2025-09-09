@@ -37,10 +37,14 @@ async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datata
         return (
             Q(id__icontains=search_value)
             | Q(name__icontains=search_value)
+            | Q(hardware__model__icontains=search_value)
+            | Q(hardware__revision__icontains=search_value)
             | Q(feed__icontains=search_value)
             | Q(sw_version__icontains=search_value)
+            | Q(assigned_software__version__icontains=search_value)
             | Q(update_mode=int(UpdateModeEnum.from_str(search_value)))
             | Q(last_state=int(UpdateStateEnum.from_str(search_value)))
+            | Q(last_ip__icontains=search_value)
         )
 
     query = Device.all().prefetch_related("assigned_software", "hardware", "assigned_software__compatibility")
