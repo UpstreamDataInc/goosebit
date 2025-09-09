@@ -23,7 +23,12 @@ router = APIRouter(prefix="/rollouts")
 )
 async def rollouts_get(dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)]) -> BFFRolloutsResponse:
     def search_filter(search_value):
-        return Q(name__icontains=search_value) | Q(feed__icontains=search_value)
+        return (
+            Q(name__icontains=search_value)
+            | Q(feed__icontains=search_value)
+            | Q(software__uri__icontains=search_value)
+            | Q(software__version__icontains=search_value)
+        )
 
     query = Rollout.all().prefetch_related("software", "software__compatibility")
 

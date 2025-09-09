@@ -5,7 +5,7 @@ from tortoise.expressions import Q
 from tortoise.queryset import QuerySet
 
 from goosebit.schema.software import SoftwareSchema
-from goosebit.ui.bff.common.requests import DataTableOrderDirection, DataTableRequest
+from goosebit.ui.bff.common.requests import DataTableRequest
 
 
 class BFFSoftwareResponse(BaseModel):
@@ -23,24 +23,14 @@ class BFFSoftwareResponse(BaseModel):
 
         filtered_records = await query.count()
 
-        if len(dt_query.order) > 0 and dt_query.order[0].name == "version":
-            # ordering cannot be delegated to database as semantic versioning sorting is not supported
-            software = await query.all()
-            reverse = dt_query.order[0].dir == DataTableOrderDirection.DESCENDING
-            software.sort(key=lambda s: s.parsed_version, reverse=reverse)
+        if dt_query.order_query:
+            query = query.order_by(dt_query.order_query)
 
-            # in-memory paging
-            if dt_query.length is None:
-                software = software[dt_query.start :]
-            else:
-                software = software[dt_query.start : dt_query.start + dt_query.length]
+        # if no ordering is specified, database-side paging can be used
+        if dt_query.length is not None:
+            query = query.limit(dt_query.length)
 
-        else:
-            # if no ordering is specified, database-side paging can be used
-            if dt_query.length is not None:
-                query = query.limit(dt_query.length)
-
-            software = await query.offset(dt_query.start).all()
+        software = await query.offset(dt_query.start).all()
 
         data = [SoftwareSchema.model_validate(s) for s in software]
 

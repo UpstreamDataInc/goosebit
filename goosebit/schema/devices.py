@@ -5,7 +5,7 @@ from datetime import datetime
 from enum import Enum, IntEnum, StrEnum
 from typing import Annotated
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, computed_field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, computed_field
 
 from goosebit.db.models import UpdateModeEnum, UpdateStateEnum
 from goosebit.schema.software import HardwareSchema, SoftwareSchema
@@ -34,8 +34,8 @@ class DeviceSchema(BaseModel):
     name: str | None
     sw_version: str | None
 
-    assigned_software: SoftwareSchema | None = Field(exclude=True)
-    hardware: HardwareSchema | None = Field(exclude=True)
+    assigned_software: SoftwareSchema | None
+    hardware: HardwareSchema | None
 
     feed: str | None
     progress: int | None
@@ -52,26 +52,6 @@ class DeviceSchema(BaseModel):
     @property
     def polling(self) -> bool | None:
         return self.last_seen < (self.poll_seconds + 10) if self.last_seen is not None else None
-
-    @computed_field  # type: ignore[misc]
-    @property
-    def sw_target_version(self) -> str | None:
-        return self.assigned_software.version if self.assigned_software is not None else None
-
-    @computed_field  # type: ignore[misc]
-    @property
-    def sw_assigned(self) -> int | None:
-        return self.assigned_software.id if self.assigned_software is not None else None
-
-    @computed_field  # type: ignore[misc]
-    @property
-    def hw_model(self) -> str | None:
-        return self.hardware.model if self.hardware is not None else None
-
-    @computed_field  # type: ignore[misc]
-    @property
-    def hw_revision(self) -> str | None:
-        return self.hardware.revision if self.hardware is not None else None
 
     @computed_field  # type: ignore[misc]
     @property

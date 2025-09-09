@@ -141,8 +141,8 @@ async def test_register_device(async_client, test_data):
     device_api = await _api_device_get(async_client, DEVICE_ID)
     assert device_api["last_state"] == "Registered"
     assert device_api["sw_version"] == "8.8.1-12-g302f635+189128"
-    assert device_api["hw_model"] == "smart-gateway-mt7688"
-    assert device_api["hw_revision"] == "default"
+    assert device_api["hardware"]["model"] == "smart-gateway-mt7688"
+    assert device_api["hardware"]["revision"] == "default"
 
 
 @pytest.mark.asyncio
