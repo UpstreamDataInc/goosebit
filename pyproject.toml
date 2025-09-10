@@ -1,6 +1,6 @@
 [project]
 name = "goosebit"
-version = "0.2.9"
+version = "0.2.10"
 description = "A simplistic, opinionated remote update server implementing hawkBit™'s DDI API"
 authors = [
     {name = "Brett Rowan", email = "121075405+b-rowan@users.noreply.github.com"}
