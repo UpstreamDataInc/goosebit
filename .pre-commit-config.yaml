@@ -35,7 +35,12 @@ repos:
     rev: v1.18.2
     hooks:
       - id: mypy
-        additional_dependencies: [types-pyyaml==6.0.12.20250915]
+        additional_dependencies:
+          [
+            pydantic==2.11.9,
+            pydantic-settings==2.10.1,
+            types-pyyaml==6.0.12.20250915,
+          ]
   - repo: local
     hooks:
       - id: pytest

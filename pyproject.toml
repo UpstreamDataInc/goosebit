@@ -77,6 +77,12 @@ src_folder = "./goosebit"
 
 [tool.mypy]
 explicit_package_bases = true
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
 
 [tool.djlint]
 ignore = "H030,H031,H021"
