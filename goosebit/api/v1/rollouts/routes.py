@@ -29,12 +29,12 @@ async def rollouts_put(_: Request, rollout: RolloutsPutRequest) -> RolloutsPutRe
     software = await Software.filter(id=rollout.software_id)
     if len(software) == 0:
         raise HTTPException(404, f"No software with ID {rollout.software_id} found")
-    rollout = await Rollout.create(
+    created_rollout = await Rollout.create(
         name=rollout.name,
         feed=rollout.feed,
         software_id=rollout.software_id,
     )
-    return RolloutsPutResponse(success=True, id=rollout.id)
+    return RolloutsPutResponse(success=True, id=created_rollout.id)
 
 
 @router.patch(
