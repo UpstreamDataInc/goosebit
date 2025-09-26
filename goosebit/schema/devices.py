@@ -14,7 +14,7 @@ from goosebit.settings import config
 
 class ConvertableEnum(StrEnum):
     @classmethod
-    def convert(cls, value: IntEnum):
+    def convert(cls, value: IntEnum) -> ConvertableEnum:
         return cls(str(value))
 
 
@@ -48,12 +48,12 @@ class DeviceSchema(BaseModel):
     ]
     auth_token: str | None
 
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def polling(self) -> bool | None:
         return self.last_seen < (self.poll_seconds + 10) if self.last_seen is not None else None
 
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def poll_seconds(self) -> int:
         time_obj = datetime.strptime(config.poll_time, "%H:%M:%S")

@@ -1,13 +1,13 @@
 import importlib.metadata
 from contextlib import asynccontextmanager
 from logging import getLogger
-from typing import Annotated
+from typing import Annotated, AsyncGenerator, Awaitable, Callable
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.requests import Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor as Instrumentor
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -16,7 +16,7 @@ from tortoise.exceptions import ValidationError
 from goosebit import api, db, plugins, ui, updater
 from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
 from goosebit.device_manager import DeviceManager
-from goosebit.settings import PWD_CXT, config
+from goosebit.settings import PWD_CXT, config  # type: ignore[attr-defined]
 from goosebit.ui.nav import nav
 from goosebit.ui.static import static
 from goosebit.ui.templates import templates
@@ -26,7 +26,7 @@ logger = getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     db_ready = await db.init()
     if not db_ready:
         logger.exception("DB does not exist, try running `poetry run aerich upgrade`.")
@@ -57,16 +57,16 @@ app = FastAPI(
         }
     ],
 )
-app.include_router(updater.router)
-app.include_router(ui.router)
-app.include_router(api.router)
+app.include_router(updater.router)  # type: ignore[attr-defined]
+app.include_router(ui.router)  # type: ignore[attr-defined]
+app.include_router(api.router)  # type: ignore[attr-defined]
 app.mount("/static", static, name="static")
 Instrumentor.instrument_app(app)
 
 for plugin in plugins.load():
     if plugin.middleware is not None:
         logger.info(f"Adding middleware for plugin: {plugin.name}")
-        app.add_middleware(plugin.middleware)
+        app.add_middleware(plugin.middleware)  # type: ignore[arg-type]
     if plugin.router is not None:
         logger.info(f"Adding routing handler for plugin: {plugin.name}")
         app.include_router(router=plugin.router, prefix=plugin.url_prefix)
@@ -78,7 +78,7 @@ for plugin in plugins.load():
         app.mount(f"{plugin.url_prefix}/static", plugin.static_files, name=plugin.static_files_name)
     if plugin.templates is not None:
         logger.info(f"Adding template handler for plugin: {plugin.name}")
-        templates.add_template_handler(plugin.templates)
+        templates.add_template_handler(plugin.templates)  # type: ignore[attr-defined]
     if plugin.update_source_hook is not None:
         DeviceManager.add_update_source(plugin.update_source_hook)
     if plugin.config_data_hook is not None:
@@ -87,70 +87,70 @@ for plugin in plugins.load():
 
 # Custom exception handler for Tortoise ValidationError
 @app.exception_handler(ValidationError)
-async def tortoise_validation_exception_handler(request: Request, exc: ValidationError):
+async def tortoise_validation_exception_handler(request: Request, exc: ValidationError) -> None:
     raise HTTPException(422, str(exc))
 
 
 # Extend default handler to do logging
 @app.exception_handler(StarletteHTTPException)
-async def custom_http_exception_handler(request, exc):
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException) -> Response:
     logger.warning(f"HTTPException, request={request.url}, status={exc.status_code}, detail={exc.detail}")
     return await http_exception_handler(request, exc)
 
 
 @app.middleware("http")
-async def attach_user(request: Request, call_next):
+async def attach_user(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     request.scope["user"] = await get_user_from_request(request)
     return await call_next(request)
 
 
 @app.middleware("http")
-async def attach_nav(request: Request, call_next):
+async def attach_nav(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     request.scope["nav"] = nav.get()
     return await call_next(request)
 
 
 @app.middleware("http")
-async def attach_config(request: Request, call_next):
+async def attach_config(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     request.scope["config"] = config
     return await call_next(request)
 
 
 @app.get("/", include_in_schema=False)
-def root_redirect(request: Request):
+def root_redirect(request: Request) -> RedirectResponse:
     return RedirectResponse(request.url_for("ui_root"))
 
 
 @app.get("/login", include_in_schema=False, dependencies=[Depends(redirect_if_authenticated)])
-async def login_get(request: Request):
+async def login_get(request: Request) -> Response:
     return templates.TemplateResponse(request, "login.html.jinja")
 
 
 @app.post("/login", tags=["login"])
-async def login_post(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+async def login_post(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> dict[str, str]:
     return {"access_token": await login_user(form_data.username, form_data.password), "token_type": "bearer"}
 
 
 @app.get("/setup", include_in_schema=False)
-async def setup_get(request: Request):
+async def setup_get(request: Request) -> Response:
     return templates.TemplateResponse(request, "setup.html.jinja")
 
 
 @app.post("/setup", include_in_schema=False)
-async def setup_post(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+async def setup_post(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> dict[str, str]:
     await create_initial_user(form_data.username, PWD_CXT.hash(form_data.password))
     return {"access_token": await login_user(form_data.username, form_data.password), "token_type": "bearer"}
 
 
 @app.get("/logout", include_in_schema=False)
-async def logout(request: Request):
+async def logout(request: Request) -> RedirectResponse:
     resp = RedirectResponse(request.url_for("login_get"), status_code=302)
     resp.delete_cookie(key="session_id")
     return resp
 
 
 @app.get("/docs", include_in_schema=False)
-async def swagger_docs(request: Request):
+async def swagger_docs(request: Request) -> Response:
     return get_swagger_ui_html(
         title="gooseBit docs",
         openapi_url="/openapi.json",

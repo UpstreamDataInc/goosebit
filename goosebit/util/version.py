@@ -11,15 +11,15 @@ from semver import Version as SemVersion
 class Version:
     version_str: str
     default_version: int | None
-    sem_version: SemVersion
+    sem_version: SemVersion | None
 
-    def __init__(self, version_str: str, default_version: int | None = None, sem_version: SemVersion = None):
-        self.version_str = version_str
-        self.default_version = default_version
-        self.sem_version = sem_version
+    def __init__(self, version_str: str, default_version: int | None = None, sem_version: SemVersion | None = None):
+        self.version_str: str = version_str
+        self.default_version: int | None = default_version
+        self.sem_version: SemVersion | None = sem_version
 
     @staticmethod
-    def parse(version_str: str):
+    def parse(version_str: str) -> "Version":
         default_version = Version._default_version_to_number(version_str)
         sem_version = None
         try:
@@ -32,10 +32,10 @@ class Version:
 
         return Version(version_str, default_version, sem_version)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.version_str
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         # support comparison with strings as a convenience
         if isinstance(other, str):
             try:
@@ -50,12 +50,12 @@ class Version:
             return self.default_version == other.default_version
 
         if self.sem_version and other.sem_version:
-            return self.sem_version == other.sem_version
+            return bool(self.sem_version == other.sem_version)
 
         # fallback to lexical comparison of no of the same type
         return self.version_str == other.version_str
 
-    def __lt__(self, other):
+    def __lt__(self, other: object) -> bool:
         if not isinstance(other, Version):
             return NotImplemented
 
@@ -63,7 +63,7 @@ class Version:
             return self.default_version < other.default_version
 
         if self.sem_version and other.sem_version:
-            return self.sem_version < other.sem_version
+            return bool(self.sem_version < other.sem_version)
 
         # fallback to lexical comparison of no of the same type
         return self.version_str < other.version_str

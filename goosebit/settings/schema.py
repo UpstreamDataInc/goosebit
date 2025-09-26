@@ -1,11 +1,10 @@
 import os
-import secrets
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated
+from typing import Any
 
 from joserfc.jwk import OctKey
-from pydantic import BaseModel, BeforeValidator, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -36,7 +35,7 @@ class DeviceAuthSettings(BaseModel):
     external_json_key: str = "token"
 
     @model_validator(mode="after")
-    def validate_external_mode_config(self):
+    def validate_external_mode_config(self) -> "DeviceAuthSettings":
         if self.mode == DeviceAuthMode.EXTERNAL:
             if self.external_url is None:
                 raise ValueError("External URL is required when using external authentication mode")
@@ -85,7 +84,7 @@ class GooseBitSettings(BaseSettings):
 
     device_auth: DeviceAuthSettings = DeviceAuthSettings()
 
-    secret_key: Annotated[OctKey, BeforeValidator(OctKey.import_key)] = secrets.token_hex(16)
+    secret_key: OctKey = Field(default_factory=OctKey.generate_key)
 
     plugins: list[str] = Field(default_factory=list)
 
@@ -98,9 +97,16 @@ class GooseBitSettings(BaseSettings):
 
     metrics: MetricsSettings = MetricsSettings()
 
-    logging: dict = LOGGING_DEFAULT
+    logging: dict[str, Any] = LOGGING_DEFAULT
 
     track_device_ip: bool = True
+
+    @field_validator("secret_key", mode="before")
+    @classmethod
+    def import_secret_key(cls, v: Any) -> OctKey:
+        if isinstance(v, OctKey):
+            return v
+        return OctKey.import_key(v)
 
     @classmethod
     def settings_customise_sources(

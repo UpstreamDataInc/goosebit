@@ -29,7 +29,7 @@ async def devices_get(_: Request) -> DevicesResponse:
     devices = await Device.all().prefetch_related("hardware", "assigned_software", "assigned_software__compatibility")
     response = DevicesResponse(devices=devices)
 
-    async def set_assigned_sw(d: DeviceSchema):
+    async def set_assigned_sw(d: DeviceSchema) -> DeviceSchema:
         device = await get_device(d.id)
         _, target = await DeviceManager.get_update(device)
         if target is not None:
@@ -108,4 +108,4 @@ async def devices_put(_: Request, config: DevicesPutRequest) -> StatusResponse:
     return StatusResponse(success=True)
 
 
-router.include_router(device.router)
+router.include_router(device.router)  # type: ignore[attr-defined]

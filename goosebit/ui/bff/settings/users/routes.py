@@ -27,7 +27,7 @@ async def settings_users_get(
 ) -> BFFSettingsUsersResponse:
     filters: list[Q] = []
 
-    def search_filter(search_value):
+    def search_filter(search_value: str) -> Q:
         base_filter = Q(Q(username__icontains=search_value), join_type="OR")
         return Q(base_filter, *filters, join_type="AND")
 

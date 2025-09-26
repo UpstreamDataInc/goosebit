@@ -1,9 +1,12 @@
+from typing import Any
+
 import pytest
+from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_list_software_version_asc(async_client, test_data):
-    response = await async_client.get(f"/ui/bff/software?order[0][dir]=asc&order[0][name]=version")
+async def test_list_software_version_asc(async_client: AsyncClient, test_data: dict[str, Any]) -> None:
+    response = await async_client.get("/ui/bff/software?order[0][dir]=asc&order[0][name]=version")
 
     assert response.status_code == 200
     software = response.json()["data"]
@@ -14,8 +17,8 @@ async def test_list_software_version_asc(async_client, test_data):
 
 
 @pytest.mark.asyncio
-async def test_list_software_version_desc(async_client, test_data):
-    response = await async_client.get(f"/ui/bff/software?order[0][dir]=desc&order[0][name]=version")
+async def test_list_software_version_desc(async_client: AsyncClient, test_data: dict[str, Any]) -> None:
+    response = await async_client.get("/ui/bff/software?order[0][dir]=desc&order[0][name]=version")
 
     assert response.status_code == 200
     software = response.json()["data"]

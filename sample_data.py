@@ -17,7 +17,7 @@ fake = Faker()
 fake.add_provider(company)
 
 
-async def generate_sample_data():
+async def generate_sample_data() -> None:
     await Rollout.all().delete()
     await Device.all().delete()
     await Software.all().delete()
@@ -75,7 +75,7 @@ async def generate_sample_data():
     print("Sample data created!")
 
 
-async def run():
+async def run() -> None:
     db_ready = await goosebit.db.init()
     if db_ready:
         await generate_sample_data()
@@ -84,5 +84,5 @@ async def run():
         print("Failed to initialize database")
 
 
-def main():
+def main() -> None:
     asyncio.run(run())

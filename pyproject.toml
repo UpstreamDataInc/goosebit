@@ -76,6 +76,7 @@ location = "goosebit/db/migrations"
 src_folder = "./goosebit"
 
 [tool.mypy]
+strict = true
 explicit_package_bases = true
 plugins = ["pydantic.mypy"]
 

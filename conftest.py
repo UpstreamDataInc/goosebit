@@ -2,9 +2,11 @@ import logging
 import os
 import tempfile
 from pathlib import Path
+from typing import Any, AsyncGenerator, Dict
 
 import pytest_asyncio
 from aiocache import caches
+from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
@@ -12,7 +14,7 @@ from tortoise.contrib.fastapi import RegisterTortoise
 from goosebit import app
 from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 from goosebit.db.models import UpdateModeEnum, UpdateStateEnum
-from goosebit.settings import PWD_CXT
+from goosebit.settings import PWD_CXT  # type: ignore[attr-defined]
 
 # Configure logging
 logging.basicConfig(level=logging.WARN)
@@ -28,13 +30,13 @@ TORTOISE_CONF = {
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
-async def clear_cache():
+async def clear_cache() -> AsyncGenerator[None, None]:
     await caches.get("default").clear()
     yield
 
 
 @pytest_asyncio.fixture(scope="function")
-async def test_app():
+async def test_app() -> AsyncGenerator[FastAPI, None]:
     from goosebit.users import create_initial_user
 
     async with RegisterTortoise(
@@ -48,7 +50,7 @@ async def test_app():
 
 
 @pytest_asyncio.fixture(scope="function")
-async def async_client(test_app):
+async def async_client(test_app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(
         transport=ASGITransport(app=test_app), base_url="http://test", follow_redirects=True
     ) as client:
@@ -63,7 +65,7 @@ async def async_client(test_app):
 
 
 @pytest_asyncio.fixture(scope="function")
-async def db():
+async def db() -> AsyncGenerator[None, None]:
     await Tortoise.init(config=TORTOISE_CONF)
     await Tortoise.generate_schemas()
     yield
@@ -72,7 +74,7 @@ async def db():
 
 
 @pytest_asyncio.fixture(scope="function")
-async def test_data(db):
+async def test_data(db: None) -> AsyncGenerator[Dict[str, Any], None]:
     from goosebit.db.models import Device, Hardware, Rollout, Software, User
 
     # Create a temporary directory

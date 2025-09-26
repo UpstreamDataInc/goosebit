@@ -18,5 +18,5 @@ async def init() -> bool:
     return True
 
 
-async def close():
+async def close() -> None:
     await Tortoise.close_connections()

@@ -13,13 +13,13 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 
-from goosebit.db import Device
+from goosebit.db import Device  # type: ignore[attr-defined]
 from goosebit.device_manager import HandlingType
 from goosebit.schema.updates import UpdateChunk
 from goosebit.settings import config
 
 
-def get_module_name():
+def get_module_name() -> str:
     module = inspect.getmodule(inspect.stack()[2][0])
     if module is not None:
         return module.__name__.split(".")[0]
@@ -41,12 +41,12 @@ class PluginSchema(BaseModel):
     update_source_hook: Callable[[Request, Device], Awaitable[tuple[HandlingType, UpdateChunk | None]]] | None = None
     config_data_hook: Callable[[Device, dict[str, Any]], Awaitable[None]] | None = None
 
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def url_prefix(self) -> str:
         return f"/plugins/{self.name}"
 
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def static_files_name(self) -> str:
         return f"{self.name}_static"

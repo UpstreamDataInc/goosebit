@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from fastapi.requests import Request
 from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 
@@ -9,7 +9,7 @@ router = APIRouter(prefix="/download", tags=["download"])
 
 
 @router.get("/{file_id}")
-async def download_file(_: Request, file_id: int):
+async def download_file(_: Request, file_id: int) -> Response:
     software = await Software.get_or_none(id=file_id)
     if software is None:
         raise HTTPException(404)

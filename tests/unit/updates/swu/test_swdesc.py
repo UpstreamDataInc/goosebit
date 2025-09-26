@@ -5,7 +5,7 @@ from libconf import AttrDict
 from goosebit.updates.swdesc.swu import parse_descriptor, parse_file
 
 
-def test_parse_descriptor_no_compatibility_defined():
+def test_parse_descriptor_no_compatibility_defined() -> None:
     desc = AttrDict(
         {
             "software": {
@@ -22,7 +22,7 @@ def test_parse_descriptor_no_compatibility_defined():
     ]
 
 
-def test_parse_descriptor_simple():
+def test_parse_descriptor_simple() -> None:
     # simplified example from https://sbabic.github.io/swupdate/sw-description.html#introduction
     desc = AttrDict(
         {
@@ -42,7 +42,7 @@ def test_parse_descriptor_simple():
     ]
 
 
-def test_parse_descriptor_boardname():
+def test_parse_descriptor_boardname() -> None:
     # GARDENA device
     desc = AttrDict(
         {
@@ -67,7 +67,7 @@ def test_parse_descriptor_boardname():
     ]
 
 
-def test_parse_descriptor_boardname_and_software_collection():
+def test_parse_descriptor_boardname_and_software_collection() -> None:
     # simplified example from https://sbabic.github.io/swupdate/sw-description.html#using-links
     desc = AttrDict(
         {
@@ -86,7 +86,7 @@ def test_parse_descriptor_boardname_and_software_collection():
     ]
 
 
-def test_parse_descriptor_several_boardname():
+def test_parse_descriptor_several_boardname() -> None:
     desc = {
         "software": {
             "version": "8.8.1-12-g302f635+189128",
@@ -116,7 +116,7 @@ def test_parse_descriptor_several_boardname():
     ]
 
 
-def test_parse_descriptor_with_toplevel_extras():
+def test_parse_descriptor_with_toplevel_extras() -> None:
     desc = {
         "reboot": True,
         "software": {
@@ -149,9 +149,10 @@ def test_parse_descriptor_with_toplevel_extras():
 
 
 @pytest.mark.asyncio
-async def test_parse_software_header():
+async def test_parse_software_header() -> None:
     resolved = await Path(__file__).resolve()
     swdesc_attrs = await parse_file(resolved.parent / "software-header.swu")
+    assert swdesc_attrs is not None
     assert str(swdesc_attrs["version"]) == "8.8.1-11-g8c926e5+188370"
     assert swdesc_attrs["compatibility"] == [
         {"hw_model": "smart-gateway-mt7688", "hw_revision": "0.5"},

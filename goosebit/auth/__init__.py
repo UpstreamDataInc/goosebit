@@ -11,7 +11,7 @@ from joserfc import jwt
 from joserfc.errors import BadSignatureError
 
 from goosebit.db.models import User
-from goosebit.settings import PWD_CXT, config
+from goosebit.settings import PWD_CXT, config  # type: ignore[attr-defined]
 from goosebit.users import UserManager
 
 logger = logging.getLogger(__name__)
@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
 
 
-async def oauth2_auth(connection: HTTPConnection):
-    return await oauth2_bearer(connection)
+async def oauth2_auth(request: Request) -> str | None:
+    return await oauth2_bearer(request)
 
 
-async def session_auth(connection: HTTPConnection) -> str:
+async def session_auth(connection: HTTPConnection) -> str | None:
     return connection.cookies.get("session_id")
 
 
@@ -78,13 +78,14 @@ async def get_current_user(
     return user
 
 
-# using | Request because oauth2_auth.__call__ expects is
-async def get_user_from_request(connection: HTTPConnection | Request) -> User | None:
-    token = await session_auth(connection) or await oauth2_auth(connection)
+async def get_user_from_request(request: Request) -> User | None:
+    token = await session_auth(request) or await oauth2_auth(request)
     return await get_user_from_token(token)
 
 
-async def redirect_if_unauthenticated(connection: HTTPConnection, user: Annotated[User, Depends(get_current_user)]):
+async def redirect_if_unauthenticated(
+    connection: HTTPConnection, user: Annotated[User, Depends(get_current_user)]
+) -> None:
     if user is None:
         raise HTTPException(
             status_code=302,
@@ -99,7 +100,9 @@ async def redirect_if_unauthenticated(connection: HTTPConnection, user: Annotate
         )
 
 
-async def redirect_if_authenticated(connection: HTTPConnection, user: Annotated[User, Depends(get_current_user)]):
+async def redirect_if_authenticated(
+    connection: HTTPConnection, user: Annotated[User, Depends(get_current_user)]
+) -> None:
     if user is not None:
         if not user.enabled:
             return
@@ -116,7 +119,7 @@ async def redirect_if_authenticated(connection: HTTPConnection, user: Annotated[
         )
 
 
-async def redirect_if_users_exist(connection: HTTPConnection):
+async def redirect_if_users_exist(connection: HTTPConnection) -> None:
     if await User.all().count() > 0:
         raise HTTPException(
             status_code=302,
@@ -125,7 +128,7 @@ async def redirect_if_users_exist(connection: HTTPConnection):
         )
 
 
-async def validate_current_user(user: Annotated[User, Depends(get_current_user)]):
+async def validate_current_user(user: Annotated[User, Depends(get_current_user)]) -> User:
     if user is None:
         raise HTTPException(
             status_code=401,

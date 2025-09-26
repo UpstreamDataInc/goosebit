@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Any, Callable
 
 from pydantic import BaseModel, Field
 from tortoise.expressions import Q
@@ -16,7 +16,9 @@ class BFFSoftwareResponse(BaseModel):
     records_filtered: int = Field(serialization_alias="recordsFiltered")
 
     @classmethod
-    async def convert(cls, dt_query: DataTableRequest, query: QuerySet, search_filter: Callable, alt_filter: Q):
+    async def convert(
+        cls, dt_query: DataTableRequest, query: QuerySet[Any], search_filter: Callable[[str], Any], alt_filter: Q
+    ) -> "BFFSoftwareResponse":
         total_records = await query.count()
         query = query.filter(alt_filter)
         if dt_query.search.value:

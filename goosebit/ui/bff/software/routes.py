@@ -34,7 +34,7 @@ async def software_get(
 ) -> BFFSoftwareResponse:
     filters: list[Q] = []
 
-    def search_filter(search_value):
+    def search_filter(search_value: str) -> Q:
         base_filter = Q(Q(uri__icontains=search_value), Q(version__icontains=search_value), join_type="OR")
         return Q(base_filter, *filters, join_type="AND")
 
@@ -67,7 +67,7 @@ async def post_update(
     init: bool = Form(default=None),
     done: bool = Form(default=None),
     filename: str = Form(default=None),
-):
+) -> None:
     if url is not None:
         # remote file
         software = await Software.get_or_none(uri=url)

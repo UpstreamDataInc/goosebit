@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import IntEnum
-from typing import Self
+from typing import Any, Self, cast
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
@@ -20,11 +20,11 @@ class UpdateModeEnum(IntEnum):
     ROLLOUT = 3
     ASSIGNED = 4
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name.capitalize()
 
     @classmethod
-    def from_str(cls, name):
+    def from_str(cls, name: str) -> "UpdateModeEnum":
         try:
             return cls[name.upper()]
         except KeyError:
@@ -39,23 +39,23 @@ class UpdateStateEnum(IntEnum):
     ERROR = 4
     FINISHED = 5
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name.capitalize()
 
     @classmethod
-    def from_str(cls, name):
+    def from_str(cls, name: str) -> "UpdateStateEnum":
         try:
             return cls[name.upper()]
         except KeyError:
             return cls.NONE
 
 
-class Tag(Model):
+class Tag(Model):  # type: ignore[misc]
     id = fields.IntField(primary_key=True)
     name = fields.CharField(max_length=255)
 
 
-class Device(Model):
+class Device(Model):  # type: ignore[misc]
     id = fields.CharField(max_length=255, primary_key=True)
     name = fields.CharField(max_length=255, null=True)
     assigned_software = fields.ForeignKeyField(
@@ -75,7 +75,7 @@ class Device(Model):
     auth_token = fields.CharField(max_length=32, null=True)
     tags = fields.ManyToManyField("models.Tag", related_name="devices", through="device_tags")
 
-    async def save(self, *args, **kwargs):
+    async def save(self, *args: Any, **kwargs: Any) -> None:
         # ensure if using rollout that feed is set
         if self.update_mode == UpdateModeEnum.ROLLOUT:
             if self.feed is None:
@@ -93,20 +93,20 @@ class Device(Model):
         if is_new:
             await self.notify_created()
 
-    async def delete(self, *args, **kwargs):
+    async def delete(self, *args: Any, **kwargs: Any) -> None:
         await super().delete(*args, **kwargs)
         await self.notify_deleted()
 
     @staticmethod
-    async def notify_created():
+    async def notify_created() -> None:
         devices_count.set(await Device.all().count())
 
     @staticmethod
-    async def notify_deleted():
+    async def notify_deleted() -> None:
         devices_count.set(await Device.all().count())
 
 
-class Rollout(Model):
+class Rollout(Model):  # type: ignore[misc]
     id = fields.IntField(primary_key=True)
     created_at = fields.DatetimeField(auto_now_add=True)
     name = fields.CharField(max_length=255, null=True)
@@ -117,7 +117,7 @@ class Rollout(Model):
     failure_count = fields.IntField(default=0)
 
 
-class Hardware(Model):
+class Hardware(Model):  # type: ignore[misc]
     id = fields.IntField(primary_key=True)
     model = fields.CharField(max_length=255)
     revision = fields.CharField(max_length=255)
@@ -127,18 +127,18 @@ class SoftwareImageFormat(IntEnum):
     SWU = 0
     RAUC = 1
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name.upper()
 
     @classmethod
-    def from_str(cls, name):
+    def from_str(cls, name: str) -> "SoftwareImageFormat":
         try:
             return cls[name.upper()]
         except KeyError:
             return cls.SWU
 
 
-class Software(Model):
+class Software(Model):  # type: ignore[misc]
     id = fields.IntField(primary_key=True)
     uri = fields.CharField(max_length=255)
     size = fields.BigIntField()
@@ -156,11 +156,14 @@ class Software(Model):
         updates = await cls.filter(compatibility__devices__id=device.id)
         if len(updates) == 0:
             return None
-        return sorted(
-            updates,
-            key=lambda x: Version.parse(x.version),
-            reverse=True,
-        )[0]
+        return cast(
+            Self,
+            sorted(
+                updates,
+                key=lambda x: Version.parse(x.version),
+                reverse=True,
+            )[0],
+        )
 
     @property
     def path(self) -> Path:
@@ -168,21 +171,21 @@ class Software(Model):
 
     @property
     def local(self) -> bool:
-        return urlparse(self.uri).scheme == "file"
+        return cast(bool, urlparse(self.uri).scheme == "file")
 
     @property
     def path_user(self) -> str:
         if self.local:
-            return self.path.name
+            return str(self.path.name)
         else:
-            return self.uri
+            return cast(str, self.uri)
 
     @property
     def parsed_version(self) -> Version:
         return Version.parse(self.version)
 
 
-class User(Model):
+class User(Model):  # type: ignore[misc]
     username = fields.CharField(max_length=255, primary_key=True, null=False)
     hashed_pwd = fields.CharField(max_length=255, null=False)
     permissions: fields.JSONField[list[str]] = fields.JSONField(default=[])

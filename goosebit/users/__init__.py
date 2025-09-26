@@ -2,7 +2,7 @@ from aiocache import caches
 
 from goosebit.api.telemetry.metrics import users_count
 from goosebit.db.models import User
-from goosebit.settings import PWD_CXT
+from goosebit.settings import PWD_CXT  # type: ignore[attr-defined]
 
 
 async def create_user(username: str, password: str, permissions: list[str]) -> User:
@@ -39,24 +39,24 @@ class UserManager:
             )
         )[0]
         users_count.set(await User.all().count())
-        return user
+        return user  # type: ignore[no-any-return]
 
     @staticmethod
     async def get_user(username: str) -> User:
         cache = caches.get("default")
         user = await cache.get(username)
         if user:
-            return user
+            return user  # type: ignore[no-any-return]
 
         user = await User.get_or_none(username=username)
         if user is not None:
             result = await cache.set(user.username, user, ttl=600)
             assert result, "user being cached"
 
-        return user
+        return user  # type: ignore[no-any-return]
 
     @staticmethod
-    async def delete_users(usernames: list[str]):
+    async def delete_users(usernames: list[str]) -> None:
         await User.filter(username__in=usernames).delete()
         for username in usernames:
             await caches.get("default").delete(username)

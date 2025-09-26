@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 import string
 
-from anyio import Path, open_file
+from anyio import open_file
 from fastapi import APIRouter, File, Form, HTTPException, Security, UploadFile
 from fastapi.requests import Request
 
@@ -11,6 +11,7 @@ from goosebit.api.responses import StatusResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 from goosebit.db.models import Rollout, Software
+from goosebit.schema.software import SoftwareSchema
 from goosebit.storage import storage
 from goosebit.updates import create_software_update
 from goosebit.util.path import validate_filename
@@ -27,7 +28,7 @@ router = APIRouter(prefix="/software", tags=["software"])
 )
 async def software_get(_: Request) -> SoftwareResponse:
     software = await Software.all().prefetch_related("compatibility")
-    return SoftwareResponse(software=software)
+    return SoftwareResponse(software=[SoftwareSchema.model_validate(s) for s in software])
 
 
 @router.delete(
@@ -61,7 +62,7 @@ async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> Stat
     "",
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["write"]()])],
 )
-async def post_update(_: Request, file: UploadFile | None = File(None), url: str | None = Form(None)):
+async def post_update(_: Request, file: UploadFile | None = File(None), url: str | None = Form(None)) -> dict[str, int]:
     if url is not None:
         # remote file
         software = await Software.get_or_none(uri=url)
@@ -75,9 +76,9 @@ async def post_update(_: Request, file: UploadFile | None = File(None), url: str
         software = await create_software_update(url, None)
     elif file is not None:
         # local file
-        temp_dir = Path(storage.get_temp_dir())
+        temp_dir = await storage.get_temp_dir()
         try:
-            file_path = await validate_filename(file.filename, temp_dir)
+            file_path = await validate_filename(file.filename or "unknown", temp_dir)
         except ValueError as e:
             raise HTTPException(400, f"Invalid filename: {e}")
         tmp_file_path = temp_dir.joinpath("".join(random.choices(string.ascii_lowercase, k=12)) + ".tmp")

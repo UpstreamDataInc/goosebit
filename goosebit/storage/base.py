@@ -1,5 +1,6 @@
-from pathlib import Path
 from typing import AsyncIterable, Protocol
+
+from anyio import Path
 
 
 class StorageProtocol(Protocol):
@@ -11,4 +12,4 @@ class StorageProtocol(Protocol):
 
     async def delete_file(self, uri: str) -> bool: ...
 
-    def get_temp_dir(self) -> Path: ...
+    async def get_temp_dir(self) -> Path: ...

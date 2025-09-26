@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from typing import Any, Generator
 
 import httpx
 import pytest
@@ -13,16 +14,16 @@ AUTH_SERVICE_BASE_URL = os.getenv("AUTH_SERVICE_BASE_URL", "http://localhost:800
 COMPOSE_FILE = Path(__file__).resolve().parents[1].joinpath("docker-compose-invalid.yml")
 
 
-def _compose_up_build():
+def _compose_up_build() -> None:
     compose_up_build(COMPOSE_FILE)
 
 
-def _compose_down():
+def _compose_down() -> None:
     compose_down(COMPOSE_FILE, remove_orphans=True)
 
 
 @pytest.fixture(scope="module", autouse=True)
-def compose_lifecycle():
+def compose_lifecycle() -> Generator[None, None, None]:
     # Ensure a clean slate for this module, then bring up compose
     try:
         _compose_down()
@@ -40,7 +41,7 @@ def compose_lifecycle():
 
 
 @pytest.fixture(scope="module")
-def ensure_services_ready(compose_lifecycle):
+def ensure_services_ready(compose_lifecycle: Any) -> bool:
     ok, err = wait_for_service(f"{AUTH_SERVICE_BASE_URL}/health", timeout_seconds=20)
     assert ok, f"auth service not ready: {err}"
 
@@ -50,7 +51,7 @@ def ensure_services_ready(compose_lifecycle):
     return True
 
 
-def test_e2e_external_auth_smoke_and_health(ensure_services_ready):
+def test_e2e_external_auth_smoke_and_health(ensure_services_ready: Any) -> None:
     """Smoke test for external auth setup and goosebit endpoints"""
 
     with httpx.Client(base_url=AUTH_SERVICE_BASE_URL, follow_redirects=True, timeout=10.0) as client:
@@ -69,7 +70,7 @@ def test_e2e_external_auth_smoke_and_health(ensure_services_ready):
         assert api_resp.status_code == 200, api_resp.text
 
 
-def test_e2e_device_registration_with_invalid_token_should_not_work(ensure_services_ready):
+def test_e2e_device_registration_with_invalid_token_should_not_work(ensure_services_ready: Any) -> None:
     """Verify device with invalid token does not appear in the database or list"""
 
     with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=20.0) as client:

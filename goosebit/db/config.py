@@ -5,7 +5,7 @@ from goosebit.db.pg_ssl_context import PostgresSSLContext
 from goosebit.settings import config
 
 
-def add_models(models_path: str):
+def add_models(models_path: str) -> None:
     models.append(models_path)
 
 
@@ -35,7 +35,7 @@ if config.db_ssl_crt is not None:
     ssl_context = PostgresSSLContext()
 
     # set certificate file
-    ssl_context.load_verify_locations(config.db_ssl_crt)
+    ssl_context.load_verify_locations(str(config.db_ssl_crt))
 
     # parse and set verify-flags
     if params.get("verifyflags") is not None:

@@ -1,6 +1,7 @@
 import logging
 import random
 import string
+from typing import Any
 
 import httpx
 from anyio import Path, open_file
@@ -13,10 +14,10 @@ from . import rauc, swu
 logger = logging.getLogger(__name__)
 
 
-async def parse_remote(url: str):
+async def parse_remote(url: str) -> dict[str, Any]:
     async with httpx.AsyncClient() as c:
         file = await c.get(url)
-        temp_dir = Path(storage.get_temp_dir())
+        temp_dir = await storage.get_temp_dir()
         tmp_file_path = temp_dir.joinpath("".join(random.choices(string.ascii_lowercase, k=12)) + ".tmp")
         try:
             async with await open_file(tmp_file_path, "w+b") as f:
@@ -29,7 +30,7 @@ async def parse_remote(url: str):
         return file_data
 
 
-async def parse_file(file: Path):
+async def parse_file(file: Path) -> dict[str, Any]:
     async with await open_file(file, "r+b") as f:
         magic = await f.read(4)
     if magic == swu.MAGIC:
@@ -39,7 +40,7 @@ async def parse_file(file: Path):
         image_format = SoftwareImageFormat.RAUC
         attributes = await rauc.parse_file(file)
     else:
-        logger.warning(f"Unknown file format, magic={magic}")
-        raise ValueError(f"Unknown file format, magic={magic}")
-    attributes["image_format"] = image_format
-    return attributes
+        logger.warning(f"Unknown file format, magic={magic.decode()}")
+        raise ValueError(f"Unknown file format, magic={magic.decode()}")
+    attributes["image_format"] = image_format  # type: ignore[index]
+    return attributes  # type: ignore[return-value]

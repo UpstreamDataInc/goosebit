@@ -5,11 +5,11 @@ import ssl
 class PostgresSSLContext:
     context: ssl.SSLContext
 
-    def __init__(self):
+    def __init__(self) -> None:
         # create ssl context in server-auth mode: this sets verify_mode = required and check_hostname = True
         self.context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
 
-    def parse_ssl_mode(self, sslmode: str):
+    def parse_ssl_mode(self, sslmode: str) -> None:
         match sslmode:
             case "none":
                 self.context.check_hostname = False
@@ -25,7 +25,7 @@ class PostgresSSLContext:
     # parse and set verify-flags according to postgres string attributes
     # default as defined in python3.13 lib/ssl.py: https://github.com/python/cpython/blob/3.13/Lib/ssl.py#L713)
     # is the following: (ssl.VERIFY_X509_PARTIAL_CHAIN | ssl.VERIFY_X509_STRICT)
-    def parse_verify_flags(self, verifyflags: str):
+    def parse_verify_flags(self, verifyflags: str) -> None:
         self.context.verify_flags = ssl.VerifyFlags(0)
         for f in verifyflags.split("|"):
             match f:
@@ -47,5 +47,5 @@ class PostgresSSLContext:
                     logging.error(f"verify-flag is undefined: {f}")
                     exit(1)
 
-    def load_verify_locations(self, file):
+    def load_verify_locations(self, file: str) -> None:
         self.context.load_verify_locations(file)

@@ -20,7 +20,7 @@ class DataTableOrderSchema(BaseModel):
     dir: DataTableOrderDirection | None = None
     name: str | None = None
 
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def direction(self) -> str:
         return "-" if self.dir == DataTableOrderDirection.DESCENDING else ""
@@ -33,7 +33,7 @@ class DataTableRequest(BaseModel):
     length: int | None = None
     search: DataTableSearchSchema = DataTableSearchSchema()
 
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def order_query(self) -> str | None:
         try:
