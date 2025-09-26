@@ -33,7 +33,7 @@ class SoftwareSchema(BaseModel):
     def local(self) -> bool:
         return urlparse(self.uri).scheme == "file"
 
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def name(self) -> str:
         if self.local:

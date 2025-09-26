@@ -6,7 +6,7 @@ from fastapi.requests import Request
 from goosebit.api.v1.devices.device.responses import DeviceLogResponse
 from goosebit.auth import validate_user_permissions
 from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
-from goosebit.db import Device
+from goosebit.db import Device  # type: ignore[attr-defined]
 from goosebit.device_manager import get_device
 from goosebit.schema.devices import DeviceSchema
 

@@ -1,6 +1,7 @@
 import configparser
 import logging
 import re
+from typing import Any
 
 import semver
 from anyio import Path, open_file
@@ -13,7 +14,7 @@ MAGIC = b"hsqs"
 logger = logging.getLogger(__name__)
 
 
-async def parse_file(file: Path):
+async def parse_file(file: Path) -> dict[str, Any]:
     async with await open_file(file, "r+b") as f:
         image_data = await f.read()
 
@@ -30,7 +31,7 @@ async def parse_file(file: Path):
     return swdesc_attrs
 
 
-def parse_descriptor(manifest: configparser.ConfigParser):
+def parse_descriptor(manifest: configparser.ConfigParser) -> dict[str, Any]:
     swdesc_attrs = {}
     try:
         swdesc_attrs["version"] = semver.Version.parse(manifest["update"].get("version"))

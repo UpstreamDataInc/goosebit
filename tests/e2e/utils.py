@@ -59,7 +59,7 @@ def auth_token(client: httpx.Client) -> str:
     creds = {"username": "admin@goosebit.local", "password": "admin"}
     setup_resp = client.post("/setup", data=creds, headers={"Content-Type": "application/x-www-form-urlencoded"})
     if setup_resp.status_code == 200:
-        return setup_resp.json()["access_token"]
+        return str(setup_resp.json()["access_token"])
     login_resp = client.post("/login", data=creds, headers={"Content-Type": "application/x-www-form-urlencoded"})
     assert login_resp.status_code == 200, login_resp.text
-    return login_resp.json()["access_token"]
+    return str(login_resp.json()["access_token"])

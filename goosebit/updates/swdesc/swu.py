@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 MAGIC = b"0707"
 
 
-def _append_compatibility(boardname, value, compatibility):
+def _append_compatibility(boardname: str, value: Any, compatibility: list[dict[str, str]]) -> None:
     if not isinstance(value, dict):
         return
     if "hardware-compatibility" in value:
@@ -21,8 +21,8 @@ def _append_compatibility(boardname, value, compatibility):
             compatibility.append({"hw_model": boardname, "hw_revision": revision})
 
 
-def parse_descriptor(swdesc: libconf.AttrDict[Any, Any | None]):
-    swdesc_attrs = {}
+def parse_descriptor(swdesc: libconf.AttrDict[Any, Any | None]) -> dict[str, Any]:
+    swdesc_attrs: dict[str, Any] = {}
     try:
         swdesc_attrs["version"] = Version.parse(swdesc["software"]["version"])
         compatibility: list[dict[str, str]] = []
@@ -48,7 +48,7 @@ def parse_descriptor(swdesc: libconf.AttrDict[Any, Any | None]):
     return swdesc_attrs
 
 
-async def parse_file(file: Path):
+async def parse_file(file: Path) -> dict[str, Any] | None:
     async with await open_file(file, "r+b") as f:
         # get file size
         size = int((await f.read(110))[54:62], 16)

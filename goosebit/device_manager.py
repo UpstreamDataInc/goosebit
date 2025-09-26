@@ -46,7 +46,7 @@ class DeviceManager:
         cache = caches.get("default")
         device = await cache.get(dev_id)
         if device:
-            return device
+            return device  # type: ignore[no-any-return]
 
         hardware = DeviceManager._hardware_default
         if hardware is None:
@@ -57,10 +57,10 @@ class DeviceManager:
         result = await cache.set(device.id, device, ttl=600)
         assert result, "device being cached"
 
-        return device
+        return device  # type: ignore[no-any-return]
 
     @staticmethod
-    async def save_device(device: Device, update_fields: list[str]):
+    async def save_device(device: Device, update_fields: list[str]) -> None:
         await device.save(update_fields=update_fields)
 
         # only update cache after a successful database save
@@ -105,7 +105,7 @@ class DeviceManager:
             await DeviceManager.save_device(device, update_fields=["last_seen", "last_ip"])
 
     @staticmethod
-    async def update_update(device: Device, update_mode: UpdateModeEnum, software: Software | None):
+    async def update_update(device: Device, update_mode: UpdateModeEnum, software: Software | None) -> None:
         device.assigned_software = software
         device.update_mode = update_mode
         if not update_mode == UpdateModeEnum.ROLLOUT:
@@ -113,25 +113,25 @@ class DeviceManager:
         await DeviceManager.save_device(device, update_fields=["assigned_software_id", "update_mode", "feed"])
 
     @staticmethod
-    async def update_name(device: Device, name: str):
+    async def update_name(device: Device, name: str) -> None:
         device.name = name
         await DeviceManager.save_device(device, update_fields=["name"])
 
     @staticmethod
-    async def update_feed(device: Device, feed: str):
+    async def update_feed(device: Device, feed: str) -> None:
         device.feed = feed
         await DeviceManager.save_device(device, update_fields=["feed"])
 
     @staticmethod
-    def add_config_callback(callback: Callable[[Device, dict[str, Any]], Awaitable[None]]):
+    def add_config_callback(callback: Callable[[Device, dict[str, Any]], Awaitable[None]]) -> None:
         DeviceManager._config_callbacks.append(callback)
 
     @staticmethod
-    def remove_config_callback(callback: Callable[[Device, dict[str, Any]], Awaitable[None]]):
+    def remove_config_callback(callback: Callable[[Device, dict[str, Any]], Awaitable[None]]) -> None:
         DeviceManager._config_callbacks.remove(callback)
 
     @staticmethod
-    async def update_config_data(device: Device, **kwargs: dict[str, Any]):
+    async def update_config_data(device: Device, **kwargs: dict[str, Any]) -> None:
         model = kwargs.get("hw_boardname") or "default"
         revision = kwargs.get("hw_revision") or "default"
         sw_version = kwargs.get("sw_version")
@@ -159,20 +159,20 @@ class DeviceManager:
             await DeviceManager.save_device(device, update_fields=["hardware_id", "last_state", "sw_version"])
 
     @staticmethod
-    async def deployment_action_start(device: Device):
+    async def deployment_action_start(device: Device) -> None:
         device.last_log = ""
         device.progress = 0
         await DeviceManager.save_device(device, update_fields=["last_log", "progress"])
 
     @staticmethod
-    async def deployment_action_success(device: Device):
+    async def deployment_action_success(device: Device) -> None:
         device.progress = 100
         await DeviceManager.save_device(device, update_fields=["progress"])
 
     @staticmethod
     async def get_rollout(device: Device) -> Rollout | None:
         if device.update_mode == UpdateModeEnum.ROLLOUT:
-            return (
+            return (  # type: ignore[no-any-return]
                 await Rollout.filter(
                     feed=device.feed,
                     paused=False,
@@ -192,10 +192,10 @@ class DeviceManager:
             if not rollout or rollout.paused:
                 return None
             await rollout.fetch_related("software")
-            return rollout.software
+            return rollout.software  # type: ignore[no-any-return]
         if device.update_mode == UpdateModeEnum.ASSIGNED:
             await device.fetch_related("assigned_software")
-            return device.assigned_software
+            return device.assigned_software  # type: ignore[no-any-return]
 
         if device.update_mode == UpdateModeEnum.LATEST:
             return await Software.latest(device)
@@ -204,7 +204,9 @@ class DeviceManager:
         return None
 
     @staticmethod
-    def add_update_source(source: Callable[[Request, Device], Awaitable[tuple[HandlingType, UpdateChunk | None]]]):
+    def add_update_source(
+        source: Callable[[Request, Device], Awaitable[tuple[HandlingType, UpdateChunk | None]]],
+    ) -> None:
         DeviceManager._update_sources.append(source)
 
     @staticmethod
@@ -247,7 +249,7 @@ class DeviceManager:
         await DeviceManager.save_device(device, update_fields=["progress", "last_log"])
 
     @staticmethod
-    async def delete_devices(ids: list[str]):
+    async def delete_devices(ids: list[str]) -> None:
         await Device.filter(id__in=ids).delete()
         for dev_id in ids:
             result = await caches.get("default").delete(dev_id)
@@ -259,4 +261,4 @@ async def get_device(dev_id: str) -> Device:
 
 
 async def get_device_or_none(dev_id: str) -> Optional[Device]:
-    return await Device.get_or_none(id=dev_id)
+    return await Device.get_or_none(id=dev_id)  # type: ignore[no-any-return]

@@ -6,19 +6,19 @@ VALID_TOKEN = os.getenv("AUTH_TOKEN")
 
 
 class AuthHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
+    def do_GET(self) -> None:
         if self.path == "/health":
             self._send_response(200, "ok")
         else:
             self.send_error(404, "Not Found")
 
-    def do_POST(self):
+    def do_POST(self) -> None:
         if self.path == "/api/v1/auth":
             self._handle_auth()
         else:
             self.send_error(404, "Not found")
 
-    def _handle_auth(self):
+    def _handle_auth(self) -> None:
         auth_header = self.headers.get("Authorization")
 
         if auth_header:
@@ -51,7 +51,7 @@ class AuthHandler(BaseHTTPRequestHandler):
             except Exception:
                 self._send_response(500, "Internal server error")
 
-    def _send_response(self, code: int = 200, message: str = "Unathorized"):
+    def _send_response(self, code: int = 200, message: str = "Unathorized") -> None:
         self.send_response(code)
         self.send_header("Content-type", "application/json")
         self.end_headers()

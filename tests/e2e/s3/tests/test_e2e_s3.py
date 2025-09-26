@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import Any, Generator
 
 import boto3
 import httpx
@@ -19,16 +20,16 @@ MINIO_SECRET_KEY = os.getenv("E2E_MINIO_SECRET_KEY", "minioadmin")
 COMPOSE_FILE = Path(__file__).resolve().parents[1].joinpath("docker-compose.yml")
 
 
-def _compose_up_build():
+def _compose_up_build() -> None:
     compose_up_build(COMPOSE_FILE)
 
 
-def _compose_down():
+def _compose_down() -> None:
     compose_down(COMPOSE_FILE, remove_orphans=True)
 
 
 @pytest.fixture(scope="module", autouse=True)
-def compose_lifecycle():
+def compose_lifecycle() -> Generator[None, None, None]:
     # Ensure a clean slate for this module, then bring up compose
     try:
         _compose_down()
@@ -46,7 +47,7 @@ def compose_lifecycle():
 
 
 @pytest.fixture(scope="module")
-def ensure_services_ready(compose_lifecycle):
+def ensure_services_ready(compose_lifecycle: Generator[None, None, None]) -> bool:
     # Wait for services once per module
     ok, err = wait_for_service(f"{BASE_URL}/docs", timeout_seconds=180)
     assert ok, f"goosebit not ready: {err}"
@@ -56,7 +57,7 @@ def ensure_services_ready(compose_lifecycle):
     return True
 
 
-def ensure_minio_bucket():
+def ensure_minio_bucket() -> None:
     s3 = boto3.resource(
         "s3",
         endpoint_url=MINIO_URL,
@@ -79,7 +80,7 @@ def ensure_minio_bucket():
 # ---------------------
 
 
-def _ensure_artifact(client: httpx.Client, token: str) -> tuple[dict, str]:
+def _ensure_artifact(client: httpx.Client, token: str) -> tuple[dict[str, Any], str]:
     """Ensure a software artifact exists (upload if needed). Return the chosen software dict and its version."""
     list_resp = client.get("/api/v1/software", headers={"Authorization": f"Bearer {token}"})
     assert list_resp.status_code == 200
@@ -105,7 +106,7 @@ def _ensure_artifact(client: httpx.Client, token: str) -> tuple[dict, str]:
     return sw, sw_version
 
 
-def _ensure_artifact_and_rollout(client: httpx.Client, token: str, feed: str = "default") -> tuple[dict, str]:
+def _ensure_artifact_and_rollout(client: httpx.Client, token: str, feed: str = "default") -> tuple[dict[str, Any], str]:
     """Ensure an artifact exists and create a rollout targeting the given feed.
     Returns the software dict and its version.
     """
@@ -121,7 +122,7 @@ def _ensure_artifact_and_rollout(client: httpx.Client, token: str, feed: str = "
     return sw, version
 
 
-def test_e2e_smoke_setup_login_and_basic_routes(ensure_services_ready):
+def test_e2e_smoke_setup_login_and_basic_routes(ensure_services_ready: bool) -> None:
     with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=20.0) as client:
         token = auth_token(client)
 
@@ -141,7 +142,7 @@ def test_e2e_smoke_setup_login_and_basic_routes(ensure_services_ready):
         assert "gooseBit" in root_resp.text or "Devices" in root_resp.text
 
 
-def test_e2e_artifact_upload_and_minio_presence(ensure_services_ready):
+def test_e2e_artifact_upload_and_minio_presence(ensure_services_ready: bool) -> None:
     with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=20.0) as client:
         token = auth_token(client)
         sw, _ = _ensure_artifact(client, token)
@@ -171,7 +172,7 @@ def test_e2e_artifact_upload_and_minio_presence(ensure_services_ready):
                 raise AssertionError(f"Object not found in MinIO bucket={MINIO_BUCKET}, key={key}: {last_exc}")
 
 
-def test_e2e_device_update_rollout_to_version(ensure_services_ready):
+def test_e2e_device_update_rollout_to_version(ensure_services_ready: bool) -> None:
     # Sanity: service docs should be reachable
     ok, err = wait_for_service(f"{BASE_URL}/docs", timeout_seconds=180)
     assert ok, f"Service not ready: {err}"
@@ -219,7 +220,7 @@ def test_e2e_device_update_rollout_to_version(ensure_services_ready):
         )
 
 
-def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready):
+def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready: bool) -> None:
     with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=20.0) as client:
         token = auth_token(client)
 

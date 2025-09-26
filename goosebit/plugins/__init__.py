@@ -7,7 +7,7 @@ from goosebit.settings import config
 logger = logging.getLogger(__name__)
 
 
-def load() -> list:
+def load() -> list[PluginSchema]:
     plugin_configs = []
     logger.info("Checking for plugins to be loaded...")
     if len(config.plugins) == 0:

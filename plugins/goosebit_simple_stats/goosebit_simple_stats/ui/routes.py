@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, Response, Security
 from fastapi.requests import Request
 
-from goosebit import nav
+from goosebit import nav  # type: ignore[attr-defined]
 from goosebit.auth import redirect_if_unauthenticated, validate_user_permissions
 from goosebit.ui.templates import templates
 
@@ -20,5 +20,5 @@ router.include_router(bff.router)
     ],
 )
 @nav.route("Stats", permissions=["stats.read"])
-async def stats_ui(request: Request):
+async def stats_ui(request: Request) -> Response:
     return templates.TemplateResponse(request, "stats.html.jinja", context={"title": "Simple Stats"})

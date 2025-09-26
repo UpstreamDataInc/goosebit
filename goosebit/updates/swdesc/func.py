@@ -3,7 +3,7 @@ import hashlib
 from anyio import AsyncFile
 
 
-async def sha1_hash_file(fileobj: AsyncFile):
+async def sha1_hash_file(fileobj: AsyncFile[bytes]) -> str:
     last = await fileobj.tell()
     await fileobj.seek(0)
     sha1_hash = hashlib.sha1()

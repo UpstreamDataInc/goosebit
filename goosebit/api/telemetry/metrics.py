@@ -9,7 +9,7 @@ from . import prometheus
 readers = []
 
 if config.metrics.prometheus.enable:
-    readers.append(prometheus.reader)
+    readers.append(prometheus.reader)  # type: ignore[attr-defined]
 
 
 resource = Resource(attributes={SERVICE_NAME: "goosebit"})

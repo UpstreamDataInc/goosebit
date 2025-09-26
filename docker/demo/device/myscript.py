@@ -3,7 +3,7 @@
 from time import sleep
 
 
-def main():
+def main() -> None:
     while True:
         print("Hello!", flush=True)
         sleep(5)

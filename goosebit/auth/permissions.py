@@ -1,21 +1,21 @@
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field, computed_field
 
 
 class Permission(BaseModel):
-    def model_post_init(self, ctx):
+    def model_post_init(self, ctx: Any) -> None:
         if self.sub_permissions is None:
             return
         for permission in self.sub_permissions:
             permission.parent_permission = self
 
-    def __call__(self, *args, **kwargs) -> str:
+    def __call__(self, *args: Any, **kwargs: Any) -> str:
         if self.parent_permission is None:
             return self.name
         return ".".join([self.parent_permission(), self.name])
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> "Permission":
         return self.sub_permissions_by_name[item]
 
     @property
@@ -24,12 +24,12 @@ class Permission(BaseModel):
             return {}
         return {item.name: item for item in self.sub_permissions}
 
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def value(self) -> str:
         return self()
 
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def parent(self) -> str | None:
         if self.parent_permission is not None:

@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
@@ -28,7 +29,7 @@ router = APIRouter(prefix="/v1")
 
 
 @router.get("/{dev_id}")
-async def polling(request: Request, device: Device = Depends(get_device)):
+async def polling(request: Request, device: Device = Depends(get_device)) -> dict[str, Any]:
     links: dict[str, dict[str, str]] = {}
 
     if device is None:
@@ -93,7 +94,7 @@ async def polling(request: Request, device: Device = Depends(get_device)):
 
 
 @router.put("/{dev_id}/configData")
-async def config_data(_: Request, cfg: ConfigDataSchema, device: Device = Depends(get_device)):
+async def config_data(_: Request, cfg: ConfigDataSchema, device: Device = Depends(get_device)) -> dict[str, bool | str]:
     await DeviceManager.update_config_data(device, **cfg.data)
     logger.info(f"Updating config data, device={device.id}")
     return {"success": True, "message": "Updated swupdate data."}
@@ -104,7 +105,7 @@ async def deployment_base(
     request: Request,
     action_id: int,
     device: Device = Depends(get_device),
-):
+) -> dict[str, Any] | None:
     handling_type, software = await DeviceManager.get_update(device)
 
     logger.info(f"Request deployment base, device={device.id}")
@@ -130,10 +131,13 @@ async def deployment_base(
                     "chunks": [chunk.model_dump(by_alias=True)],
                 },
             }
+    return None
 
 
 @router.post("/{dev_id}/deploymentBase/{action_id}/feedback")
-async def deployment_feedback(_: Request, data: FeedbackSchema, action_id: int, device: Device = Depends(get_device)):
+async def deployment_feedback(
+    _: Request, data: FeedbackSchema, action_id: int, device: Device = Depends(get_device)
+) -> dict[str, str]:
     if data.status.execution == FeedbackStatusExecutionState.PROCEEDING:
         if device and device.last_state != UpdateStateEnum.RUNNING:
             await DeviceManager.deployment_action_start(device)
@@ -201,8 +205,8 @@ async def deployment_feedback(_: Request, data: FeedbackSchema, action_id: int, 
 
 
 @router.head("/{dev_id}/download")
-async def download_artifact_head(_: Request, device: Device = Depends(get_device)):
-    _, software = await DeviceManager.get_update(device)
+async def download_artifact_head(_: Request, device: Device = Depends(get_device)) -> Response:
+    handling_type, software = await DeviceManager.get_update(device)
     if software is None:
         raise HTTPException(404)
 
@@ -212,8 +216,8 @@ async def download_artifact_head(_: Request, device: Device = Depends(get_device
 
 
 @router.get("/{dev_id}/download")
-async def download_artifact(_: Request, device: Device = Depends(get_device)):
-    _, software = await DeviceManager.get_update(device)
+async def download_artifact(_: Request, device: Device = Depends(get_device)) -> Response:
+    handling_type, software = await DeviceManager.get_update(device)
     if software is None:
         raise HTTPException(404)
 

@@ -1,8 +1,8 @@
 import asyncio
-from pathlib import Path
 from typing import AsyncIterable
 from urllib.parse import urlparse
 
+from anyio import Path
 from boto3.session import Session
 from botocore.config import Config
 from botocore.exceptions import ClientError
@@ -76,11 +76,11 @@ class S3StorageBackend(StorageProtocol):
         else:
             raise ValueError(f"Fallback to streaming as S3 service might not be exposed externally: {uri}")
 
-    def get_temp_dir(self) -> Path:
+    async def get_temp_dir(self) -> Path:
         import tempfile
 
         temp_dir = Path(tempfile.gettempdir()).joinpath("goosebit-s3-temp")
-        temp_dir.mkdir(parents=True, exist_ok=True)
+        await temp_dir.mkdir(parents=True, exist_ok=True)
         return temp_dir
 
     async def delete_file(self, uri: str) -> bool:

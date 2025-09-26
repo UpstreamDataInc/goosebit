@@ -3,5 +3,5 @@ from goosebit.schema.plugins import PluginSchema
 from . import middleware
 
 config = PluginSchema(
-    middleware=middleware.ForwardedHeaderMiddleware,
+    middleware=middleware.ForwardedHeaderMiddleware,  # type: ignore[attr-defined]
 )

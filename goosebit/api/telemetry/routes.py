@@ -6,4 +6,4 @@ from . import prometheus
 
 router = APIRouter(prefix="/telemetry")
 if config.metrics.prometheus.enable:
-    router.include_router(prometheus.router)
+    router.include_router(prometheus.router)  # type: ignore[attr-defined]

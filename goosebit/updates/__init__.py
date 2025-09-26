@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
@@ -51,7 +52,7 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
         filename = Path(url2pathname(unquote(parsed_uri.path))).name
 
         dest_path = Path(update_info["hash"]).joinpath(filename)
-        uri = await storage.store_file(temp_file, dest_path)
+        uri = await storage.store_file(Path(temp_file), dest_path)
 
     # create software
     software = await Software.create(
@@ -68,10 +69,10 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
         revision = comp.get("hw_revision", "default")
         await software.compatibility.add((await Hardware.get_or_create(model=model, revision=revision))[0])
     await software.save()
-    return software
+    return software  # type: ignore[no-any-return]
 
 
-async def _is_software_colliding(update_info):
+async def _is_software_colliding(update_info: dict[str, Any]) -> bool:
     version = update_info["version"]
     compatibility = update_info["compatibility"]
 
@@ -89,7 +90,7 @@ async def _is_software_colliding(update_info):
     # Check if any existing software with the same version is compatible with any of these hardware IDs
     is_colliding = await Software.filter(version=version, compatibility__in=hardware_ids).exists()
 
-    return is_colliding
+    return is_colliding  # type: ignore[no-any-return]
 
 
 async def generate_chunk(request: Request, device: Device) -> list[UpdateChunk]:

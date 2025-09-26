@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException, Response, Security
 from fastapi.requests import HTTPConnection, Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import SecurityScopes
@@ -18,7 +18,7 @@ from . import bff
 from .templates import templates
 
 router = APIRouter(prefix="/ui", include_in_schema=False)
-router.include_router(bff.router)
+router.include_router(bff.router)  # type: ignore[attr-defined]
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def validate_user_permissions_with_nav_redirect(
     connection: HTTPConnection,
     security: SecurityScopes,
     user: User = Depends(get_current_user),
-):
+) -> HTTPConnection:
     if not check_permissions(security.scopes, user.permissions):
         logger.warning(f"{user.username} does not have sufficient permissions")
         for item in nav.items:
@@ -45,7 +45,7 @@ def validate_user_permissions_with_nav_redirect(
 
 
 @router.get("", dependencies=[Depends(redirect_if_unauthenticated)])
-async def ui_root(request: Request):
+async def ui_root(request: Request) -> RedirectResponse:
     return RedirectResponse(request.url_for("devices_ui"))
 
 
@@ -57,7 +57,7 @@ async def ui_root(request: Request):
     ],
 )
 @nav.route("Devices", permissions=[GOOSEBIT_PERMISSIONS["device"]["read"]()])
-async def devices_ui(request: Request):
+async def devices_ui(request: Request) -> Response:
     return templates.TemplateResponse(request, "devices.html.jinja", context={"title": "Devices"})
 
 
@@ -69,7 +69,7 @@ async def devices_ui(request: Request):
     ],
 )
 @nav.route("Software", permissions=[GOOSEBIT_PERMISSIONS["software"]["read"]()])
-async def software_ui(request: Request):
+async def software_ui(request: Request) -> Response:
     return templates.TemplateResponse(request, "software.html.jinja", context={"title": "Software"})
 
 
@@ -81,7 +81,7 @@ async def software_ui(request: Request):
     ],
 )
 @nav.route("Rollouts", permissions=[GOOSEBIT_PERMISSIONS["rollout"]["read"]()])
-async def rollouts_ui(request: Request):
+async def rollouts_ui(request: Request) -> Response:
     return templates.TemplateResponse(request, "rollouts.html.jinja", context={"title": "Rollouts"})
 
 
@@ -92,7 +92,7 @@ async def rollouts_ui(request: Request):
         Security(validate_user_permissions_with_nav_redirect, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()]),
     ],
 )
-async def logs_ui(request: Request, dev_id: str):
+async def logs_ui(request: Request, dev_id: str) -> Response:
     return templates.TemplateResponse(request, "logs.html.jinja", context={"title": "Log", "device": dev_id})
 
 
@@ -104,5 +104,5 @@ async def logs_ui(request: Request, dev_id: str):
     ],
 )
 @nav.route("Settings", permissions=[GOOSEBIT_PERMISSIONS["settings"]()], show=False)
-async def settings_ui(request: Request):
+async def settings_ui(request: Request) -> Response:
     return templates.TemplateResponse(request, "settings.html.jinja", context={"title": "Settings"})

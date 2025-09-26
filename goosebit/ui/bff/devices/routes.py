@@ -25,7 +25,7 @@ from .requests import DevicesPatchRequest
 from .responses import BFFDeviceResponse
 
 router = APIRouter(prefix="/devices")
-router.include_router(device.router)
+router.include_router(device.router)  # type: ignore[attr-defined]
 
 
 @router.get(
@@ -33,7 +33,7 @@ router.include_router(device.router)
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()])],
 )
 async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)]) -> BFFDeviceResponse:
-    def search_filter(search_value: str):
+    def search_filter(search_value: str) -> Q:
         return (
             Q(id__icontains=search_value)
             | Q(name__icontains=search_value)
@@ -51,7 +51,7 @@ async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datata
 
     response = await BFFDeviceResponse.convert(dt_query, query, search_filter)
 
-    async def set_assigned_sw(d: DeviceSchema):
+    async def set_assigned_sw(d: DeviceSchema) -> DeviceSchema:
         device = await get_device(d.id)
         _, target = await DeviceManager.get_update(device)
         if target is not None:
@@ -59,7 +59,8 @@ async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datata
             d.assigned_software = SoftwareSchema.model_validate(target)
         return d
 
-    response.data = await asyncio.gather(*[set_assigned_sw(d) for d in response.data])
+    updated_devices: list[DeviceSchema] = await asyncio.gather(*[set_assigned_sw(d) for d in response.data])
+    response.data = updated_devices
     return response
 
 

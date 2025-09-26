@@ -8,7 +8,7 @@ from . import users
 
 router = APIRouter(prefix="/settings")
 
-router.include_router(users.router)
+router.include_router(users.router)  # type: ignore[attr-defined]
 
 router.add_api_route(
     "/permissions",

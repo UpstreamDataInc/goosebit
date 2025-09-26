@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, field_serializer
 
@@ -20,5 +21,5 @@ class RolloutSchema(BaseModel):
     failure_count: int
 
     @field_serializer("created_at")
-    def serialize_created_at(self, created_at: datetime, _info):
+    def serialize_created_at(self, created_at: datetime, _info: Any) -> int:
         return int(created_at.timestamp() * 1000)

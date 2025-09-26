@@ -1,5 +1,6 @@
-from pathlib import Path
 from typing import AsyncIterable
+
+from anyio import Path
 
 from goosebit.settings import config
 from goosebit.settings.schema import GooseBitSettings, StorageType
@@ -17,11 +18,11 @@ class GoosebitStorage:
     def _create_backend(self) -> StorageProtocol:
 
         if self.config.storage.backend == StorageType.FILESYSTEM:
-            return FilesystemStorageBackend(base_path=self.config.artifacts_dir)
+            return FilesystemStorageBackend(base_path=Path(self.config.artifacts_dir))
 
         elif self.config.storage.backend == StorageType.S3:
             if self.config.storage.s3 is None:
-                return FilesystemStorageBackend(base_path=self.config.artifacts_dir)
+                return FilesystemStorageBackend(base_path=Path(self.config.artifacts_dir))
 
             s3_config = self.config.storage.s3
             return S3StorageBackend(
@@ -51,8 +52,8 @@ class GoosebitStorage:
     async def get_download_url(self, uri: str) -> str:
         return await self.backend.get_download_url(uri)
 
-    def get_temp_dir(self) -> Path:
-        return self.backend.get_temp_dir()
+    async def get_temp_dir(self) -> Path:
+        return await self.backend.get_temp_dir()
 
     async def delete_file(self, uri: str) -> bool:
         return await self.backend.delete_file(uri)
