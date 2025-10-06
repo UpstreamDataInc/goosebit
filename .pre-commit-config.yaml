@@ -22,12 +22,12 @@ repos:
         name: check-yaml for other YAML files
         exclude: ^mkdocs\.yml$
       - id: check-added-large-files
-  - repo: https://github.com/psf/black
+  - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 25.9.0
     hooks:
       - id: black
   - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
+    rev: 6.1.0
     hooks:
       - id: isort
         name: isort (python)
@@ -60,7 +60,7 @@ repos:
       - id: flake8
         additional_dependencies: []
   - repo: https://github.com/biomejs/pre-commit
-    rev: "v2.2.0"
+    rev: "v2.2.5"
     hooks:
       - id: biome-check
         additional_dependencies: ["@biomejs/biome@1.8.3"]
