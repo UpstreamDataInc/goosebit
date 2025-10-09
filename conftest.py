@@ -11,10 +11,14 @@ from httpx import ASGITransport, AsyncClient
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
 
-from goosebit import app
-from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
-from goosebit.db.models import UpdateModeEnum, UpdateStateEnum
-from goosebit.settings import PWD_CXT  # type: ignore[attr-defined]
+# Configuring rauc_compatible_pattern for tests/unit/updates/rauc/test_swdesc.py here, as we do not want to have it set
+# in goosebit.yaml.
+os.environ["GOOSEBIT_RAUC_COMPATIBLE_PATTERN"] = r"^(?P<hw_boardname>.+?)(-(?P<hw_revision>\w*[\d.]+\w*))?$"
+
+from goosebit import app  # noqa: E402
+from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS  # noqa: E402
+from goosebit.db.models import UpdateModeEnum, UpdateStateEnum  # noqa: E402
+from goosebit.settings import PWD_CXT  # type: ignore[attr-defined]  # noqa: E402
 
 # Configure logging
 logging.basicConfig(level=logging.WARN)
