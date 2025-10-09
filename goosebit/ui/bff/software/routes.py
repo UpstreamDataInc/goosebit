@@ -81,7 +81,7 @@ async def post_update(
         await create_software_update(url, None)
     else:
         # local file
-        temp_dir = Path(storage.get_temp_dir())
+        temp_dir = Path(await storage.get_temp_dir())
 
         try:
             file_path = await validate_filename(filename, temp_dir)
