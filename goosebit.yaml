@@ -59,6 +59,12 @@ poll_time: 00:01:00
 # Defaults to a randomized value. If this value is not set, user sessions will not persist when app restarts.
 #secret_key: my_very_top_secret_key123
 
+# Regular expression to extract board name and revision from RAUC compatible string.
+# HW revision support is disabled by default when using RAUC.
+# By uncommenting the following line, the last part of the compatible string, separated by a hyphen, will be
+# interpreted as the HW revision, e.g.: myboard-rev1.0a
+#rauc_compatible_pattern: ^(?P<hw_boardname>.+?)(-(?P<hw_revision>\w*[\d.]+\w*))?$
+
 # A list of installed plugins that you want to enable in gooseBit
 #plugins:
 #  - goosebit_simple_stats

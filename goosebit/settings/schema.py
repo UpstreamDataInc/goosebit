@@ -101,6 +101,8 @@ class GooseBitSettings(BaseSettings):
 
     track_device_ip: bool = True
 
+    rauc_compatible_pattern: str | None = None
+
     @field_validator("secret_key", mode="before")
     @classmethod
     def import_secret_key(cls, v: Any) -> OctKey:

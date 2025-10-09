@@ -7,6 +7,8 @@ import semver
 from anyio import Path, open_file
 from PySquashfsImage import SquashFsImage
 
+from goosebit.settings import config
+
 from .func import sha1_hash_file
 
 MAGIC = b"hsqs"
@@ -35,13 +37,14 @@ def parse_descriptor(manifest: configparser.ConfigParser) -> dict[str, Any]:
     swdesc_attrs = {}
     try:
         swdesc_attrs["version"] = semver.Version.parse(manifest["update"].get("version"))
-        pattern = re.compile(r"^(?P<hw_model>.+?)([- ](?P<hw_revision>\w*[\d.]+\w*))?$")
-        hw_model = "default"
+        hw_model = manifest["update"]["compatible"]
         hw_revision = "default"
-        m = pattern.match(manifest["update"]["compatible"])
-        if m:
-            hw_model = m.group("hw_model")
-            hw_revision = m.group("hw_revision") or "default"
+        if config.rauc_compatible_pattern is not None:
+            pattern = re.compile(config.rauc_compatible_pattern)
+            m = pattern.match(manifest["update"]["compatible"])
+            if m:
+                hw_model = m.group("hw_boardname")
+                hw_revision = m.group("hw_revision") or "default"
         swdesc_attrs["compatibility"] = [{"hw_model": hw_model, "hw_revision": hw_revision}]
     except KeyError as e:
         logger.warning(f"Parsing RAUC descriptor failed, error={e}")
