@@ -35,7 +35,7 @@ def parse_descriptor(manifest: configparser.ConfigParser) -> dict[str, Any]:
     swdesc_attrs = {}
     try:
         swdesc_attrs["version"] = semver.Version.parse(manifest["update"].get("version"))
-        pattern = re.compile(r"^(?P<hw_model>.+?)[- ]?(?P<hw_revision>\w*[\d.]+\w*)?$")
+        pattern = re.compile(r"^(?P<hw_model>.+?)([- ](?P<hw_revision>\w*[\d.]+\w*))?$")
         hw_model = "default"
         hw_revision = "default"
         m = pattern.match(manifest["update"]["compatible"])
