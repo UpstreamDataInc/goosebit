@@ -77,6 +77,7 @@ async function get_request(url) {
                 text: result.detail,
                 icon: "warning",
                 confirmButtonText: "Understood",
+                theme: "bootstrap-5",
             });
         }
 
@@ -99,6 +100,7 @@ async function post_request(url, object) {
                 text: result.detail,
                 icon: "warning",
                 confirmButtonText: "Understood",
+                theme: "bootstrap-5",
             });
         }
 
@@ -120,6 +122,7 @@ async function put_request(url, object) {
                 text: result.detail,
                 icon: "warning",
                 confirmButtonText: "Understood",
+                theme: "bootstrap-5",
             });
         }
 
@@ -141,6 +144,7 @@ async function patch_request(url, object) {
                 text: result.detail,
                 icon: "warning",
                 confirmButtonText: "Understood",
+                theme: "bootstrap-5",
             });
         }
 
@@ -162,6 +166,7 @@ async function delete_request(url, object) {
                 text: result.detail,
                 icon: "warning",
                 confirmButtonText: "Understood",
+                theme: "bootstrap-5",
             });
         }
 
