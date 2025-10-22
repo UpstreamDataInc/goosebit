@@ -3,7 +3,7 @@ from .responses import DTColumnDescription
 
 class DeviceColumns:
     id = DTColumnDescription(
-        title="ID",
+        title="Device ID",
         data="id",
         name="id",
         searchable=True,
@@ -55,14 +55,12 @@ class DeviceColumns:
         title="Update Mode",
         data="update_mode",
         name="update_mode",
-        searchable=True,
         orderable=True,
     )
     last_state = DTColumnDescription(
         title="State",
         data="last_state",
         name="last_state",
-        searchable=True,
         orderable=True,
     )
     force_update = DTColumnDescription(

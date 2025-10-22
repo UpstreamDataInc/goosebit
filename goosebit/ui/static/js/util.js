@@ -1,3 +1,8 @@
+// fix for datatable alignment issues with numbers
+DataTable.type("num", "className", "");
+DataTable.type("date", "className", "");
+DataTable.type("datetime", "className", "");
+
 function secondsToRecentDate(t) {
     if (t == null) {
         return null;
@@ -172,4 +177,23 @@ async function delete_request(url, object) {
 
         throw new Error(`DELETE ${url} failed for ${JSON.stringify(object)}`);
     }
+}
+function createColumnFooter() {
+    const inputGroup = document.createElement("div");
+    inputGroup.className = "input-group input-group-sm";
+    inputGroup.style.width = "100%";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "-";
+    input.className = "form-control form-control-sm";
+    input.disabled = true;
+
+    const iconSpan = document.createElement("span");
+    iconSpan.className = "input-group-text";
+    iconSpan.innerHTML = '<i class="bi bi-ban"></i>';
+
+    inputGroup.appendChild(iconSpan);
+    inputGroup.appendChild(input);
+    return inputGroup;
 }

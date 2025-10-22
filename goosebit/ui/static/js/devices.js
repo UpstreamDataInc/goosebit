@@ -37,10 +37,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (renderFunctions[colName]) {
             columnConfig.columns[col].render = renderFunctions[colName];
         }
+        columnConfig.columns[col].footer = createColumnFooter().outerHTML;
     }
 
     dataTable = new DataTable("#device-table", {
-        responsive: true,
         paging: true,
         processing: false,
         serverSide: true,
@@ -53,14 +53,49 @@ document.addEventListener("DOMContentLoaded", async () => {
         rowId: "id",
         ajax: {
             url: "/ui/bff/devices",
-            data: (data) => {
-                // biome-ignore lint/performance/noDelete: really has to be deleted
-                delete data.columns;
-            },
+            method: "POST",
+            submitAs: "json",
             contentType: "application/json",
         },
-        initComplete: () => {
+        initComplete: function () {
             updateBtnState();
+            const api = this.api();
+
+            columnConfig.columns.forEach((col, idx) => {
+                if (col.visible === false) {
+                    return;
+                }
+
+                if (col.searchable) {
+                    const inputGroup = document.createElement("div");
+                    inputGroup.className = "input-group input-group-sm";
+                    inputGroup.style.width = "100%";
+
+                    const column = api.column(idx);
+
+                    const input = document.createElement("input");
+                    input.type = "text";
+                    input.placeholder = col.title;
+                    input.value = column.search();
+                    input.className = "form-control form-control-sm";
+
+                    const iconSpan = document.createElement("span");
+                    iconSpan.className = "input-group-text";
+                    iconSpan.innerHTML = '<i class="bi bi-search"></i>'; // Bootstrap icon
+
+                    inputGroup.appendChild(iconSpan);
+                    inputGroup.appendChild(input);
+
+                    input.addEventListener("input", function () {
+                        const column = api.column(idx);
+                        if (column.search() !== this.value) {
+                            column.search(this.value).draw();
+                        }
+                    });
+
+                    api.column(idx).footer().replaceChildren(inputGroup);
+                }
+            });
         },
         columnDefs: [
             {
