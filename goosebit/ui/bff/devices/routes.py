@@ -11,7 +11,7 @@ from goosebit.api.responses import StatusResponse
 from goosebit.api.v1.devices import routes
 from goosebit.auth import validate_user_permissions
 from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
-from goosebit.db.models import Device, Software, UpdateModeEnum, UpdateStateEnum
+from goosebit.db.models import Device, Software, UpdateModeEnum
 from goosebit.device_manager import DeviceManager, get_device
 from goosebit.schema.devices import DeviceSchema
 from goosebit.schema.software import SoftwareSchema
@@ -33,6 +33,14 @@ router.include_router(device.router)  # type: ignore[attr-defined]
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()])],
 )
 async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)]) -> BFFDeviceResponse:
+    return await devices_post(dt_query)
+
+
+@router.post(
+    "",
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()])],
+)
+async def devices_post(dt_query: DataTableRequest) -> BFFDeviceResponse:
     def search_filter(search_value: str) -> Q:
         return (
             Q(id__icontains=search_value)
@@ -42,8 +50,6 @@ async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datata
             | Q(feed__icontains=search_value)
             | Q(sw_version__icontains=search_value)
             | Q(assigned_software__version__icontains=search_value)
-            | Q(update_mode=int(UpdateModeEnum.from_str(search_value)))
-            | Q(last_state=int(UpdateStateEnum.from_str(search_value)))
             | Q(last_ip__icontains=search_value)
         )
 
