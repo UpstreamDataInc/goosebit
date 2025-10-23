@@ -32,14 +32,6 @@ async def software_get(
     dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)],
     ids: list[str] = Query(default=None),
 ) -> BFFSoftwareResponse:
-    return await software_post(dt_query, ids)
-
-
-@router.post(
-    "",
-    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["read"]()])],
-)
-async def software_post(dt_query: DataTableRequest, ids: list[str] | None = None) -> BFFSoftwareResponse:
     filters: list[Q] = []
 
     if ids is not None:
@@ -48,11 +40,24 @@ async def software_post(dt_query: DataTableRequest, ids: list[str] | None = None
 
     def search_filter(search_value: str) -> Q:
         base_filter = Q(Q(uri__icontains=search_value), Q(version__icontains=search_value), join_type="OR")
-        return Q(base_filter, *filters, join_type="AND")
+        return Q(base_filter, join_type="AND")
 
     query = Software.all().prefetch_related("compatibility")
 
     return await BFFSoftwareResponse.convert(dt_query, query, search_filter, Q(*filters))
+
+
+@router.post(
+    "",
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["read"]()])],
+)
+async def software_post(dt_query: DataTableRequest) -> BFFSoftwareResponse:
+    def search_filter(search_value: str) -> Q:
+        return Q(uri__icontains=search_value) | Q(version__icontains=search_value)
+
+    query = Software.all().prefetch_related("compatibility")
+
+    return await BFFSoftwareResponse.convert(dt_query, query, search_filter)
 
 
 router.add_api_route(

@@ -21,6 +21,9 @@ class BFFRolloutsResponse(BaseModel):
         if dt_query.search.value:
             query = query.filter(search_filter(dt_query.search.value))
 
+        for column in dt_query.columns:
+            query = query.filter(column.query)
+
         filtered_records = await query.count()
 
         if dt_query.order_query:
