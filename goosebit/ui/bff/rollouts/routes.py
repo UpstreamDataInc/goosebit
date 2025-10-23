@@ -38,9 +38,9 @@ async def rollouts_get(dt_query: Annotated[DataTableRequest, Depends(parse_datat
 router.add_api_route(
     "",
     routes.rollouts_put,
-    methods=["POST"],
+    methods=["PUT"],
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["write"]()])],
-    name="bff_rollouts_post",
+    name="bff_rollouts_put",
 )
 
 

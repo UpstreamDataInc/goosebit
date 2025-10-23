@@ -21,7 +21,7 @@ async def rollouts_get(_: Request) -> RolloutsResponse:
     return RolloutsResponse(rollouts=rollouts)
 
 
-@router.post(
+@router.put(
     "",
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["write"]()])],
 )

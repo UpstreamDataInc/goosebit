@@ -24,7 +24,7 @@ async def settings_users_get(_: Request) -> SettingsUsersResponse:
     return SettingsUsersResponse(users=users)
 
 
-@router.post(
+@router.put(
     "",
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["settings"]["users"]["write"]()])],
 )

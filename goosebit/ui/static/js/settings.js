@@ -289,7 +289,7 @@ async function createUser() {
     );
 
     try {
-        await post_request("/ui/bff/settings/users", {
+        await put_request("/ui/bff/settings/users", {
             username: username,
             password: password,
             permissions: permissions,

@@ -28,7 +28,7 @@ async def _api_device_get(async_client: AsyncClient, dev_id: str) -> Dict[str, A
 
 
 async def _api_rollout_create(async_client: AsyncClient, feed: str, software: Software, paused: bool) -> None:
-    response = await async_client.post(
+    response = await async_client.put(
         "/api/v1/rollouts",
         json={"name": "", "feed": feed, "software_id": software.id},
     )

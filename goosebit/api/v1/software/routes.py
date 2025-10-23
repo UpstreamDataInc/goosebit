@@ -58,11 +58,11 @@ async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> Stat
     return StatusResponse(success=success)
 
 
-@router.post(
+@router.put(
     "",
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["write"]()])],
 )
-async def post_update(_: Request, file: UploadFile | None = File(None), url: str | None = Form(None)) -> dict[str, int]:
+async def put_update(_: Request, file: UploadFile | None = File(None), url: str | None = Form(None)) -> dict[str, int]:
     if url is not None:
         # remote file
         software = await Software.get_or_none(uri=url)

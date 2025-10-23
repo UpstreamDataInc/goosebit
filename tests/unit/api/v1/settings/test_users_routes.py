@@ -9,7 +9,7 @@ from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
 async def test_create_user(async_client: Any, test_data: Any) -> None:
     user_to_create = {"username": "created@goosebit.test", "permissions": [GOOSEBIT_PERMISSIONS["device"]["read"]()]}
 
-    response = await async_client.post("/api/v1/settings/users", json={"password": "testcreated", **user_to_create})
+    response = await async_client.put("/api/v1/settings/users", json={"password": "testcreated", **user_to_create})
     assert response.status_code == 200
 
     user_to_create["enabled"] = True  # type: ignore[assignment]

@@ -13,7 +13,7 @@ async def test_create_software_local(async_client: Any, test_data: Any) -> None:
     async with await open_file(path, "rb") as file:
         files = {"file": await file.read()}
 
-    response = await async_client.post("/api/v1/software", files=files)
+    response = await async_client.put("/api/v1/software", files=files)
 
     assert response.status_code == 200
     software = response.json()
@@ -26,12 +26,12 @@ async def test_create_software_local_twice(async_client: Any, test_data: Any) ->
     path = resolved.parent / "software-header.swu"
     with open(path, "rb") as file:
         files = {"file": file}
-        response = await async_client.post("/api/v1/software", files=files)
+        response = await async_client.put("/api/v1/software", files=files)
     assert response.status_code == 200
 
     with open(path, "rb") as file:
         files = {"file": file}
-        response = await async_client.post("/api/v1/software", files=files)
+        response = await async_client.put("/api/v1/software", files=files)
     assert response.status_code == 409
 
 
@@ -45,7 +45,7 @@ async def test_create_software_remote(async_client: Any, httpserver: Any, test_d
     httpserver.expect_request("/software-header.swu").respond_with_data(byte_array)
 
     software_url = httpserver.url_for("/software-header.swu")
-    response = await async_client.post("/api/v1/software", data={"url": software_url})
+    response = await async_client.put("/api/v1/software", data={"url": software_url})
 
     assert response.status_code == 200
     software = response.json()
@@ -115,5 +115,5 @@ async def _upload_software(async_client: Any, httpserver: Any, software_file: st
         byte_array = file.read()
     httpserver.expect_request(download_url).respond_with_data(byte_array)
     software_url = httpserver.url_for(download_url)
-    response = await async_client.post("/api/v1/software", data={"url": software_url})
+    response = await async_client.put("/api/v1/software", data={"url": software_url})
     return response
