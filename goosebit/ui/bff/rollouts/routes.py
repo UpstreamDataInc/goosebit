@@ -22,6 +22,14 @@ router = APIRouter(prefix="/rollouts")
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["read"]()])],
 )
 async def rollouts_get(dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)]) -> BFFRolloutsResponse:
+    return await rollouts_post(dt_query)
+
+
+@router.post(
+    "",
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["read"]()])],
+)
+async def rollouts_post(dt_query: DataTableRequest) -> BFFRolloutsResponse:
     def search_filter(search_value: str) -> Q:
         return (
             Q(name__icontains=search_value)

@@ -17,12 +17,22 @@ class BFFSoftwareResponse(BaseModel):
 
     @classmethod
     async def convert(
-        cls, dt_query: DataTableRequest, query: QuerySet[Any], search_filter: Callable[[str], Any], alt_filter: Q
+        cls,
+        dt_query: DataTableRequest,
+        query: QuerySet[Any],
+        search_filter: Callable[[str], Any],
+        alt_filter: Q | None = None,
     ) -> "BFFSoftwareResponse":
         total_records = await query.count()
-        query = query.filter(alt_filter)
+
+        if alt_filter is not None:
+            query = query.filter(alt_filter)
+
         if dt_query.search.value:
             query = query.filter(search_filter(dt_query.search.value))
+
+        for column in dt_query.columns:
+            query = query.filter(column.query)
 
         filtered_records = await query.count()
 
