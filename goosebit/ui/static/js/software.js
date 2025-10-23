@@ -165,7 +165,7 @@ async function sendFileChunks(file) {
         }
 
         const response = await fetch("/ui/bff/software", {
-            method: "POST",
+            method: "PUT",
             body: formData,
         });
 
@@ -209,7 +209,7 @@ async function sendFileUrl(url) {
     formData.append("url", url);
 
     const response = await fetch("/ui/bff/software", {
-        method: "POST",
+        method: "PUT",
         body: formData,
     });
 

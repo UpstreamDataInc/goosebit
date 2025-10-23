@@ -32,17 +32,25 @@ async def software_get(
     dt_query: Annotated[DataTableRequest, Depends(parse_datatables_query)],
     ids: list[str] = Query(default=None),
 ) -> BFFSoftwareResponse:
+    return await software_post(dt_query, ids)
+
+
+@router.post(
+    "",
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["read"]()])],
+)
+async def software_post(dt_query: DataTableRequest, ids: list[str] | None = None) -> BFFSoftwareResponse:
     filters: list[Q] = []
+
+    if ids is not None:
+        hardware = await Hardware.filter(devices__id__in=ids).distinct()
+        filters.append(Q(*[Q(compatibility__id=c.id) for c in hardware], join_type="AND"))
 
     def search_filter(search_value: str) -> Q:
         base_filter = Q(Q(uri__icontains=search_value), Q(version__icontains=search_value), join_type="OR")
         return Q(base_filter, *filters, join_type="AND")
 
     query = Software.all().prefetch_related("compatibility")
-
-    if ids:
-        hardware = await Hardware.filter(devices__id__in=ids).distinct()
-        filters.append(Q(*[Q(compatibility__id=c.id) for c in hardware], join_type="AND"))
 
     return await BFFSoftwareResponse.convert(dt_query, query, search_filter, Q(*filters))
 
@@ -56,11 +64,11 @@ router.add_api_route(
 )
 
 
-@router.post(
+@router.put(
     "",
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["write"]()])],
 )
-async def post_update(
+async def put_update(
     request: Request,
     url: str = Form(default=None),
     chunk: UploadFile = Form(default=None),

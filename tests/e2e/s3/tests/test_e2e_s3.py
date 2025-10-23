@@ -92,7 +92,7 @@ def _ensure_artifact(client: httpx.Client, token: str) -> tuple[dict[str, Any], 
         assert swu_path.exists(), f"Missing test artifact: {swu_path}"
         with swu_path.open("rb") as f:
             files = {"file": (swu_path.name, f, "application/octet-stream")}
-            up_resp = client.post("/api/v1/software", files=files, headers={"Authorization": f"Bearer {token}"})
+            up_resp = client.put("/api/v1/software", files=files, headers={"Authorization": f"Bearer {token}"})
         assert up_resp.status_code == 200, up_resp.text
         uploaded_id = up_resp.json()["id"]
         # Re-fetch to get version
@@ -111,7 +111,7 @@ def _ensure_artifact_and_rollout(client: httpx.Client, token: str, feed: str = "
     Returns the software dict and its version.
     """
     sw, version = _ensure_artifact(client, token)
-    ro_resp = client.post(
+    ro_resp = client.put(
         "/api/v1/rollouts",
         json={"name": f"e2e {version}", "feed": feed, "software_id": sw["id"]},
         headers={"Authorization": f"Bearer {token}"},
@@ -230,7 +230,7 @@ def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready: bool) -> 
         assert swu_path.exists(), f"Missing test artifact: {swu_path}"
         with swu_path.open("rb") as f:
             files = {"file": (swu_path.name, f, "application/octet-stream")}
-            up_resp = client.post("/api/v1/software", files=files, headers={"Authorization": f"Bearer {token}"})
+            up_resp = client.put("/api/v1/software", files=files, headers={"Authorization": f"Bearer {token}"})
         assert up_resp.status_code == 200, up_resp.text
         sw_id = up_resp.json()["id"]
 

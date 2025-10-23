@@ -39,7 +39,7 @@ async def settings_users_get(
 router.add_api_route(
     "",
     routes.settings_users_put,
-    methods=["POST"],
+    methods=["PUT"],
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["settings"]["users"]["write"]()])],
     name="bff_settings_users_put",
 )
