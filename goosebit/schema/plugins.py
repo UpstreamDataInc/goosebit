@@ -13,6 +13,7 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 
+from goosebit.auth.permissions import Permission
 from goosebit.db import Device  # type: ignore[attr-defined]
 from goosebit.device_manager import HandlingType
 from goosebit.schema.updates import UpdateChunk
@@ -40,6 +41,7 @@ class PluginSchema(BaseModel):
     templates: Jinja2Templates | None = None
     update_source_hook: Callable[[Request, Device], Awaitable[tuple[HandlingType, UpdateChunk | None]]] | None = None
     config_data_hook: Callable[[Device, dict[str, Any]], Awaitable[None]] | None = None
+    permissions: Permission | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
