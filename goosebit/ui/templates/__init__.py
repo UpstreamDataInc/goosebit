@@ -17,7 +17,7 @@ templates = Jinja2Templates(context_processors=[attach_permissions_comparison], 
 
 
 def add_template_handler(handler: Jinja2Templates) -> None:
-    if hasattr(templates.env.loader, "loaders") and hasattr(handler.env.loader, "loaders"):
+    if hasattr(templates.env.loader, "loaders"):
         templates.env.loader.loaders.append(handler.env.loader)
 
 
