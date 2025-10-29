@@ -14,8 +14,12 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from tortoise.exceptions import ValidationError
 
 from goosebit import api, db, plugins, ui, updater
-from goosebit.auth import get_user_from_request, login_user, redirect_if_authenticated
-from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS
+from goosebit.auth import (
+    get_user_from_request,
+    login_user,
+    permissions,
+    redirect_if_authenticated,
+)
 from goosebit.device_manager import DeviceManager
 from goosebit.settings import PWD_CXT, config  # type: ignore[attr-defined]
 from goosebit.ui.nav import nav
@@ -84,8 +88,8 @@ for plugin in plugins.load():
         DeviceManager.add_update_source(plugin.update_source_hook)
     if plugin.config_data_hook is not None:
         DeviceManager.add_config_callback(plugin.config_data_hook)
-    if plugin.permissions is not None and GOOSEBIT_PERMISSIONS.sub_permissions is not None:
-        GOOSEBIT_PERMISSIONS.sub_permissions.append(plugin.permissions)
+    if plugin.permissions is not None:
+        permissions.HANDLER.append(plugin.permissions)
 
 
 # Custom exception handler for Tortoise ValidationError
