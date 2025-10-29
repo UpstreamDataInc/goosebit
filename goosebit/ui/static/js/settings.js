@@ -196,17 +196,17 @@ function updateUsersList() {
 async function createPermissions() {
     const permissions = await get_request("/ui/bff/settings/permissions");
 
-    innerAccordion = document.createElement("div");
+    const innerAccordion = document.createElement("div");
     innerAccordion.classList = "accordion-body p-0";
 
-    for (innerPermission in permissions.sub_permissions) {
-        dropdown = createPermissionDropdown(permissions.sub_permissions[innerPermission]);
-        innerAccordion.innerHTML += dropdown;
+    for (innerPermission in permissions) {
+        const dropdown = createPermissionDropdown(permissions[innerPermission]);
+        innerAccordion.insertAdjacentHTML("beforeend", dropdown);
     }
 
     return `<div class="input-group d-flex">
         <div class="input-group-text p-2 px-3">
-            <input class="form-check-input mt-0 ignore-validation" type="checkbox" value="${permissions.value}"  id="${permissions.value}-checkbox" onchange="permissionCheckOnUpdate(this)">
+            <input class="form-check-input mt-0 ignore-validation" type="checkbox" value="*"  id="all-checkbox" onchange="permissionCheckOnUpdate(this)">
         </div>
         <div class="d-flex flex-fill accordion rounded-start-0">
             <div class="accordion-item w-100 rounded-start-0">
@@ -214,11 +214,11 @@ async function createPermissions() {
                     <button class="accordion-button collapsed py-2 rounded-start-0"
                         type="button"
                         data-bs-toggle="collapse"
-                        data-bs-target="#${permissions.value}">
-                        ${permissions.description}
+                        data-bs-target="#all">
+                        Full access to Goosebit and all plugins
                     </button>
                 </div>
-                <div id="${permissions.value}" class="accordion-collapse collapse">
+                <div id="all" class="accordion-collapse collapse">
                     ${innerAccordion.outerHTML}
                 </div>
             </div>
@@ -238,18 +238,19 @@ function createPermissionDropdown(permission) {
         </div>`;
     }
 
-    subAccordion = document.createElement("div");
+    const subAccordion = document.createElement("div");
     subAccordion.classList = "accordion-body p-0";
 
-    for (innerPermission in permission.sub_permissions) {
-        dropdown = createPermissionDropdown(permission.sub_permissions[innerPermission]);
-        subAccordion.innerHTML += dropdown;
+    for (innerPermission of permission.sub_permissions) {
+        const dropdown = createPermissionDropdown(innerPermission);
+        subAccordion.insertAdjacentHTML("beforeend", dropdown);
     }
-    permissionId = permission.value.replaceAll(".", "-");
+    const permissionId = permission.value.replaceAll(".", "-");
+    const parentPermission = permission.parent ? permission.parent : "*";
 
     return `<div class="input-group d-flex border-top">
         <div class="input-group-text p-2 px-3 rounded-0 border-0 border-start">
-            <input class="form-check-input mt-0" type="checkbox" value="${permission.value}" id="${permissionId}-checkbox" data-permission-parent="${permission.parent}" onchange="permissionCheckOnUpdate(this)">
+            <input class="form-check-input mt-0" type="checkbox" value="${permission.value}" id="${permissionId}-checkbox" data-permission-parent="${parentPermission}" onchange="permissionCheckOnUpdate(this)">
         </div>
         <div class="d-flex flex-fill accordion accordion-flush border-start">
             <div class="accordion-item w-100 rounded-start-0">

@@ -78,3 +78,17 @@ GOOSEBIT_PERMISSIONS = Permission(
     description="Full access to GooseBit",
     sub_permissions=[DEVICE_PERMISSIONS, SOFTWARE_PERMISSIONS, ROLLOUT_PERMISSIONS, SETTING_PERMISSIONS],
 )
+
+
+class PermissionHandler:
+    def __init__(self, permissions: list[Permission]):
+        self.permissions = permissions
+
+    def append(self, permission: Permission) -> None:
+        self.permissions.append(permission)
+
+    def extend(self, permissions: list[Permission]) -> None:
+        self.permissions.extend(permissions)
+
+
+HANDLER = PermissionHandler([GOOSEBIT_PERMISSIONS])

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS, Permission
+from goosebit.auth.permissions import HANDLER, Permission
 
 from . import users
 
@@ -10,5 +10,5 @@ router.include_router(users.router)  # type: ignore[attr-defined]
 
 
 @router.get("/permissions", response_model_exclude_none=True)
-async def settings_permissions_get() -> Permission:
-    return GOOSEBIT_PERMISSIONS
+async def settings_permissions_get() -> list[Permission]:
+    return HANDLER.permissions
