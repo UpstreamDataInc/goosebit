@@ -99,10 +99,12 @@ class DeviceManager:
             await DeviceManager.save_device(device, update_fields=["last_seen"])
         elif ":" in last_ip:
             device.last_ipv6 = last_ip
-            await DeviceManager.save_device(device, update_fields=["last_seen", "last_ipv6"])
+            device.last_ip = None
+            await DeviceManager.save_device(device, update_fields=["last_seen", "last_ipv6", "last_ip"])
         else:
             device.last_ip = last_ip
-            await DeviceManager.save_device(device, update_fields=["last_seen", "last_ip"])
+            device.last_ipv6 = None
+            await DeviceManager.save_device(device, update_fields=["last_seen", "last_ip", "last_ipv6"])
 
     @staticmethod
     async def update_update(device: Device, update_mode: UpdateModeEnum, software: Software | None) -> None:
