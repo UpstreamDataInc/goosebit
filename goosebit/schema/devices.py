@@ -5,7 +5,7 @@ from datetime import datetime
 from enum import Enum, IntEnum, StrEnum
 from typing import Annotated
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, computed_field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, computed_field
 
 from goosebit.db.models import UpdateModeEnum, UpdateStateEnum
 from goosebit.schema.software import HardwareSchema, SoftwareSchema
@@ -42,7 +42,8 @@ class DeviceSchema(BaseModel):
     last_state: Annotated[UpdateStateSchema, BeforeValidator(UpdateStateSchema.convert)]  # type: ignore[valid-type]
     update_mode: Annotated[UpdateModeSchema, BeforeValidator(UpdateModeSchema.convert)]  # type: ignore[valid-type]
     force_update: bool
-    last_ip: str | None
+    last_ipv4: str | None = Field(validation_alias="last_ip")
+    last_ipv6: str | None
     last_seen: Annotated[
         int | None, BeforeValidator(lambda last_seen: round(time.time() - last_seen) if last_seen is not None else None)
     ]
@@ -52,6 +53,11 @@ class DeviceSchema(BaseModel):
     @property
     def polling(self) -> bool | None:
         return self.last_seen < (self.poll_seconds + 10) if self.last_seen is not None else None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def last_ip(self) -> str | None:
+        return self.last_ipv4 or self.last_ipv6
 
     @computed_field  # type: ignore[prop-decorator]
     @property
