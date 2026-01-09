@@ -1,10 +1,23 @@
 from __future__ import annotations
 
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote, urlparse, urlunparse
 from urllib.request import url2pathname
 
 from anyio import Path
 from pydantic import BaseModel, ConfigDict, Field, computed_field
+
+
+def mask_url_password(url: str) -> str:
+    """Mask password in URL for display purposes."""
+    parsed = urlparse(url)
+    if parsed.password:
+        # Reconstruct netloc with masked password
+        if parsed.port:
+            netloc = f"{parsed.username}:***@{parsed.hostname}:{parsed.port}"
+        else:
+            netloc = f"{parsed.username}:***@{parsed.hostname}"
+        return urlunparse(parsed._replace(netloc=netloc))
+    return url
 
 
 class HardwareSchema(BaseModel):
@@ -39,4 +52,4 @@ class SoftwareSchema(BaseModel):
         if self.local:
             return self.path.name
         else:
-            return self.uri
+            return mask_url_password(self.uri)
