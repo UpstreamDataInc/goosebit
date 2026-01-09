@@ -98,9 +98,14 @@ async def generate_chunk(request: Request, device: Device) -> list[UpdateChunk]:
     if software is None:
         return []
 
-    # Always use the download endpoint for consistency, the endpoint
-    # will handle both local and remote files appropriately.
-    href = str(request.url_for("download_artifact", dev_id=device.id))
+    # For remote http(s) URLs, pass the original URL directly to the device.
+    # This preserves credentials in the URL and allows relative path resolution (e.g. for casync).
+    # For s3:// or file:// URIs, use the download endpoint which handles proxying.
+    parsed_uri = urlparse(software.uri)
+    if parsed_uri.scheme in ("http", "https"):
+        href = software.uri
+    else:
+        href = str(request.url_for("download_artifact", dev_id=device.id))
 
     return [
         UpdateChunk(
