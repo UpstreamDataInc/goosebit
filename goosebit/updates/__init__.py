@@ -110,6 +110,7 @@ async def generate_chunk(request: Request, device: Device) -> list[UpdateChunk]:
     return [
         UpdateChunk(
             name=software.path.name,
+            version=software.version,
             artifacts=[
                 UpdateChunkArtifact(
                     filename=software.path.name,
