@@ -1,5 +1,8 @@
 FROM alpine:3.22 AS build
 
+ARG LIBUBOOTENV_COMMIT=5e6d8b6318be809ac5a8989756ade45ece88ca7e
+ARG SWUPDATE_COMMIT=cad85ea38ccd53bb5174c2f5fa3fb31a8d469a39
+
 WORKDIR /app
 
 RUN apk add --no-cache alpine-sdk python3 cmake zlib-dev linux-headers \
@@ -11,11 +14,11 @@ RUN ln -s /usr/lib/lua5.2/liblua.so /usr/lib/liblua.so
 
 RUN git clone https://github.com/sbabic/libubootenv && \
     cd libubootenv && \
-    git reset --hard 5e6d8b6318be809ac5a8989756ade45ece88ca7e && \
+    git reset --hard ${LIBUBOOTENV_COMMIT} && \
     mkdir -p build && cd build && cmake .. && make && make install
 
 RUN git clone https://github.com/sbabic/swupdate && cd swupdate && \
-    git reset --hard cad85ea38ccd53bb5174c2f5fa3fb31a8d469a39 && \
+    git reset --hard ${SWUPDATE_COMMIT} && \
     cd scripts/basic && gcc fixdep.c -o fixdep
 
 COPY config /app/swupdate/.config

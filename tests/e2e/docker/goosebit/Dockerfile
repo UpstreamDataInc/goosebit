@@ -1,55 +1,74 @@
 # Multi-stage build for goosebit
-FROM python:3.13-alpine AS builder
+FROM ghcr.io/astral-sh/uv:python3.14-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache \
     gcc \
     musl-dev \
     libffi-dev \
-    postgresql-dev \
-    curl
-
-# Install Poetry
-RUN pip install --no-cache-dir poetry
+    postgresql-dev
 
 # Set working directory
 WORKDIR /app
 
-# Copy poetry files
-COPY pyproject.toml poetry.lock ./
+# Enable bytecode compilation and disable dev dependencies
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_NO_DEV=1
+ENV UV_LINK_MODE=copy
 
-# Configure poetry: no dev dependencies, no virtual env (using container)
-RUN poetry config virtualenvs.create false && poetry install --only=main --no-root
+# Copy dependency files and plugin source code for better caching
+# For workspaces, we need the complete plugin directories before syncing
+COPY pyproject.toml uv.lock ./
+COPY plugins/ ./plugins/
 
-# Copy application code
+# Install dependencies only (not the workspace members)
+# Use --frozen instead of --locked since we don't have the main project files yet
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-workspace
+
+# Copy the rest of the application
 COPY . .
 
-# Install the application
-RUN poetry install --only=main
+# Install the project and workspace members in non-editable mode
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-editable
 
 # Production stage
-FROM python:3.13-alpine
-
-RUN apk add --no-cache curl
+FROM python:3.14-alpine
 
 # Install runtime dependencies
-RUN pip install --no-cache-dir gunicorn
+RUN apk add --no-cache \
+    libpq \
+    curl
+
+# Create app user for security
+RUN addgroup -g 1000 app && \
+    adduser -D -u 1000 -G app app
 
 # Create database directory
-RUN mkdir -p db/
+RUN mkdir -p /db && chown app:app /db
 
-# Copy Python packages from builder stage
-COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
+# Install gunicorn separately (not in project dependencies)
+RUN pip install --no-cache-dir gunicorn
 
 # Set working directory
 WORKDIR /app
 
-# Copy application code
-COPY . .
+# Copy virtual environment from builder
+COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
-RUN mv /app/tests/e2e/docker/goosebit/aerich.toml /aerich.toml
-RUN mv /app/tests/e2e/docker/goosebit/goosebit.yaml /app/goosebit.yaml
+# Copy application code
+COPY --chown=app:app . .
+
+# Move configuration files
+RUN mv /app/tests/e2e/docker/goosebit/aerich.toml /aerich.toml && \
+    mv /app/tests/e2e/docker/goosebit/goosebit.yaml /app/goosebit.yaml
+
+# Switch to non-root user
+USER app
+
+# Add virtual environment to PATH
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Expose the application port
 EXPOSE 60053
@@ -64,4 +83,5 @@ ENV GUNICORN_CMD_ARGS="--workers 1 --enable-stdio-inheritance"
 
 # Default command: run database migrations and start the server
 SHELL ["/bin/sh", "-c"]
-CMD poetry run aerich upgrade && gunicorn --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:60053 goosebit:app
+CMD aerich upgrade && \
+    gunicorn --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:60053 goosebit:app

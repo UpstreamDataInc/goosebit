@@ -106,28 +106,28 @@ Devices can be pinned to their current software version, preventing any updates 
 
 While updates are in progress, gooseBit captures real-time logs, which are accessible through the device repository.
 
-## Development with Poetry
+## Development with uv
 
 ### Initial Setup
 
-Install Poetry as described [here](https://python-poetry.org/docs/#installation).
+Install uv as described [here](https://docs.astral.sh/uv/getting-started/installation/).
 
 Then, to install gooseBit's dependencies, run:
 
 ```txt
-poetry install
+uv sync
 ```
 
 Initialize the database:
 
 ```txt
-poetry run aerich upgrade
+uv run aerich upgrade
 ```
 
 Launch gooseBit:
 
 ```txt
-poetry run python -m goosebit
+uv run python -m goosebit
 ```
 
 The service is now available at: [http://localhost:60053](http://localhost:60053)
@@ -137,19 +137,19 @@ The service is now available at: [http://localhost:60053](http://localhost:60053
 Initialize or migrate database:
 
 ```txt
-poetry run aerich upgrade
+uv run aerich upgrade
 ```
 
 After a model change create the migration:
 
 ```txt
-poetry run aerich migrate
+uv run aerich migrate
 ```
 
 To seed some sample data (attention: drops all current data) use:
 
 ```txt
-poetry run generate-sample-data
+uv run generate-sample-data
 ```
 
 ### Code formatting and linting
@@ -168,13 +168,13 @@ Code is linted using different tools as well
 Best to have pre-commit install git hooks that run all those tools before a commit:
 
 ```txt
-poetry run pre-commit install
+uv run pre-commit install
 ```
 
 To manually apply the hooks to all files use:
 
 ```txt
-poetry run pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ### Testing
@@ -182,19 +182,19 @@ poetry run pre-commit run --all-files
 Tests are implemented using pytest. You can run all the tests with:
 
 ```txt
-poetry run pytest
+uv run pytest
 ```
 
 To run only the unit tests:
 
 ```txt
-poetry run pytest tests/unit
+uv run pytest tests/unit
 ```
 
 To run only the end-to-end tests:
 
 ```txt
-poetry run pytest tests/e2e
+uv run pytest tests/e2e
 ```
 
 ## Development with Docker (and PostgreSQL)

@@ -34,7 +34,7 @@ logger = getLogger(__name__)
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     db_ready = await db.init()
     if not db_ready:
-        logger.exception("DB does not exist, try running `poetry run aerich upgrade`.")
+        logger.exception("DB does not exist, try running `uv run aerich upgrade`.")
 
     logger.debug(f"Initialized storage backend: {config.storage.backend}")
 

@@ -7,12 +7,19 @@ import httpx
 
 
 def compose_cmd(compose_file: Path) -> List[str]:
-    """Return a docker compose command list (v2 or fallback to docker-compose).
+    """Return a compose command list (docker compose, docker-compose, or podman compose).
 
     Always pins the compose file passed by the caller so each suite can use its own
     docker-compose.yml living alongside the tests.
+    
+    Tries in order:
+    1. docker compose (v2)
+    2. docker-compose (v1)
+    3. podman compose
     """
     compose_file = Path(compose_file).resolve()
+    
+    # Try docker compose (v2)
     try:
         subprocess.run(
             ["docker", "compose", "version"],
@@ -21,8 +28,36 @@ def compose_cmd(compose_file: Path) -> List[str]:
             stderr=subprocess.PIPE,
         )
         return ["docker", "compose", "-f", str(compose_file)]
-    except Exception:
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        pass
+    
+    # Try docker-compose (v1)
+    try:
+        subprocess.run(
+            ["docker-compose", "version"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         return ["docker-compose", "-f", str(compose_file)]
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        pass
+    
+    # Fallback to podman compose
+    try:
+        subprocess.run(
+            ["podman", "compose", "version"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        return ["podman", "compose", "-f", str(compose_file)]
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        raise RuntimeError(
+            "No container compose tool found. Please install one of: "
+            "docker compose, docker-compose, or podman compose"
+        )
+
 
 
 def compose_up_build(compose_file: Path) -> None:
