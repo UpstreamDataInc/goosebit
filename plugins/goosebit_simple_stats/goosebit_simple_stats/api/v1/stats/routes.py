@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Security
 from fastapi.requests import Request
-from goosebit_simple_stats.schema import SimpleStatsShow
-from goosebit_simple_stats.settings import config
 
 from goosebit.auth import validate_user_permissions
 from goosebit.db.models import Device, Software
+from goosebit_simple_stats.schema import SimpleStatsShow
+from goosebit_simple_stats.settings import config
 
 from .responses import SimpleStatsResponse
 

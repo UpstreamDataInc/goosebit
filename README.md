@@ -168,13 +168,13 @@ Code is linted using different tools as well
 Best to have pre-commit install git hooks that run all those tools before a commit:
 
 ```txt
-uv run pre-commit install
+uv run prek install
 ```
 
 To manually apply the hooks to all files use:
 
 ```txt
-uv run pre-commit run --all-files
+uv run prek -a
 ```
 
 ### Testing

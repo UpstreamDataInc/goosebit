@@ -16,7 +16,6 @@ class GoosebitStorage:
         self._backend: StorageProtocol = self._create_backend()
 
     def _create_backend(self) -> StorageProtocol:
-
         if self.config.storage.backend == StorageType.FILESYSTEM:
             return FilesystemStorageBackend(base_path=Path(self.config.artifacts_dir))
 

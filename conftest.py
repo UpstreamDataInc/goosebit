@@ -73,7 +73,7 @@ async def db() -> AsyncGenerator[None, None]:
     await Tortoise.init(config=TORTOISE_CONF)
     await Tortoise.generate_schemas()
     yield
-    await Tortoise._drop_databases()
+    await Tortoise._drop_databases()  # noqa: SLF001  TODO
     await Tortoise.close_connections()
 
 
