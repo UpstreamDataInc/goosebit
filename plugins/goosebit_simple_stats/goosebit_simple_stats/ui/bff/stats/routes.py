@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Security
-from goosebit_simple_stats.api.v1.stats import routes
 
 from goosebit.auth import validate_user_permissions
+from goosebit_simple_stats.api.v1.stats import routes
 
 router = APIRouter(prefix="/stats")
 

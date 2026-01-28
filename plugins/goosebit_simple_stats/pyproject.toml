@@ -2,22 +2,27 @@
 name = "goosebit-simple-stats"
 version = "0.1.1"
 description = "gooseBit plugin showing some basic statistics"
-authors = [
-    {name = "Brett Rowan", email = "121075405+b-rowan@users.noreply.github.com"}
-]
-readme = "README.md"
+authors = [{ name = "Brett Rowan", email = "121075405+b-rowan@users.noreply.github.com" }]
 requires-python = ">=3.11,<4.0"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
 dependencies = ["goosebit"]
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[project.entry-points.'goosebit.plugins']
+[project.entry-points."goosebit.plugins"]
 goosebit_simple_stats = "goosebit_simple_stats"
+
+[build-system]
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
 
 [tool.djlint]
 ignore = "H030,H031,H021"
-
-[tool.poetry.dependencies]
-goosebit = {develop = true}

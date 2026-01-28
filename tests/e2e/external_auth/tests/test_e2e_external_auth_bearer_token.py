@@ -107,9 +107,9 @@ def test_e2e_device_registration_with_external_auth_bearer_token(ensure_services
         assert registered_device is not None, "No registered device data found"
 
         # Verify device has required fields and proper state
-        assert (
-            registered_device.get("last_state", "").lower() == "registered"
-        ), f"Device state is {registered_device.get('last_state')}, expected REGISTERED"
+        assert registered_device.get("last_state", "").lower() == "registered", (
+            f"Device state is {registered_device.get('last_state')}, expected REGISTERED"
+        )
         assert "id" in registered_device, "Device missing id"
         assert "last_seen" in registered_device, "Device missing last_seen"
 
@@ -118,6 +118,6 @@ def test_e2e_device_registration_with_external_auth_bearer_token(ensure_services
         assert device_detail_resp.status_code == 200, f"Cannot access device details: {device_detail_resp.text}"
         device_detail = device_detail_resp.json()
         assert device_detail["id"] == dev_id
-        assert (
-            device_detail.get("last_state", "").lower() == "registered"
-        ), f"Individual device fetch shows state {device_detail.get('last_state')}, expected REGISTERED"
+        assert device_detail.get("last_state", "").lower() == "registered", (
+            f"Individual device fetch shows state {device_detail.get('last_state')}, expected REGISTERED"
+        )
