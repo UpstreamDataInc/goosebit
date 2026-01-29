@@ -7,7 +7,7 @@ on:
     paths:
       - ".github/workflows/update-docs.ya?ml"
       - "mkdocs.ya?ml"
-      - "poetry.lock"
+      - "uv.lock"
       - "pyproject.toml"
       - "docs/**"
 
@@ -25,23 +25,15 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        uses: step-security/harden-runner@v2
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v6
 
-      - name: Install Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
-        with:
-          python-version: 3.13
-
-      - name: Install Poetry
-        run: pip install poetry
-
-      - name: Install Dependencies
-        run: poetry install --no-root --with docs
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Deploy website
-        run: poetry run mkdocs gh-deploy --theme material --force --no-history
+        run: uv run mkdocs gh-deploy --theme material --force --no-history

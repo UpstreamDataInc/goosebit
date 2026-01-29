@@ -1,6 +1,5 @@
-from goosebit_simple_stats.schema import SimpleStatsShow
-
 from goosebit.schema.plugins import PluginSettings
+from goosebit_simple_stats.schema import SimpleStatsShow
 
 
 class SimpleStatsSettings(PluginSettings):

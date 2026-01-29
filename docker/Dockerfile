@@ -1,14 +1,18 @@
-FROM python:3.13.7-alpine@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844
+FROM python:3.14-alpine
 
 ARG GOOSEBIT_VERSION
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 RUN addgroup -g 1000 goosebit && \
     adduser -u 1000 -G goosebit -s /bin/sh -D goosebit && \
     mkdir /artifacts && \
     chown goosebit:goosebit /artifacts && \
     pip install --no-cache-dir \
-        gunicorn \
-        goosebit[postgresql]==$GOOSEBIT_VERSION
+        "gunicorn" \
+        "goosebit[postgresql]==${GOOSEBIT_VERSION}"
 
 COPY aerich.toml /
 

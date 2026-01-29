@@ -240,9 +240,9 @@ def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready: bool) -> 
         items = list_resp.json().get("software", [])
         sw = next(x for x in items if x["id"] == sw_id)
         sw_name = sw.get("name")
-        assert (
-            sw_name and isinstance(sw_name, str) and sw_name.startswith(f"s3://{MINIO_BUCKET}/")
-        ), f"Artifact is not stored on S3/minio as expected, name={sw_name}"
+        assert sw_name and isinstance(sw_name, str) and sw_name.startswith(f"s3://{MINIO_BUCKET}/"), (
+            f"Artifact is not stored on S3/minio as expected, name={sw_name}"
+        )
         key = sw_name.replace(f"s3://{MINIO_BUCKET}/", "")
 
         s3c = boto3.client(

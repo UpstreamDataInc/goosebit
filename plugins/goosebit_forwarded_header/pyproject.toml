@@ -2,19 +2,24 @@
 name = "goosebit-forwarded-header"
 version = "0.1.1"
 description = "gooseBit plugin for Forwarded HTTP header (RFC 7239) support"
-authors = [
-    {name = "Ezra Buehler", email = "ezra.buehler@husqvarnagroup.com"}
-]
-readme = "README.md"
+authors = [{ name = "Ezra Buehler", email = "ezra.buehler@husqvarnagroup.com" }]
 requires-python = ">=3.11,<4.0"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
 dependencies = ["goosebit"]
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[project.entry-points.'goosebit.plugins']
+[project.entry-points."goosebit.plugins"]
 goosebit_forwarded_header = "goosebit_forwarded_header"
 
-[tool.poetry.dependencies]
-goosebit = {develop = true}
+[build-system]
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""

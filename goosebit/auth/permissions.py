@@ -13,7 +13,7 @@ class Permission(BaseModel):
     def __call__(self, *args: Any, **kwargs: Any) -> str:
         if self.parent_permission is None:
             return self.name
-        return ".".join([self.parent_permission(), self.name])
+        return f"{self.parent_permission()}.{self.name}"
 
     def __getitem__(self, item: str) -> "Permission":
         return self.sub_permissions_by_name[item]
