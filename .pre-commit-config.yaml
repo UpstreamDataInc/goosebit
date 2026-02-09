@@ -4,7 +4,7 @@ ci:
     - pytest
 repos:
   - repo: https://github.com/python-poetry/poetry
-    rev: 2.2.1
+    rev: 2.3.2
     hooks:
       - id: poetry-check
       - id: poetry-lock
@@ -22,17 +22,17 @@ repos:
         name: check-yaml for other YAML files
         exclude: ^mkdocs\.yml$
       - id: check-added-large-files
-  - repo: https://github.com/psf/black
-    rev: 25.9.0
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 26.1.0
     hooks:
       - id: black
   - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
+    rev: 7.0.0
     hooks:
       - id: isort
         name: isort (python)
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.2
+    rev: v1.19.1
     hooks:
       - id: mypy
         additional_dependencies:
@@ -60,12 +60,12 @@ repos:
       - id: flake8
         additional_dependencies: []
   - repo: https://github.com/biomejs/pre-commit
-    rev: "v2.2.0"
+    rev: "v2.3.14"
     hooks:
       - id: biome-check
         additional_dependencies: ["@biomejs/biome@1.8.3"]
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.6.2"
+    rev: "v3.8.1"
     hooks:
       - id: prettier
         files: \.(html|md|yml|yaml)$
@@ -75,6 +75,6 @@ repos:
       - id: djlint-reformat-jinja
       - id: djlint-jinja
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.28.0
+    rev: v8.30.0
     hooks:
       - id: gitleaks
