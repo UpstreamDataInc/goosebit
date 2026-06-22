@@ -94,7 +94,6 @@ async def validate_device_token(request: Request, dev_id: str) -> None:
 
 
 router = APIRouter(
-    prefix=f"/{config.tenant}",
     dependencies=[Depends(log_last_connection), Depends(validate_device_token)],
     tags=["ddi"],
 )

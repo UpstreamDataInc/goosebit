@@ -62,7 +62,11 @@ app = FastAPI(
         }
     ],
 )
-app.include_router(updater.router)  # type: ignore[attr-defined]
+if isinstance(config.tenant, list):
+    for tenant in config.tenant:
+        app.include_router(updater.router, prefix=f"/{tenant}")  # type: ignore[attr-defined]
+elif isinstance(config.tenant, str):
+    app.include_router(updater.router, prefix=f"/{config.tenant}")  # type: ignore[attr-defined]
 app.include_router(ui.router)  # type: ignore[attr-defined]
 app.include_router(api.router)  # type: ignore[attr-defined]
 app.mount("/static", static, name="static")
