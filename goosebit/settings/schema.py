@@ -76,7 +76,7 @@ class GooseBitSettings(BaseSettings):
     config_file: Path | None = None
 
     port: int = 60053  # GOOSE
-    tenant: str | list = "DEFAULT"
+    tenant: str | list[str] = "DEFAULT"
 
     poll_time: str = "00:01:00"
 
