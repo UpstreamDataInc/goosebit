@@ -4,7 +4,7 @@ ci:
     - pytest
 repos:
   - repo: https://github.com/python-poetry/poetry
-    rev: 2.2.1
+    rev: 2.4.1
     hooks:
       - id: poetry-check
       - id: poetry-lock
@@ -23,16 +23,16 @@ repos:
         exclude: ^mkdocs\.yml$
       - id: check-added-large-files
   - repo: https://github.com/psf/black
-    rev: 25.9.0
+    rev: 26.5.1
     hooks:
       - id: black
   - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
+    rev: 8.0.1
     hooks:
       - id: isort
         name: isort (python)
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.2
+    rev: v2.1.0
     hooks:
       - id: mypy
         additional_dependencies:
@@ -40,9 +40,9 @@ repos:
             anyio==4.11.0,
             fastapi==0.117.1,
             joserfc==1.3.4,
-            pydantic==2.11.9,
-            pydantic-settings==2.10.1,
-            pytest-asyncio==1.2.0,
+            pydantic==2.13.4,
+            pydantic-settings==2.14.2,
+            pytest-asyncio==1.4.0,
             types-pyyaml==6.0.12.20250915,
           ]
   - repo: local
@@ -65,7 +65,7 @@ repos:
       - id: biome-check
         additional_dependencies: ["@biomejs/biome@1.8.3"]
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.6.2"
+    rev: "v3.8.4"
     hooks:
       - id: prettier
         files: \.(html|md|yml|yaml)$

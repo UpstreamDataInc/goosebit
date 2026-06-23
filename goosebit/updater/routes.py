@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.requests import Request
 
 from goosebit.device_manager import DeviceManager, get_device_or_none
-from goosebit.settings import config
 from goosebit.settings.schema import DeviceAuthMode, ExternalAuthMode
 
 from ..db.models import Device
