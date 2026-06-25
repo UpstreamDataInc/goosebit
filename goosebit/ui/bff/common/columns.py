@@ -134,6 +134,11 @@ class RolloutColumns:
         searchable=True,
         orderable=True,
     )
+    compatibility = DTColumnDescription(
+        title="Compatibility",
+        data="software.compatibility",
+        name="software__compatibility",
+    )
     paused = DTColumnDescription(
         title="Paused",
         name="paused",

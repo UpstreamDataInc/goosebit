@@ -46,7 +46,11 @@ async function updateSoftwareSelection(devices = null) {
             const optionElem = document.createElement("option");
             optionElem.value = item.id;
             optionElem.textContent = `${item.version}`;
-            const models = [...new Set(item.compatibility.map((item) => item.model))];
+            const models = [
+                ...new Set(
+                    item.compatibility.map((item) => (item.revision ? `${item.model} - ${item.revision}` : item.model)),
+                ),
+            ];
             optionElem.textContent = `${item.version} (${models})`;
             selectElem.appendChild(optionElem);
         }

@@ -86,6 +86,7 @@ async def devices_get_columns() -> DTColumns:
                 RolloutColumns.feed,
                 RolloutColumns.sw_file,
                 RolloutColumns.sw_version,
+                RolloutColumns.compatibility,
                 RolloutColumns.paused,
                 RolloutColumns.success_count,
                 RolloutColumns.failure_count,
