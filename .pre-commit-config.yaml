@@ -22,12 +22,12 @@ repos:
         name: check-yaml for other YAML files
         exclude: ^mkdocs\.yml$
       - id: check-added-large-files
-  - repo: https://github.com/psf/black
+  - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 26.5.1
     hooks:
       - id: black
   - repo: https://github.com/pycqa/isort
-    rev: 8.0.1
+    rev: 9.0.0a3
     hooks:
       - id: isort
         name: isort (python)
@@ -60,21 +60,21 @@ repos:
       - id: flake8
         additional_dependencies: []
   - repo: https://github.com/biomejs/pre-commit
-    rev: "v2.2.0"
+    rev: "v2.5.1"
     hooks:
       - id: biome-check
         additional_dependencies: ["@biomejs/biome@1.8.3"]
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.8.4"
+    rev: "v3.9.1"
     hooks:
       - id: prettier
         files: \.(html|md|yml|yaml)$
   - repo: https://github.com/djlint/djLint
-    rev: v1.36.4
+    rev: v1.39.5
     hooks:
       - id: djlint-reformat-jinja
       - id: djlint-jinja
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.28.0
+    rev: v8.30.0
     hooks:
       - id: gitleaks
