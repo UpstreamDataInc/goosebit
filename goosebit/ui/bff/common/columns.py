@@ -55,12 +55,14 @@ class DeviceColumns:
         title="Update Mode",
         data="update_mode",
         name="update_mode",
+        searchable=True,
         orderable=True,
     )
     last_state = DTColumnDescription(
         title="State",
         data="last_state",
         name="last_state",
+        searchable=True,
         orderable=True,
     )
     force_update = DTColumnDescription(
