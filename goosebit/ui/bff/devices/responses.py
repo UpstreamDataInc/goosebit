@@ -1,12 +1,28 @@
 from __future__ import annotations
 
+from enum import IntEnum
 from typing import Any, Callable
 
 from pydantic import BaseModel, Field
+from tortoise.expressions import Q
 from tortoise.queryset import QuerySet
 
+from goosebit.db.models import UpdateModeEnum, UpdateStateEnum
 from goosebit.schema.devices import DeviceSchema
 from goosebit.ui.bff.common.requests import DataTableRequest
+
+# Integer-enum columns displayed as text: search the term against the enum names, not the column.
+ENUM_SEARCH_COLUMNS: dict[str, type[IntEnum]] = {
+    "last_state": UpdateStateEnum,
+    "update_mode": UpdateModeEnum,
+}
+
+
+def _enum_search_query(name: str, enum_cls: type[IntEnum], value: str) -> Q:
+    # Substring match on enum display names ("err" -> ERROR); no match -> empty __in -> no rows.
+    value = value.casefold()
+    matches = [int(member) for member in enum_cls if value in str(member).casefold()]
+    return Q(**{f"{name}__in": matches})
 
 
 class BFFDeviceResponse(BaseModel):
@@ -24,7 +40,12 @@ class BFFDeviceResponse(BaseModel):
             query = query.filter(search_filter(dt_query.search.value))
 
         for column in dt_query.columns:
-            query = query.filter(column.query)
+            enum_cls = ENUM_SEARCH_COLUMNS.get(column.name)
+            if enum_cls is not None and column.search.value is not None:
+                column_query = _enum_search_query(column.name, enum_cls, column.search.value)
+            else:
+                column_query = column.query
+            query = query.filter(column_query)
 
         filtered_records = await query.count()
 
