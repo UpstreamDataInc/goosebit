@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any, AsyncGenerator, Dict
 
 import pytest_asyncio
-from aiocache import caches
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from tortoise import Tortoise
@@ -17,7 +16,9 @@ os.environ["GOOSEBIT_RAUC_COMPATIBLE_PATTERN"] = r"^(?P<hw_boardname>.+?)(-(?P<h
 
 from goosebit import app  # noqa: E402
 from goosebit.auth.permissions import GOOSEBIT_PERMISSIONS  # noqa: E402
+from goosebit.cache import cache  # noqa: E402
 from goosebit.db.models import UpdateModeEnum, UpdateStateEnum  # noqa: E402
+from goosebit.device_manager import DeviceManager  # noqa: E402
 from goosebit.settings import PWD_CXT  # type: ignore[attr-defined]  # noqa: E402
 
 # Configure logging
@@ -35,7 +36,9 @@ TORTOISE_CONF = {
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def clear_cache() -> AsyncGenerator[None, None]:
-    await caches.get("default").clear()
+    await cache.clear()
+    # class-level cache holding a row from the previous test's database
+    DeviceManager._hardware_default = None
     yield
 
 

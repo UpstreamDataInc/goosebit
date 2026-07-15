@@ -20,8 +20,9 @@ EXPOSE 60053
 
 USER goosebit
 
-# We currently do not fully support multiple workers. For more information, see:
-# https://github.com/UpstreamDataInc/goosebit/issues/125
+# Multiple workers require the in-memory cache to be disabled (GOOSEBIT_CACHE__ENABLED=false)
+# and an explicit GOOSEBIT_SECRET_KEY. Override GUNICORN_CMD_ARGS at runtime to raise the
+# worker count.
 ENV GUNICORN_CMD_ARGS="--workers 1 --enable-stdio-inheritance"
 
 SHELL ["/bin/sh", "-c"]

@@ -9,8 +9,9 @@ from fastapi.responses import (
     Response,
     StreamingResponse,
 )
+from tortoise.expressions import F
 
-from goosebit.db.models import Device, Software, UpdateStateEnum
+from goosebit.db.models import Device, Rollout, Software, UpdateStateEnum
 from goosebit.device_manager import DeviceManager, HandlingType, get_device
 from goosebit.settings import config
 from goosebit.storage import storage
@@ -159,8 +160,8 @@ async def deployment_feedback(
             rollout = await DeviceManager.get_rollout(device)
             if rollout:
                 if rollout.software == reported_software:
-                    rollout.success_count += 1
-                    await rollout.save()
+                    # atomic DB-side increment
+                    await Rollout.filter(id=rollout.id).update(success_count=F("success_count") + 1)
                 else:
                     # edge case where device update mode got changed while update was running
                     logging.warning(
@@ -180,8 +181,8 @@ async def deployment_feedback(
             rollout = await DeviceManager.get_rollout(device)
             if rollout:
                 if rollout.software == reported_software:
-                    rollout.failure_count += 1
-                    await rollout.save()
+                    # atomic DB-side increment
+                    await Rollout.filter(id=rollout.id).update(failure_count=F("failure_count") + 1)
                 else:
                     # edge case where device update mode got changed while update was running
                     logging.warning(
