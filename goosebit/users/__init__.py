@@ -4,6 +4,11 @@ from goosebit.db.models import User
 from goosebit.settings import PWD_CXT  # type: ignore[attr-defined]
 
 
+def _cache_key(username: str) -> str:
+    # avoid colliding with device keys in the shared cache
+    return f"user:{username}"
+
+
 async def create_user(username: str, password: str, permissions: list[str]) -> User:
     return await UserManager.setup_user(username=username, hashed_pwd=PWD_CXT.hash(password), permissions=permissions)
 
@@ -18,7 +23,7 @@ class UserManager:
         await user.save(update_fields=update_fields)
 
         # only update cache after a successful database save
-        await cache.set(user.username, user)
+        await cache.set(_cache_key(user.username), user)
 
     @staticmethod
     async def update_enabled(user: User, enabled: bool) -> None:
@@ -41,13 +46,13 @@ class UserManager:
 
     @staticmethod
     async def get_user(username: str) -> User:
-        user = await cache.get(username)
+        user = await cache.get(_cache_key(username))
         if user:
             return user  # type: ignore[no-any-return]
 
         user = await User.get_or_none(username=username)
         if user is not None:
-            await cache.set(user.username, user)
+            await cache.set(_cache_key(user.username), user)
 
         return user  # type: ignore[no-any-return]
 
@@ -55,5 +60,5 @@ class UserManager:
     async def delete_users(usernames: list[str]) -> None:
         await User.filter(username__in=usernames).delete()
         for username in usernames:
-            await cache.delete(username)
+            await cache.delete(_cache_key(username))
         users_count.set(await User.all().count())

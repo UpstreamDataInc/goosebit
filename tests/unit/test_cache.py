@@ -3,6 +3,7 @@ from typing import Any
 import pytest
 
 from goosebit.cache import Cache, cache
+from goosebit.db.models import User
 from goosebit.device_manager import DeviceManager
 from goosebit.settings.schema import GooseBitSettings
 from goosebit.users import UserManager, create_initial_user
@@ -74,6 +75,16 @@ async def test_user_manager_with_disabled_cache(db: None, monkeypatch: Any) -> N
 
     await UserManager.delete_users([user.username])
     assert await UserManager.get_user("cache@goosebit.test") is None
+
+
+@pytest.mark.asyncio
+async def test_device_id_does_not_shadow_username(db: None) -> None:
+    username = "collision@goosebit.test"
+    await create_initial_user(username=username, hashed_pwd="hash")
+    # dev_id equal to a username must not poison the user cache
+    await DeviceManager.get_device(username)
+    user = await UserManager.get_user(username)
+    assert isinstance(user, User)
 
 
 def test_cache_enabled_setting(monkeypatch: Any) -> None:

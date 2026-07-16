@@ -25,6 +25,11 @@ class HandlingType(StrEnum):
     FORCED = "forced"
 
 
+def _cache_key(dev_id: str) -> str:
+    # avoid colliding with user keys in the shared cache
+    return f"device:{dev_id}"
+
+
 class DeviceManager:
     _hardware_default = None
 
@@ -33,7 +38,7 @@ class DeviceManager:
 
     @staticmethod
     async def get_device(dev_id: str) -> Device:
-        device = await cache.get(dev_id)
+        device = await cache.get(_cache_key(dev_id))
         if device:
             return device  # type: ignore[no-any-return]
 
@@ -43,7 +48,7 @@ class DeviceManager:
             DeviceManager._hardware_default = hardware
 
         device = (await Device.get_or_create(id=dev_id, defaults={"hardware": hardware}))[0]
-        await cache.set(device.id, device)
+        await cache.set(_cache_key(device.id), device)
 
         return device  # type: ignore[no-any-return]
 
@@ -52,7 +57,7 @@ class DeviceManager:
         await device.save(update_fields=update_fields)
 
         # only update cache after a successful database save
-        await cache.set(device.id, device)
+        await cache.set(_cache_key(device.id), device)
 
     @staticmethod
     async def update_auth_token(device: Device, auth_token: str) -> None:
@@ -241,7 +246,7 @@ class DeviceManager:
     async def delete_devices(ids: list[str]) -> None:
         await Device.filter(id__in=ids).delete()
         for dev_id in ids:
-            await cache.delete(dev_id)
+            await cache.delete(_cache_key(dev_id))
 
 
 async def get_device(dev_id: str) -> Device:
