@@ -1,6 +1,5 @@
 import os
 from enum import StrEnum
-from logging import getLogger
 from pathlib import Path
 from typing import Any
 
@@ -15,13 +14,17 @@ from pydantic_settings import (
 
 from .const import CURRENT_DIR, GOOSEBIT_ROOT_DIR, LOGGING_DEFAULT
 
+_secret_key_generated = False
+
 
 def _generate_secret_key() -> OctKey:
-    getLogger(__name__).warning(
-        "No secret_key configured, generated a random one. User sessions will not survive restarts "
-        "and logins will fail intermittently when running multiple workers. Set GOOSEBIT_SECRET_KEY."
-    )
+    global _secret_key_generated
+    _secret_key_generated = True
     return OctKey.generate_key()
+
+
+def secret_key_was_generated() -> bool:
+    return _secret_key_generated
 
 
 class DeviceAuthMode(StrEnum):
