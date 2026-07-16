@@ -3,7 +3,7 @@ from typing import Any, Dict
 import pytest
 from httpx import AsyncClient
 
-from goosebit.db.models import Device, Hardware, Software
+from goosebit.db.models import Device, Hardware, Software, UpdateStateEnum
 from goosebit.device_manager import DeviceManager, get_device
 from goosebit.settings import config
 
@@ -308,7 +308,8 @@ async def _assert_log_lines(async_client: AsyncClient, device: Device, expected_
     assert response.status_code == 200
 
     log = response.json()["log"]
-    if log is None:
+    # a claim resets last_log to "" (previously NULL until first feedback)
+    if not log:
         assert expected_line_count == 0
     else:
         actual_line_count = log.count("\n")
@@ -353,3 +354,66 @@ async def test_update_logs_and_progress(async_client: AsyncClient, test_data: Di
     # fake installation start confirmation to check clearing of logs
     await _feedback(async_client, device.id, software, "none", "proceeding", "Downloaded 1%")
     await _assert_log_lines(async_client, device, 1)
+
+
+@pytest.mark.asyncio
+async def test_concurrent_update_cap(
+    async_client: AsyncClient, test_data: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(config, "max_concurrent_updates", 1)
+
+    device1 = test_data["device_rollout"]
+    device2 = test_data["device_assigned"]
+    software = test_data["software_release"]
+
+    # first device claims the only slot
+    await _poll(async_client, device1.id, software)
+    device_api = await _api_device_get(async_client, device1.id)
+    assert device_api["last_state"] == "Running"
+
+    # cap exhausted: no link for the second device
+    await _poll(async_client, device2.id, software, expect_update=False)
+
+    # first device finishes, freeing the slot
+    await _feedback(async_client, device1.id, software, "success", "closed")
+
+    # second device now gets the link
+    await _poll(async_client, device2.id, software)
+
+
+@pytest.mark.asyncio
+async def test_running_device_keeps_slot_when_cap_exhausted(
+    async_client: AsyncClient, test_data: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(config, "max_concurrent_updates", 1)
+
+    device1 = test_data["device_rollout"]
+    device2 = test_data["device_assigned"]
+    software = test_data["software_release"]
+
+    # device1 already occupies the single slot
+    device1 = await get_device(dev_id=device1.id)
+    await DeviceManager.update_device_state(device1, UpdateStateEnum.RUNNING)
+
+    # cap is exhausted for a fresh claim
+    await _poll(async_client, device2.id, software, expect_update=False)
+
+    # running device keeps receiving the link
+    await _poll(async_client, device1.id, software)
+
+
+@pytest.mark.asyncio
+async def test_claim_resets_log_and_progress(async_client: AsyncClient, test_data: Dict[str, Any]) -> None:
+    device = test_data["device_rollout"]
+    software = test_data["software_release"]
+
+    # stale bookkeeping from a previous update
+    device.last_log = "stale log entry\n"
+    device.progress = 50
+    await device.save(update_fields=["last_log", "progress"])
+
+    await _poll(async_client, device.id, software)
+
+    await device.refresh_from_db()
+    assert device.last_log == ""
+    assert device.progress == 0

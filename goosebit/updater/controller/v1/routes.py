@@ -59,8 +59,8 @@ async def polling(request: Request, device: Device = Depends(get_device)) -> dic
         # won't confirm a successful testing (might be a bug/problem in swupdate)
         handling_type, software = await DeviceManager.get_update(device)
         if handling_type != HandlingType.SKIP and software is not None:
-            number_of_running = await Device.filter(last_state=UpdateStateEnum.RUNNING).count()
-            if number_of_running < config.max_concurrent_updates or device.last_state == UpdateStateEnum.RUNNING:
+            # claim a slot before handing out the link
+            if await DeviceManager.try_claim_update_slot(device, config.max_concurrent_updates):
                 links["deploymentBase"] = {
                     "href": str(
                         request.url_for(
@@ -71,13 +71,14 @@ async def polling(request: Request, device: Device = Depends(get_device)) -> dic
                     )
                 }
                 logger.info(f"Forced: update available, device={device.id}")
+            else:
+                logger.info(f"Denied: concurrent update limit reached, device={device.id}")
         else:
-            number_of_running = await Device.filter(last_state=UpdateStateEnum.RUNNING).count()
-            if number_of_running < config.max_concurrent_updates or device.last_state == UpdateStateEnum.RUNNING:
-                plugin_sources = await DeviceManager.get_alt_src_updates(request, device)
-                for handling_type, _ in plugin_sources:
-                    if handling_type == HandlingType.SKIP:
-                        continue
+            plugin_sources = await DeviceManager.get_alt_src_updates(request, device)
+            for handling_type, _ in plugin_sources:
+                if handling_type == HandlingType.SKIP:
+                    continue
+                if await DeviceManager.try_claim_update_slot(device, config.max_concurrent_updates):
                     links["deploymentBase"] = {
                         "href": str(
                             request.url_for(
@@ -87,7 +88,9 @@ async def polling(request: Request, device: Device = Depends(get_device)) -> dic
                             )
                         )
                     }
-                    break
+                else:
+                    logger.info(f"Denied: concurrent update limit reached, device={device.id}")
+                break
     return {
         "config": {"polling": {"sleep": sleep}},
         "_links": links,

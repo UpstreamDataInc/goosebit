@@ -6,6 +6,7 @@ from enum import StrEnum
 from typing import Any, Awaitable, Callable, Optional
 
 from fastapi.requests import Request
+from tortoise import connections
 from tortoise.expressions import F
 from tortoise.functions import Coalesce
 
@@ -154,6 +155,40 @@ class DeviceManager:
 
         if modified:
             await DeviceManager.save_device(device, update_fields=["hardware_id", "last_state", "sw_version"])
+
+    @staticmethod
+    async def try_claim_update_slot(device: Device, max_concurrent: int) -> bool:
+        """Atomically move the device into RUNNING to claim an update slot."""
+        # running devices keep their slot; swupdate needs the link re-served
+        if device.last_state == UpdateStateEnum.RUNNING:
+            return True
+
+        running = int(UpdateStateEnum.RUNNING)
+        table = Device._meta.db_table
+        id_column = Device._meta.fields_db_projection["id"]
+        state_column = Device._meta.fields_db_projection["last_state"]
+
+        conn = connections.get("default")
+
+        # placeholder differs by dialect ("?" vs "$n")
+        def param(idx: int) -> str:
+            return f"${idx}" if conn.capabilities.dialect == "postgres" else "?"
+
+        # count and claim in one statement: atomic on SQLite, ms-scale residual race
+        # on PostgreSQL READ COMMITTED (vs. minutes for separate check+handout)
+        sql = (
+            f'UPDATE "{table}" SET "{state_column}" = {param(1)}'
+            f' WHERE "{id_column}" = {param(2)} AND "{state_column}" != {param(3)}'
+            f' AND (SELECT COUNT(*) FROM "{table}" WHERE "{state_column}" = {param(4)}) < {param(5)}'
+        )
+        rowcount, _ = await conn.execute_query(sql, [running, device.id, running, running, max_concurrent])
+        if rowcount != 1:
+            return False
+
+        device.last_state = UpdateStateEnum.RUNNING
+        # reset update bookkeeping (previously done at first PROCEEDING feedback)
+        await DeviceManager.deployment_action_start(device)
+        return True
 
     @staticmethod
     async def deployment_action_start(device: Device) -> None:
