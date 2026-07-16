@@ -7,6 +7,8 @@ from typing import Any, Awaitable, Callable, Optional
 
 from aiocache import caches
 from fastapi.requests import Request
+from tortoise.expressions import Subquery
+from tortoise.functions import Count
 
 from goosebit.db.models import (
     Device,
@@ -159,6 +161,43 @@ class DeviceManager:
 
         if modified:
             await DeviceManager.save_device(device, update_fields=["hardware_id", "last_state", "sw_version"])
+
+    @staticmethod
+    async def try_claim_update_slot(device: Device, max_concurrent: int) -> bool:
+        """Atomically move the device into RESERVED to claim an update slot.
+
+        Both RESERVED and RUNNING count against the cap. The device is promoted to
+        RUNNING (and its log/progress reset) only once it reports progress.
+        """
+        # a device already holding a slot keeps it; swupdate needs the link re-served
+        if device.last_state in (UpdateStateEnum.RESERVED, UpdateStateEnum.RUNNING):
+            return True
+
+        occupied = Subquery(
+            Device.filter(last_state__in=[UpdateStateEnum.RESERVED, UpdateStateEnum.RUNNING])
+            .annotate(count=Count("id"))
+            .values("count")
+        )
+        # count occupied slots and claim in one statement: atomic on SQLite, ms-scale
+        # residual race on PostgreSQL READ COMMITTED
+        rowcount = (
+            await Device.filter(
+                id=device.id,
+                last_state__not_in=[UpdateStateEnum.RESERVED, UpdateStateEnum.RUNNING],
+            )
+            .annotate(occupied=occupied)
+            .filter(occupied__lt=max_concurrent)
+            .update(last_state=UpdateStateEnum.RESERVED)
+        )
+        if rowcount != 1:
+            return False
+
+        device.last_state = UpdateStateEnum.RESERVED
+        # the claim is already committed; only keep the cached copy coherent (no further
+        # DB write).
+        result = await caches.get("default").set(device.id, device, ttl=600)
+        assert result, "device being cached"
+        return True
 
     @staticmethod
     async def deployment_action_start(device: Device) -> None:

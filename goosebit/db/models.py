@@ -38,6 +38,7 @@ class UpdateStateEnum(IntEnum):
     RUNNING = 3
     ERROR = 4
     FINISHED = 5
+    RESERVED = 6
 
     def __str__(self) -> str:
         return self.name.capitalize()
