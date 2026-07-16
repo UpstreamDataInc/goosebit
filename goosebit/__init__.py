@@ -20,6 +20,7 @@ from goosebit.auth import (
     permissions,
     redirect_if_authenticated,
 )
+from goosebit.cache import configured_worker_count
 from goosebit.device_manager import DeviceManager
 from goosebit.settings import PWD_CXT, config  # type: ignore[attr-defined]
 from goosebit.ui.nav import nav
@@ -32,6 +33,14 @@ logger = getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
+    workers = configured_worker_count()
+    if config.cache.enabled and workers > 1:
+        logger.warning(
+            f"The in-memory cache is enabled while running {workers} workers; workers will serve stale "
+            "device/user data. Set GOOSEBIT_CACHE__ENABLED=false when running more than one worker, see "
+            "https://github.com/UpstreamDataInc/goosebit/issues/125."
+        )
+
     db_ready = await db.init()
     if not db_ready:
         logger.exception("DB does not exist, try running `poetry run aerich upgrade`.")
