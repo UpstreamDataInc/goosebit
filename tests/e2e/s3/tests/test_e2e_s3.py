@@ -1,14 +1,17 @@
+import math
 import os
 import sys
 import time
 from pathlib import Path
 from typing import Any, Generator
+from unittest.mock import patch
 
 import boto3
 import httpx
 import pytest
 from botocore.exceptions import ClientError
 
+from goosebit.storage.s3 import RANGE_REQUEST_SIZE, S3StorageBackend
 from tests.e2e.utils import auth_token, compose_down, compose_up_build, wait_for_service
 
 BASE_URL = os.getenv("E2E_BASE_URL", "http://localhost:60053")
@@ -295,3 +298,53 @@ def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready: bool) -> 
                     break
                 time.sleep(1.0)
         assert deleted, f"S3 object still present after delete bucket={MINIO_BUCKET}, key={key}. Last error: {last_exc}"
+
+
+# ---------------------
+# Ranged streaming (S3StorageBackend.get_file_stream)
+# ---------------------
+
+
+def _minio_client() -> Any:
+    return boto3.client(
+        "s3",
+        endpoint_url=MINIO_URL,
+        aws_access_key_id=MINIO_ACCESS_KEY,
+        aws_secret_access_key=MINIO_SECRET_KEY,
+    )
+
+
+@pytest.mark.parametrize(
+    "label, size",
+    [
+        ("empty", 0),  # zero-byte object -> 416 InvalidRange -> empty stream
+        ("sub_range", 64 * 1024),  # smaller than one range -> single GetObject
+        ("multi_range", 2_500_000),  # larger than RANGE_REQUEST_SIZE -> offset-continuation loop
+    ],
+)
+async def test_e2e_s3_stream_reassembles_ranges(ensure_services_ready: bool, label: str, size: int) -> None:
+    """Ranged streaming reassembles bytes identically to the source, across object sizes."""
+    source = os.urandom(size)
+    key = f"e2e-stream/{label}.bin"
+    _minio_client().put_object(Bucket=MINIO_BUCKET, Key=key, Body=source)
+
+    backend = S3StorageBackend(
+        bucket=MINIO_BUCKET,
+        endpoint_url=MINIO_URL,
+        access_key_id=MINIO_ACCESS_KEY,
+        secret_access_key=MINIO_SECRET_KEY,
+    )
+    uri = f"s3://{MINIO_BUCKET}/{key}"
+
+    with patch.object(backend.s3_client, "get_object", wraps=backend.s3_client.get_object) as spy:
+        streamed = b"".join([chunk async for chunk in backend.get_file_stream(uri)])
+
+    assert streamed == source, f"{label}: streamed {len(streamed)} bytes != source {len(source)} bytes"
+
+    # one GetObject per range (empty object still costs the single 416 probe)
+    expected_calls = 1 if size == 0 else math.ceil(size / RANGE_REQUEST_SIZE)
+    assert (
+        spy.call_count == expected_calls
+    ), f"{label}: expected {expected_calls} ranged GetObject call(s), got {spy.call_count}"
+    if size > RANGE_REQUEST_SIZE:
+        assert spy.call_count > 1, f"{label}: object larger than a range must span multiple GetObject calls"
