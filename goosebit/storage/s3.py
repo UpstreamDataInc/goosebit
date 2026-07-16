@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 from typing import AsyncIterable
 from urllib.parse import urlparse
 
@@ -10,6 +11,10 @@ from botocore.exceptions import BotoCoreError, ClientError
 from .base import StorageProtocol
 
 DOWNLOAD_CHUNK_SIZE = 64 * 1024
+# bytes fetched per ranged GetObject; request count and per-stream memory both scale with this
+RANGE_REQUEST_SIZE = 1024 * 1024
+# retries per range for transient read failures; botocore only retries get_object, not body.read()
+RANGE_READ_ATTEMPTS = 3
 
 
 class S3StorageBackend(StorageProtocol):
@@ -53,22 +58,65 @@ class S3StorageBackend(StorageProtocol):
 
     async def get_file_stream(self, uri: str) -> AsyncIterable[bytes]:  # type: ignore[override]
         key = self._extract_key_from_uri(uri)
+        loop = asyncio.get_running_loop()
+
+        offset = 0
+        total_size: int | None = None
+        etag: str | None = None
 
         try:
-            loop = asyncio.get_running_loop()
-            response = await loop.run_in_executor(None, lambda: self.s3_client.get_object(Bucket=self.bucket, Key=key))
+            while total_size is None or offset < total_size:
+                request = {
+                    "Bucket": self.bucket,
+                    "Key": key,
+                    "Range": f"bytes={offset}-{offset + RANGE_REQUEST_SIZE - 1}",
+                }
+                if etag is not None:
+                    # fail with 412 instead of splicing two versions if the artifact is replaced mid-download
+                    request["IfMatch"] = etag
 
-            body = response["Body"]
-            try:
-                while True:
-                    chunk = await loop.run_in_executor(None, body.read, DOWNLOAD_CHUNK_SIZE)
-                    if not chunk:
+                # retry the whole range fetch on transient failures; ClientErrors are terminal
+                data = None
+                for attempt in range(RANGE_READ_ATTEMPTS):
+                    try:
+                        response = await loop.run_in_executor(None, partial(self.s3_client.get_object, **request))
+
+                        if total_size is None:
+                            etag = response.get("ETag")
+                            # ContentRange is "bytes 0-1048575/104857600"; fall back to
+                            # ContentLength if a backend ignored Range (200) or reports "*" total
+                            content_range = response.get("ContentRange")
+                            if content_range and content_range.rsplit("/", 1)[1] != "*":
+                                total_size = int(content_range.rsplit("/", 1)[1])
+                            else:
+                                total_size = response["ContentLength"]
+                            if etag is not None:
+                                request["IfMatch"] = etag  # pin version across ranges and retries
+
+                        body = response["Body"]
+                        try:
+                            data = await loop.run_in_executor(None, body.read)
+                        finally:
+                            await loop.run_in_executor(None, body.close)
                         break
-                    yield chunk
-            finally:
-                await loop.run_in_executor(None, body.close)
+                    except ClientError as e:
+                        if offset == 0 and e.response["Error"]["Code"] == "InvalidRange":
+                            return  # zero-byte object: any range request returns 416
+                        raise
+                    except BotoCoreError:
+                        if attempt + 1 == RANGE_READ_ATTEMPTS:
+                            raise
+                        await asyncio.sleep(0.5 * (attempt + 1))  # back off, then re-fetch this range
 
-        # BotoCoreError covers mid-stream failures (e.g. ResponseStreamingError
+                if not data:
+                    raise ValueError(f"S3 returned empty range at offset {offset} for {uri}")
+                offset += len(data)
+
+                # device-paced waits happen here, with no S3 request in flight to time out
+                for i in range(0, len(data), DOWNLOAD_CHUNK_SIZE):
+                    yield data[i : i + DOWNLOAD_CHUNK_SIZE]
+
+        # BotoCoreError covers mid-transfer failures (e.g. ResponseStreamingError
         # when the connection drops), which are not ClientError subclasses.
         except (BotoCoreError, ClientError) as e:
             raise ValueError(f"S3 download failed: {e}")
