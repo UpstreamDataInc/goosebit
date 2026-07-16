@@ -9,7 +9,6 @@ from anyio import Path
 from tortoise import Model, fields
 from tortoise.exceptions import ValidationError
 
-from goosebit.api.telemetry.metrics import devices_count
 from goosebit.util.version import Version
 
 
@@ -88,22 +87,7 @@ class Device(Model):  # type: ignore[misc]
             if not is_compatible:
                 raise ValidationError("The assigned software is not compatible with the device's hardware.")
 
-        is_new = self._saved_in_db is False
         await super().save(*args, **kwargs)
-        if is_new:
-            await self.notify_created()
-
-    async def delete(self, *args: Any, **kwargs: Any) -> None:
-        await super().delete(*args, **kwargs)
-        await self.notify_deleted()
-
-    @staticmethod
-    async def notify_created() -> None:
-        devices_count.set(await Device.all().count())
-
-    @staticmethod
-    async def notify_deleted() -> None:
-        devices_count.set(await Device.all().count())
 
 
 class Rollout(Model):  # type: ignore[misc]

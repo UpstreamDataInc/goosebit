@@ -1,4 +1,3 @@
-from goosebit.api.telemetry.metrics import users_count
 from goosebit.cache import cache
 from goosebit.db.models import User
 from goosebit.settings import PWD_CXT  # type: ignore[attr-defined]
@@ -41,7 +40,6 @@ class UserManager:
                 },
             )
         )[0]
-        users_count.set(await User.all().count())
         return user  # type: ignore[no-any-return]
 
     @staticmethod
@@ -61,4 +59,3 @@ class UserManager:
         await User.filter(username__in=usernames).delete()
         for username in usernames:
             await cache.delete(_cache_key(username))
-        users_count.set(await User.all().count())
