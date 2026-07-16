@@ -6,8 +6,11 @@ from enum import StrEnum
 from typing import Any, Awaitable, Callable, Optional
 
 from fastapi.requests import Request
+from tortoise.expressions import F
+from tortoise.functions import Coalesce
 
 from goosebit.cache import cache
+from goosebit.db.expressions import StrConcat
 from goosebit.db.models import (
     Device,
     Hardware,
@@ -230,17 +233,19 @@ class DeviceManager:
         if log_data is None:
             return
 
-        if device.last_log is None:
-            device.last_log = ""
+        # DB-side append so concurrent feedback cannot drop lines; NULL || x is NULL, hence Coalesce
+        values: dict[str, Any] = {"last_log": StrConcat(Coalesce(F("last_log"), ""), f"{log_data}\n")}
 
         # SWUpdate-specific log parsing to report progress
         matches = re.findall(r"Downloaded (\d+)%", log_data)
         if matches:
-            device.progress = matches[-1]
+            values["progress"] = int(matches[-1])
 
-        device.last_log += f"{log_data}\n"
+        await Device.filter(id=device.id).update(**values)
 
-        await DeviceManager.save_device(device, update_fields=["progress", "last_log"])
+        # sync the local object and the cache with the DB
+        await device.refresh_from_db(fields=["progress", "last_log"])
+        await cache.set(_cache_key(device.id), device)
 
     @staticmethod
     async def delete_devices(ids: list[str]) -> None:
