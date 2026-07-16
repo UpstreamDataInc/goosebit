@@ -5,9 +5,11 @@ from urllib.parse import urlparse
 from anyio import Path
 from boto3.session import Session
 from botocore.config import Config
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 
 from .base import StorageProtocol
+
+DOWNLOAD_CHUNK_SIZE = 64 * 1024
 
 
 class S3StorageBackend(StorageProtocol):
@@ -59,14 +61,16 @@ class S3StorageBackend(StorageProtocol):
             body = response["Body"]
             try:
                 while True:
-                    chunk = await loop.run_in_executor(None, body.read, 8192)
+                    chunk = await loop.run_in_executor(None, body.read, DOWNLOAD_CHUNK_SIZE)
                     if not chunk:
                         break
                     yield chunk
             finally:
                 await loop.run_in_executor(None, body.close)
 
-        except ClientError as e:
+        # BotoCoreError covers mid-stream failures (e.g. ResponseStreamingError
+        # when the connection drops), which are not ClientError subclasses.
+        except (BotoCoreError, ClientError) as e:
             raise ValueError(f"S3 download failed: {e}")
 
     async def get_download_url(self, uri: str) -> str:
