@@ -122,6 +122,10 @@ class Hardware(Model):  # type: ignore[misc]
     model = fields.CharField(max_length=255)
     revision = fields.CharField(max_length=255)
 
+    class Meta:
+        # makes get_or_create race-free across workers
+        unique_together = (("model", "revision"),)
+
 
 class SoftwareImageFormat(IntEnum):
     SWU = 0
