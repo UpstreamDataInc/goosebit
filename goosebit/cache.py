@@ -32,7 +32,7 @@ class Cache:
 
     def __init__(self, enabled: bool):
         self.enabled = enabled
-        self._backend = SimpleMemoryCache(serializer=PickleSerializer())
+        self._backend = SimpleMemoryCache(serializer=PickleSerializer(), ttl=CACHE_TTL)
 
     async def get(self, key: str) -> Any:
         if not self.enabled:
@@ -42,7 +42,7 @@ class Cache:
     async def set(self, key: str, value: Any) -> None:
         if not self.enabled:
             return
-        await self._backend.set(key, value, ttl=CACHE_TTL)
+        await self._backend.set(key, value)
 
     async def delete(self, key: str) -> None:
         if not self.enabled:

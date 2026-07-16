@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from goosebit.cache import Cache, cache
+from goosebit.cache import CACHE_TTL, Cache, cache
 from goosebit.db.models import User
 from goosebit.device_manager import DeviceManager
 from goosebit.settings.schema import GooseBitSettings
@@ -33,6 +33,17 @@ async def test_enabled_cache_round_trip() -> None:
 
     # deleting a key that was never cached must not raise
     await enabled.delete("never-cached")
+
+
+@pytest.mark.asyncio
+async def test_enabled_cache_set_applies_ttl() -> None:
+    enabled = Cache(enabled=True)
+
+    await enabled.set("key", "value")
+
+    # an expiry TimerHandle exists only when a ttl was applied
+    assert "key" in enabled._backend._handlers
+    assert enabled._backend.ttl == CACHE_TTL
 
 
 @pytest.mark.asyncio
