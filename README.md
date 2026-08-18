@@ -57,6 +57,27 @@ To use PostgreSQL, set `db_uri` or the `GOSSEBIT_DB_URI` environment variable to
 postgres://user:password@host:5432/db_name
 ```
 
+### Multiple Workers
+
+By default, gooseBit runs with a single worker process. Running multiple workers (e.g. to utilize more
+CPU cores) is supported if the following requirements are met:
+
+1. The in-memory object cache is disabled, since each worker would otherwise serve stale data
+   (set `cache: enabled: false` or `GOOSEBIT_CACHE__ENABLED=false`).
+2. `secret_key` is set explicitly. Otherwise, each worker generates its own random key and user sessions
+   signed by one worker fail on the others.
+3. PostgreSQL is recommended as the database. SQLite serializes writers via file locks, which is fine for
+   testing but not for concurrent load.
+4. All workers share the same artifacts storage. Workers on one host share the `artifacts_dir` volume;
+   deployments spanning multiple hosts should use the S3 storage backend.
+
+With the Docker image, the worker count can then be set at runtime, for example:
+
+```txt
+docker run -e GOOSEBIT_CACHE__ENABLED=false -e GOOSEBIT_SECRET_KEY=<key> \
+    -e GUNICORN_CMD_ARGS="--workers 4 --enable-stdio-inheritance" upstreamdata/goosebit
+```
+
 ### Artifact Storage
 
 The software packages managed by gooseBit are either stored on the local filesystem (`artifacts_dir` setting) or an S3-compatible object storage.

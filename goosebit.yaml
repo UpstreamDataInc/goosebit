@@ -29,6 +29,11 @@ poll_time: 00:01:00
 # Limit the number of updates that run at the same time. Can be used to avoid overloading the update server.
 #max_concurrent_updates: 1000
 
+# In-memory cache for device/user objects. Must be disabled when running more than one worker
+# process, otherwise workers serve stale data. See https://github.com/UpstreamDataInc/goosebit/issues/125
+#cache:
+#  enabled: true
+
 # Whether to track the IP of the device when it polls.  Useful for debugging, but can be turned off for privacy.
 #track_device_ip: true
 

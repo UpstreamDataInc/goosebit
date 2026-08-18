@@ -1,5 +1,6 @@
 import os
 from enum import StrEnum
+from logging import getLogger
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,14 @@ from pydantic_settings import (
 )
 
 from .const import CURRENT_DIR, GOOSEBIT_ROOT_DIR, LOGGING_DEFAULT
+
+
+def _generate_secret_key() -> OctKey:
+    getLogger(__name__).warning(
+        "No secret_key configured, generated a random one. User sessions will not survive restarts "
+        "and logins will fail intermittently when running multiple workers. Set GOOSEBIT_SECRET_KEY."
+    )
+    return OctKey.generate_key()
 
 
 class DeviceAuthMode(StrEnum):
@@ -70,6 +79,12 @@ class StorageSettings(BaseModel):
     s3: S3StorageSettings | None = None
 
 
+class CacheSettings(BaseModel):
+    # in-memory cache for device/user objects; must be disabled when running multiple workers,
+    # see https://github.com/UpstreamDataInc/goosebit/issues/125
+    enabled: bool = True
+
+
 class GooseBitSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="GOOSEBIT_", extra="ignore", env_nested_delimiter="__")
 
@@ -84,7 +99,7 @@ class GooseBitSettings(BaseSettings):
 
     device_auth: DeviceAuthSettings = DeviceAuthSettings()
 
-    secret_key: OctKey = Field(default_factory=OctKey.generate_key)
+    secret_key: OctKey = Field(default_factory=_generate_secret_key)
 
     plugins: list[str] = Field(default_factory=list)
 
@@ -94,6 +109,8 @@ class GooseBitSettings(BaseSettings):
     artifacts_dir: Path = GOOSEBIT_ROOT_DIR.joinpath("artifacts")
 
     storage: StorageSettings = StorageSettings()
+
+    cache: CacheSettings = CacheSettings()
 
     metrics: MetricsSettings = MetricsSettings()
 
