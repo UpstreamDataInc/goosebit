@@ -2,6 +2,7 @@
 DataTable.type("num", "className", "");
 DataTable.type("date", "className", "");
 DataTable.type("datetime", "className", "");
+DataTable.defaults.lengthMenu = [10, 25, 50, 100, { label: "All", value: -1 }];
 
 function secondsToRecentDate(t) {
     if (t == null) {

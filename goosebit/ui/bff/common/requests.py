@@ -60,7 +60,7 @@ class DataTableRequest(BaseModel):
     draw: int = 1
     order: list[DataTableOrderSchema] = list()
     start: int = 0
-    length: int | None = None
+    length: Annotated[int | None, BeforeValidator(lambda value: None if value == -1 else value)] = None
     search: DataTableSearchSchema = DataTableSearchSchema()
     columns: list[DataTableColumnSchema] = Field(default_factory=list)
 
