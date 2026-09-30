@@ -14,15 +14,15 @@ function secondsToRecentDate(t) {
     const s = Math.floor(((time % 86400) % 3600) % 60);
 
     if (d > 0) {
-        return d + (d === 1 ? " day" : " days");
+        return `${d}d`;
     }
     if (h > 0) {
-        return h + (h === 1 ? " hour" : " hours");
+        return `${h}h`;
     }
     if (m > 0) {
-        return m + (m === 1 ? " minute" : " minutes");
+        return `${m}m`;
     }
-    return s + (s === 1 ? " second" : " seconds");
+    return `${s}s`;
 }
 
 async function updateSoftwareSelection(devices = null) {
