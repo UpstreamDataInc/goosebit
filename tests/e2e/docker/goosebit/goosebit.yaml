@@ -74,6 +74,6 @@ storage:
   s3:
     bucket: goosebit
     # region: us-east-1
-    endpoint_url: http://minio:9000 # example for self-hosted min.io
-    access_key_id: minioadmin
-    secret_access_key: minioadmin
+    endpoint_url: http://s3:9000
+    access_key_id: test
+    secret_access_key: test
