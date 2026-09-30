@@ -51,6 +51,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         stateSave: true,
         select: true,
         rowId: "id",
+        // Don't restore selection: Select matches row IDs as CSS selectors, and
+        // device IDs may contain invalid chars (e.g. ":") that abort table init.
+        stateLoadParams: (settings, data) => {
+            // biome-ignore lint/performance/noDelete: selection must not be restored
+            delete data.select;
+        },
         ajax: {
             url: "/ui/bff/devices",
             method: "POST",
@@ -195,6 +201,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         })
         .on("deselect", () => {
             updateBtnState();
+        })
+        // Don't persist selection (see stateLoadParams above).
+        .on("stateSaveParams", (e, settings, data) => {
+            // biome-ignore lint/performance/noDelete: selection must not be persisted
+            delete data.select;
         });
 
     setInterval(() => {
