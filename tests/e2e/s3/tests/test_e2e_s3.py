@@ -15,10 +15,10 @@ from goosebit.storage.s3 import RANGE_REQUEST_SIZE, S3StorageBackend
 from tests.e2e.utils import auth_token, compose_down, compose_up_build, wait_for_service
 
 BASE_URL = os.getenv("E2E_BASE_URL", "http://localhost:60053")
-MINIO_URL = os.getenv("E2E_MINIO_URL", "http://localhost:9000")
-MINIO_BUCKET = os.getenv("E2E_MINIO_BUCKET", "goosebit")
-MINIO_ACCESS_KEY = os.getenv("E2E_MINIO_ACCESS_KEY", "minioadmin")
-MINIO_SECRET_KEY = os.getenv("E2E_MINIO_SECRET_KEY", "minioadmin")
+S3_URL = os.getenv("E2E_S3_URL", os.getenv("E2E_MINIO_URL", "http://localhost:9000"))
+S3_BUCKET = os.getenv("E2E_S3_BUCKET", os.getenv("E2E_MINIO_BUCKET", "goosebit"))
+S3_ACCESS_KEY = os.getenv("E2E_S3_ACCESS_KEY", os.getenv("E2E_MINIO_ACCESS_KEY", "test"))
+S3_SECRET_KEY = os.getenv("E2E_S3_SECRET_KEY", os.getenv("E2E_MINIO_SECRET_KEY", "test"))
 
 COMPOSE_FILE = Path(__file__).resolve().parents[1].joinpath("docker-compose.yml")
 
@@ -54,28 +54,28 @@ def ensure_services_ready(compose_lifecycle: Generator[None, None, None]) -> boo
     # Wait for services once per module
     ok, err = wait_for_service(f"{BASE_URL}/docs", timeout_seconds=180)
     assert ok, f"goosebit not ready: {err}"
-    ok, err = wait_for_service(f"{MINIO_URL}/minio/health/live", timeout_seconds=180)
-    assert ok, f"minio not ready: {err}"
-    ensure_minio_bucket()
+    ok, err = wait_for_service(f"{S3_URL}/moto-api/", timeout_seconds=180)
+    assert ok, f"S3 test server not ready: {err}"
+    ensure_s3_bucket()
     return True
 
 
-def ensure_minio_bucket() -> None:
+def ensure_s3_bucket() -> None:
     s3 = boto3.resource(
         "s3",
-        endpoint_url=MINIO_URL,
-        aws_access_key_id=MINIO_ACCESS_KEY,
-        aws_secret_access_key=MINIO_SECRET_KEY,
+        endpoint_url=S3_URL,
+        aws_access_key_id=S3_ACCESS_KEY,
+        aws_secret_access_key=S3_SECRET_KEY,
         region_name="us-east-1",
     )
 
-    bucket = s3.Bucket(MINIO_BUCKET)
+    bucket = s3.Bucket(S3_BUCKET)
     try:
-        s3.meta.client.head_bucket(Bucket=MINIO_BUCKET)
-        print(f"MinIO bucket '{MINIO_BUCKET}' exists")
+        s3.meta.client.head_bucket(Bucket=S3_BUCKET)
+        print(f"S3 bucket '{S3_BUCKET}' exists")
     except ClientError:
-        print(f"\nCreating MinIO bucket '{MINIO_BUCKET}'...\n")
-        bucket.create(CreateBucketConfiguration={"LocationConstraint": "us-east-1"})
+        print(f"\nCreating S3 bucket '{S3_BUCKET}'...\n")
+        bucket.create()
 
 
 # ---------------------
@@ -145,34 +145,34 @@ def test_e2e_smoke_setup_login_and_basic_routes(ensure_services_ready: bool) -> 
         assert "gooseBit" in root_resp.text or "Devices" in root_resp.text
 
 
-def test_e2e_artifact_upload_and_minio_presence(ensure_services_ready: bool) -> None:
+def test_e2e_artifact_upload_and_s3_presence(ensure_services_ready: bool) -> None:
     with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=20.0) as client:
         token = auth_token(client)
         sw, _ = _ensure_artifact(client, token)
 
-        # Verify artifact presence in MinIO when applicable
+        # Verify artifact presence in S3 when applicable
         sw_name = sw.get("name")
         sw_hash = sw.get("hash")
-        if sw_name and isinstance(sw_name, str) and sw_name.startswith(f"s3://{MINIO_BUCKET}/"):
-            key = sw_name.replace(f"s3://{MINIO_BUCKET}/", "")
+        if sw_name and isinstance(sw_name, str) and sw_name.startswith(f"s3://{S3_BUCKET}/"):
+            key = sw_name.replace(f"s3://{S3_BUCKET}/", "")
             assert sw_hash and sw_hash in key, f"Expected object key to include hash {sw_hash}, got {key}"
             s3c = boto3.client(
                 "s3",
-                endpoint_url=MINIO_URL,
-                aws_access_key_id=MINIO_ACCESS_KEY,
-                aws_secret_access_key=MINIO_SECRET_KEY,
+                endpoint_url=S3_URL,
+                aws_access_key_id=S3_ACCESS_KEY,
+                aws_secret_access_key=S3_SECRET_KEY,
             )
             deadline_s3 = time.time() + 30
             last_exc = None
             while time.time() < deadline_s3:
                 try:
-                    s3c.head_object(Bucket=MINIO_BUCKET, Key=key)
+                    s3c.head_object(Bucket=S3_BUCKET, Key=key)
                     break
                 except ClientError as e:
                     last_exc = e
                     time.sleep(1.0)
             else:
-                raise AssertionError(f"Object not found in MinIO bucket={MINIO_BUCKET}, key={key}: {last_exc}")
+                raise AssertionError(f"Object not found in S3 bucket={S3_BUCKET}, key={key}: {last_exc}")
 
 
 def test_e2e_device_update_rollout_to_version(ensure_services_ready: bool) -> None:
@@ -223,7 +223,7 @@ def test_e2e_device_update_rollout_to_version(ensure_services_ready: bool) -> No
         )
 
 
-def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready: bool) -> None:
+def test_e2e_artifact_delete_removes_from_s3(ensure_services_ready: bool) -> None:
     with httpx.Client(base_url=BASE_URL, follow_redirects=True, timeout=20.0) as client:
         token = auth_token(client)
 
@@ -244,15 +244,15 @@ def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready: bool) -> 
         sw = next(x for x in items if x["id"] == sw_id)
         sw_name = sw.get("name")
         assert (
-            sw_name and isinstance(sw_name, str) and sw_name.startswith(f"s3://{MINIO_BUCKET}/")
-        ), f"Artifact is not stored on S3/minio as expected, name={sw_name}"
-        key = sw_name.replace(f"s3://{MINIO_BUCKET}/", "")
+            sw_name and isinstance(sw_name, str) and sw_name.startswith(f"s3://{S3_BUCKET}/")
+        ), f"Artifact is not stored on S3 as expected, name={sw_name}"
+        key = sw_name.replace(f"s3://{S3_BUCKET}/", "")
 
         s3c = boto3.client(
             "s3",
-            endpoint_url=MINIO_URL,
-            aws_access_key_id=MINIO_ACCESS_KEY,
-            aws_secret_access_key=MINIO_SECRET_KEY,
+            endpoint_url=S3_URL,
+            aws_access_key_id=S3_ACCESS_KEY,
+            aws_secret_access_key=S3_SECRET_KEY,
         )
 
         # Sanity: it should exist before delete
@@ -260,15 +260,13 @@ def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready: bool) -> 
         last_exc = None
         while time.time() < precheck_deadline:
             try:
-                s3c.head_object(Bucket=MINIO_BUCKET, Key=key)
+                s3c.head_object(Bucket=S3_BUCKET, Key=key)
                 break
             except ClientError as e:
                 last_exc = e
                 time.sleep(1.0)
         else:
-            raise AssertionError(
-                f"Object not found in MinIO before delete bucket={MINIO_BUCKET}, key={key}: {last_exc}"
-            )
+            raise AssertionError(f"Object not found in S3 before delete bucket={S3_BUCKET}, key={key}: {last_exc}")
 
         del_resp = client.request(
             "DELETE",
@@ -286,7 +284,7 @@ def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready: bool) -> 
         last_exc = None
         while time.time() < deadline:
             try:
-                s3c.head_object(Bucket=MINIO_BUCKET, Key=key)
+                s3c.head_object(Bucket=S3_BUCKET, Key=key)
                 # Still exists, wait and retry
                 time.sleep(1.0)
             except ClientError as e:
@@ -297,7 +295,7 @@ def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready: bool) -> 
                     deleted = True
                     break
                 time.sleep(1.0)
-        assert deleted, f"S3 object still present after delete bucket={MINIO_BUCKET}, key={key}. Last error: {last_exc}"
+        assert deleted, f"S3 object still present after delete bucket={S3_BUCKET}, key={key}. Last error: {last_exc}"
 
 
 # ---------------------
@@ -305,12 +303,12 @@ def test_e2e_artifact_delete_removes_from_minio(ensure_services_ready: bool) -> 
 # ---------------------
 
 
-def _minio_client() -> Any:
+def _s3_client() -> Any:
     return boto3.client(
         "s3",
-        endpoint_url=MINIO_URL,
-        aws_access_key_id=MINIO_ACCESS_KEY,
-        aws_secret_access_key=MINIO_SECRET_KEY,
+        endpoint_url=S3_URL,
+        aws_access_key_id=S3_ACCESS_KEY,
+        aws_secret_access_key=S3_SECRET_KEY,
     )
 
 
@@ -326,15 +324,15 @@ async def test_e2e_s3_stream_reassembles_ranges(ensure_services_ready: bool, lab
     """Ranged streaming reassembles bytes identically to the source, across object sizes."""
     source = os.urandom(size)
     key = f"e2e-stream/{label}.bin"
-    _minio_client().put_object(Bucket=MINIO_BUCKET, Key=key, Body=source)
+    _s3_client().put_object(Bucket=S3_BUCKET, Key=key, Body=source)
 
     backend = S3StorageBackend(
-        bucket=MINIO_BUCKET,
-        endpoint_url=MINIO_URL,
-        access_key_id=MINIO_ACCESS_KEY,
-        secret_access_key=MINIO_SECRET_KEY,
+        bucket=S3_BUCKET,
+        endpoint_url=S3_URL,
+        access_key_id=S3_ACCESS_KEY,
+        secret_access_key=S3_SECRET_KEY,
     )
-    uri = f"s3://{MINIO_BUCKET}/{key}"
+    uri = f"s3://{S3_BUCKET}/{key}"
 
     with patch.object(backend.s3_client, "get_object", wraps=backend.s3_client.get_object) as spy:
         streamed = b"".join([chunk async for chunk in backend.get_file_stream(uri)])
