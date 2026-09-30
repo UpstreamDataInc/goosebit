@@ -24,3 +24,13 @@ async def test_list_devices_id_desc(async_client: AsyncClient, test_data: dict[s
     assert len(devices) == 2
     assert devices[0]["id"] == test_data["device_assigned"].id
     assert devices[1]["id"] == test_data["device_rollout"].id
+
+
+@pytest.mark.asyncio
+async def test_device_columns_limit_last_ip_width(async_client: AsyncClient) -> None:
+    response = await async_client.get("/ui/bff/devices/columns")
+
+    assert response.status_code == 200
+    columns = {column["data"]: column for column in response.json()["columns"]}
+    assert columns["last_ip"]["width"] == "20ch"
+    assert "className" not in columns["last_ip"]

@@ -11,6 +11,7 @@ class DTColumnDescription(BaseModel):
     searchable: bool | None = None
     orderable: bool | None = None
     visible: bool | None = None
+    width: str | None = None
 
 
 class DTColumns(BaseModel):

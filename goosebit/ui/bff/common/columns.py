@@ -83,6 +83,7 @@ class DeviceColumns:
         name="last_ip",
         searchable=True,
         orderable=True,
+        width="20ch",
     )
     polling = DTColumnDescription(
         title="Polling",

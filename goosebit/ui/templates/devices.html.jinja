@@ -1,5 +1,17 @@
 {% extends "nav.html.jinja" %}
 {% block content %}
+    <style>
+        .last-ip-column {
+            width: 20ch !important;
+            max-width: 20ch;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .last-ip-column .form-control {
+            min-width: 0;
+        }
+    </style>
     <div class="container-fluid">
         <div class="row p-2 d-flex justify-content-center">
             <div class="col">

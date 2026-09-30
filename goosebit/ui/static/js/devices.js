@@ -37,6 +37,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (renderFunctions[colName]) {
             columnConfig.columns[col].render = renderFunctions[colName];
         }
+        if (colName === "last_ip") {
+            columnConfig.columns[col].className = "last-ip-column";
+            columnConfig.columns[col].createdCell = (cell, value) => {
+                cell.title = value || "";
+            };
+        }
         columnConfig.columns[col].footer = createColumnFooter().outerHTML;
     }
 
