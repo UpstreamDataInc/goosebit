@@ -38,6 +38,10 @@
         <link rel="manifest" href="{{ url_for('static', path='manifest.json') }}" />
         <!--select search fix-->
         <style>
+            table.dataTable tbody th,
+            table.dataTable tbody td {
+                white-space: nowrap;
+            }
             .no-results {
                 background-color: var(--bs-body-bg)!important;
             }
