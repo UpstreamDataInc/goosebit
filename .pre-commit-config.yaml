@@ -4,7 +4,7 @@ ci:
     - pytest
 repos:
   - repo: https://github.com/python-poetry/poetry
-    rev: 2.4.1
+    rev: 2.5.1
     hooks:
       - id: poetry-check
       - id: poetry-lock
@@ -22,17 +22,17 @@ repos:
         name: check-yaml for other YAML files
         exclude: ^mkdocs\.yml$
       - id: check-added-large-files
-  - repo: https://github.com/psf/black
-    rev: 26.5.1
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 26.10.0
     hooks:
       - id: black
   - repo: https://github.com/pycqa/isort
-    rev: 8.0.1
+    rev: 9.0.2
     hooks:
       - id: isort
         name: isort (python)
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.1.0
+    rev: v2.4.0
     hooks:
       - id: mypy
         additional_dependencies:
@@ -55,26 +55,26 @@ repos:
         pass_filenames: false
         always_run: true
   - repo: https://github.com/pycqa/flake8
-    rev: 7.3.0 # You can specify the version of Flake8 you want to use
+    rev: 7.4.1 # You can specify the version of Flake8 you want to use
     hooks:
       - id: flake8
         additional_dependencies: []
   - repo: https://github.com/biomejs/pre-commit
-    rev: "v2.2.0"
+    rev: "v2.5.15"
     hooks:
       - id: biome-check
         additional_dependencies: ["@biomejs/biome@1.8.3"]
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.8.4"
+    rev: "v3.9.9"
     hooks:
       - id: prettier
         files: \.(html|md|yml|yaml)$
   - repo: https://github.com/djlint/djLint
-    rev: v1.36.4
+    rev: v1.46.4
     hooks:
       - id: djlint-reformat-jinja
       - id: djlint-jinja
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.28.0
+    rev: v8.30.0
     hooks:
       - id: gitleaks
