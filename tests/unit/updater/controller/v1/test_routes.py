@@ -1,4 +1,6 @@
+from datetime import UTC, datetime
 from typing import Any, Dict
+from unittest.mock import patch
 
 import pytest
 from httpx import AsyncClient
@@ -333,8 +335,11 @@ async def test_update_logs_and_progress(async_client: AsyncClient, test_data: Di
     await _retrieve_software_url(async_client, device.id, deployment_base, software)
 
     # confirm installation start (in reality: several of similar posts)
-    await _feedback(async_client, device.id, software, "none", "proceeding", "Downloaded 7%")
-    await _assert_log_lines(async_client, device, 1)
+    with patch("goosebit.device_manager.datetime") as mock_datetime:
+        mock_datetime.now.return_value = datetime(2026, 10, 21, 13, 2, 11, tzinfo=UTC)
+        await _feedback(async_client, device.id, software, "none", "proceeding", "Downloaded 7%")
+    log = (await async_client.get(f"/ui/bff/devices/{device.id}/log")).json()["log"]
+    assert log == "[2026-10-21T13:02:11+00:00] Downloaded 7%\n"
     device_api = await _api_device_get(async_client, device.id)
     assert device_api["last_state"] == "Running"
     assert device_api["progress"] == 7
