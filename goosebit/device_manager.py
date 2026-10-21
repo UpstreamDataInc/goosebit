@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Awaitable, Callable, Optional
 
@@ -285,7 +286,8 @@ class DeviceManager:
         if matches:
             device.progress = matches[-1]
 
-        device.last_log += f"{log_data}\n"
+        timestamp = datetime.now(UTC).isoformat(timespec="seconds")
+        device.last_log += "".join(f"[{timestamp}] {line}\n" for line in log_data.split("\n"))
 
         await DeviceManager.save_device(device, update_fields=["progress", "last_log"])
 
