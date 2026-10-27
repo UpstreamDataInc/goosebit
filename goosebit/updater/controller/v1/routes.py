@@ -86,6 +86,22 @@ async def polling(request: Request, device: Device = Depends(get_device)) -> dic
                         )
                     }
                 break
+
+            # device holds a slot, but has nothing left to install (e.g. rollout paused): ask it to cancel
+            if "deploymentBase" not in links and device.last_state in (
+                UpdateStateEnum.RESERVED,
+                UpdateStateEnum.RUNNING,
+            ):
+                links["cancelAction"] = {
+                    "href": str(
+                        request.url_for(
+                            "cancel_action",
+                            dev_id=device.id,
+                            action_id=0,
+                        )
+                    )
+                }
+                logger.info(f"Cancel: update no longer available, device={device.id}")
     return {
         "config": {"polling": {"sleep": sleep}},
         "_links": links,
@@ -199,6 +215,36 @@ async def deployment_feedback(
             await DeviceManager.update_log(device, "\n".join(log))
     except AttributeError:
         logging.warning(f"No details to update device update log, device={device.id}")
+
+    return {"id": str(action_id)}
+
+
+@router.get("/{dev_id}/cancelAction/{action_id}")
+async def cancel_action(_: Request, action_id: int, device: Device = Depends(get_device)) -> dict[str, Any]:
+    logger.info(f"Request cancel action, device={device.id}")
+    return {"id": str(action_id), "cancelAction": {"stopId": str(action_id)}}
+
+
+@router.post("/{dev_id}/cancelAction/{action_id}/feedback")
+async def cancel_action_feedback(
+    _: Request, data: FeedbackSchema, action_id: int, device: Device = Depends(get_device)
+) -> dict[str, str]:
+    if device.last_state not in (UpdateStateEnum.RESERVED, UpdateStateEnum.RUNNING):
+        logger.warning(f"Cancellation ignored, no update in progress, device={device.id}")
+    elif data.status.execution == FeedbackStatusExecutionState.CLOSED and data.status.result.finished in [
+        FeedbackStatusResultFinished.SUCCESS,
+        FeedbackStatusResultFinished.NONE,
+    ]:
+        await DeviceManager.update_device_state(device, UpdateStateEnum.CANCELED)
+        logger.info(f"Cancellation acknowledged, device={device.id}")
+    else:
+        logger.warning(
+            f"Cancellation not acknowledged, state={data.status.execution}, "
+            f"result={data.status.result.finished}, device={device.id}"
+        )
+
+    if data.status.details:
+        await DeviceManager.update_log(device, "\n".join(data.status.details))
 
     return {"id": str(action_id)}
 
