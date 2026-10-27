@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 from httpx import AsyncClient
 
-from goosebit.db.models import Device, Hardware, Software, UpdateStateEnum
+from goosebit.db.models import Device, Hardware, Rollout, Software, UpdateStateEnum
 from goosebit.device_manager import DeviceManager, get_device
 from goosebit.settings import config
 
@@ -136,6 +136,22 @@ async def _feedback(
                 "result": {"finished": finished},
                 "execution": execution,
                 "details": [details],
+            },
+        },
+    )
+    assert response.status_code == 200
+
+
+async def _cancel_feedback(async_client: AsyncClient, device_id: str, action_id: int) -> None:
+    # what swupdate sends to acknowledge a cancel
+    response = await async_client.post(
+        f"/DEFAULT/controller/v1/{device_id}/cancelAction/{action_id}/feedback",
+        json={
+            "id": action_id,
+            "status": {
+                "result": {"finished": "success"},
+                "execution": "closed",
+                "details": ["cancellation acknowledged."],
             },
         },
     )
@@ -433,3 +449,97 @@ async def test_claim_reserves_and_proceeding_resets(async_client: AsyncClient, t
     assert device.last_state == UpdateStateEnum.RUNNING
     assert "stale log entry" not in (device.last_log or "")
     assert device.progress == 0
+
+
+@pytest.mark.asyncio
+async def test_rollout_paused_during_update_cancels(async_client: AsyncClient, test_data: Dict[str, Any]) -> None:
+    device = test_data["device_rollout"]
+    software = test_data["software_release"]
+    rollout = test_data["rollout_default"]
+
+    await _poll(async_client, device.id, software)
+    await _feedback(async_client, device.id, software, "none", "proceeding")
+
+    response = await async_client.patch("/api/v1/rollouts", json={"ids": [rollout.id], "paused": True})
+    assert response.status_code == 200
+
+    # device is asked to cancel instead of losing its update
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device.id}")
+    cancel_url = response.json()["_links"]["cancelAction"]["href"]
+    assert cancel_url == f"http://test/DEFAULT/controller/v1/{device.id}/cancelAction/0"
+
+    response = await async_client.get(cancel_url)
+    assert response.status_code == 200
+    assert response.json() == {"id": "0", "cancelAction": {"stopId": "0"}}
+
+    await _cancel_feedback(async_client, device.id, 0)
+    device_api = await _api_device_get(async_client, device.id)
+    assert device_api["last_state"] == "Canceled"
+
+    # slot is released: no more cancel links, and the update comes back once resumed
+    await _poll(async_client, device.id, None, expect_update=False)
+    response = await async_client.patch("/api/v1/rollouts", json={"ids": [rollout.id], "paused": False})
+    assert response.status_code == 200
+    await _poll(async_client, device.id, software)
+
+
+@pytest.mark.asyncio
+async def test_rollout_paused_with_older_rollout_cancels(async_client: AsyncClient, test_data: Dict[str, Any]) -> None:
+    device = test_data["device_rollout"]
+    software = test_data["software_rc"]
+
+    # device already runs the default rollout's software, a newer rollout brings rc
+    device.sw_version = test_data["software_release"].version
+    await device.save(update_fields=["sw_version"])
+    rollout = await Rollout.create(software_id=software.id)
+
+    await _poll(async_client, device.id, software)
+    await _feedback(async_client, device.id, software, "none", "proceeding")
+
+    response = await async_client.patch("/api/v1/rollouts", json={"ids": [rollout.id], "paused": True})
+    assert response.status_code == 200
+
+    # fallback to the older rollout has nothing to install, so the device is asked to cancel
+    response = await async_client.get(f"/DEFAULT/controller/v1/{device.id}")
+    assert response.json()["_links"] == {
+        "cancelAction": {"href": f"http://test/DEFAULT/controller/v1/{device.id}/cancelAction/0"}
+    }
+
+
+@pytest.mark.asyncio
+async def test_cancel_feedback_without_update_is_ignored(async_client: AsyncClient, test_data: Dict[str, Any]) -> None:
+    device = await get_device(dev_id=test_data["device_rollout"].id)
+    await DeviceManager.update_device_state(device, UpdateStateEnum.ERROR)
+
+    await _cancel_feedback(async_client, device.id, 0)
+
+    device_api = await _api_device_get(async_client, device.id)
+    assert device_api["last_state"] == "Error"
+
+
+@pytest.mark.asyncio
+async def test_rollout_resumed_after_cancel_skips_installed_version(
+    async_client: AsyncClient, test_data: Dict[str, Any]
+) -> None:
+    device = test_data["device_rollout"]
+    software = test_data["software_release"]
+    rollout = test_data["rollout_default"]
+
+    await _poll(async_client, device.id, software)
+    await _feedback(async_client, device.id, software, "none", "proceeding", "All Chunks Installed.")
+
+    # paused while the device reboots into the new version: swupdate acks the cancel instead of confirming
+    response = await async_client.patch("/api/v1/rollouts", json={"ids": [rollout.id], "paused": True})
+    assert response.status_code == 200
+    await _cancel_feedback(async_client, device.id, 0)
+
+    # swupdate sends configData on every startup, reporting the version it now runs
+    response = await async_client.put(
+        f"/DEFAULT/controller/v1/{device.id}/configData", json={"data": {"sw_version": software.version}}
+    )
+    assert response.status_code == 200
+
+    # resuming doesn't hand out the already running version again
+    response = await async_client.patch("/api/v1/rollouts", json={"ids": [rollout.id], "paused": False})
+    assert response.status_code == 200
+    await _poll(async_client, device.id, None, expect_update=False)
