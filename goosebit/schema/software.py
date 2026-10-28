@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from urllib.parse import unquote, urlparse, urlunparse
 from urllib.request import url2pathname
 
@@ -32,6 +33,7 @@ class SoftwareSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    created_at: datetime | None = None
     uri: str = Field(exclude=True)
     size: int
     hash: str

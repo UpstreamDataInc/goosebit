@@ -49,7 +49,10 @@ class BFFSoftwareResponse(BaseModel):
                 software = software[dt_query.start : dt_query.start + dt_query.length]
 
         else:
-            # if no ordering is specified, database-side paging can be used
+            if dt_query.order_query:
+                query = query.order_by(dt_query.order_query)
+
+            # Apply ordering before database-side paging.
             if dt_query.length is not None:
                 query = query.limit(dt_query.length)
 

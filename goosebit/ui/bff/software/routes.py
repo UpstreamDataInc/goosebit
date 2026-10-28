@@ -131,6 +131,7 @@ async def devices_get_columns() -> DTColumns:
                 SoftwareColumns.version,
                 SoftwareColumns.compatibility,
                 SoftwareColumns.size,
+                SoftwareColumns.created_at,
             ],
         )
     )
