@@ -20,7 +20,7 @@ router = APIRouter(prefix="/{dev_id}")
 async def device_get(_: Request, device: Device = Depends(get_device)) -> DeviceSchema:
     if device is None:
         raise HTTPException(404)
-    await device.fetch_related("assigned_software", "hardware")
+    await device.fetch_related("assigned_software", "assigned_software__compatibility", "hardware")
     return DeviceSchema.model_validate(device)
 
 
