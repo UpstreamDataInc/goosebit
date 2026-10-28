@@ -192,6 +192,12 @@ class SoftwareColumns:
         data="size",
         orderable=True,
     )
+    created_at = DTColumnDescription(
+        title="Uploaded",
+        data="created_at",
+        name="created_at",
+        orderable=True,
+    )
 
 
 class SettingsUsersColumns:
