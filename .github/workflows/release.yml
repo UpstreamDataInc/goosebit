@@ -98,7 +98,7 @@ jobs:
 
       - name: Build Docker image ${{ github.event_name != 'pull_request' && 'and push to registry' || '' }}
         id: push
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ${{ github.event_name == 'pull_request' && '.' || 'docker' }}
           file: ${{ github.event_name == 'pull_request' && 'docker/dev.dockerfile' || 'docker/Dockerfile' }}
