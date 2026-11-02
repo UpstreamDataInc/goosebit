@@ -28,13 +28,17 @@ function secondsToRecentDate(t) {
 
 async function updateSoftwareSelection(devices = null) {
     try {
-        const url = new URL("/ui/bff/software?order[0][dir]=desc&order[0][name]=version", window.location.origin);
+        const url = new URL("/ui/bff/software", window.location.origin);
         if (devices != null) {
             for (const device of devices) {
                 url.searchParams.append("ids", device.id);
             }
         }
-        const response = await fetch(url.toString());
+        const response = await fetch(url.toString(), {
+            method: "QUERY",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ order: [{ name: "version", dir: "desc" }] }),
+        });
         if (!response.ok) {
             console.error("Retrieving software list failed.");
             return;

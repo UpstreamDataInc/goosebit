@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         rowId: "id",
         ajax: {
             url: "/ui/bff/rollouts",
-            method: "POST",
+            method: "QUERY",
             submitAs: "json",
             contentType: "application/json",
         },

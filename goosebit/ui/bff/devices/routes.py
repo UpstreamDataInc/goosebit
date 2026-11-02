@@ -36,6 +36,11 @@ async def devices_get(dt_query: Annotated[DataTableRequest, Depends(parse_datata
     return await devices_post(dt_query)
 
 
+@router.api_route(
+    "",
+    methods=["QUERY"],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()])],
+)
 @router.post(
     "",
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["device"]["read"]()])],

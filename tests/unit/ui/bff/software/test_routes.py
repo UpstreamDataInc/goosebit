@@ -8,7 +8,7 @@ from goosebit.db.models import Software
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("method", ["get", "post"])
+@pytest.mark.parametrize("method", ["get", "post", "query"])
 @pytest.mark.parametrize("direction", [None, "asc", "desc"])
 async def test_list_software_upload_order(
     async_client: AsyncClient, test_data: dict[str, Any], method: str, direction: str | None
@@ -21,8 +21,8 @@ async def test_list_software_upload_order(
     params: dict[str, Any] = {"start": 1, "length": 2}
     if direction:
         params["order"] = [{"name": "created_at", "dir": direction}]
-    if method == "post":
-        response = await async_client.post("/ui/bff/software", json=params)
+    if method != "get":
+        response = await async_client.request(method, "/ui/bff/software", json=params)
     else:
         params.pop("order", None)
         if direction:

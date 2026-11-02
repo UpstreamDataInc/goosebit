@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         ajax: {
             url: "/ui/bff/devices",
-            method: "POST",
+            method: "QUERY",
             submitAs: "json",
             contentType: "application/json",
         },

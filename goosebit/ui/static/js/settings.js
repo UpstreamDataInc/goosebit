@@ -47,6 +47,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         ajax: {
             url: "/ui/bff/settings/users",
+            method: "QUERY",
+            submitAs: "json",
             data: (data) => {
                 // biome-ignore lint/performance/noDelete: really has to be deleted
                 delete data.columns;

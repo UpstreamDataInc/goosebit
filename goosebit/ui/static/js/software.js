@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         stateSave: true,
         ajax: {
             url: "/ui/bff/software",
-            method: "POST",
+            method: "QUERY",
             submitAs: "json",
             contentType: "application/json",
         },

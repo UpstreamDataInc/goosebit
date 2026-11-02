@@ -36,6 +36,15 @@ async def settings_users_get(
     return await BFFSettingsUsersResponse.convert(dt_query, query, search_filter)
 
 
+@router.api_route(
+    "",
+    methods=["QUERY"],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["settings"]["users"]["read"]()])],
+)
+async def settings_users_query(dt_query: DataTableRequest) -> BFFSettingsUsersResponse:
+    return await settings_users_get(dt_query)
+
+
 router.add_api_route(
     "",
     routes.settings_users_put,

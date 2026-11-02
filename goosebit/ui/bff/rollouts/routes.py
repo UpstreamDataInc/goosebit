@@ -25,6 +25,11 @@ async def rollouts_get(dt_query: Annotated[DataTableRequest, Depends(parse_datat
     return await rollouts_post(dt_query)
 
 
+@router.api_route(
+    "",
+    methods=["QUERY"],
+    dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["read"]()])],
+)
 @router.post(
     "",
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["rollout"]["read"]()])],
