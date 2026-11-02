@@ -27,12 +27,12 @@ repos:
     hooks:
       - id: black
   - repo: https://github.com/pycqa/isort
-    rev: 10.0.0b1
+    rev: 10.0.0b2
     hooks:
       - id: isort
         name: isort (python)
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.4.0
+    rev: v2.4.1
     hooks:
       - id: mypy
         additional_dependencies:
@@ -55,12 +55,12 @@ repos:
         pass_filenames: false
         always_run: true
   - repo: https://github.com/pycqa/flake8
-    rev: 7.4.1 # You can specify the version of Flake8 you want to use
+    rev: 7.5.0 # You can specify the version of Flake8 you want to use
     hooks:
       - id: flake8
         additional_dependencies: []
   - repo: https://github.com/biomejs/pre-commit
-    rev: "v2.6.3"
+    rev: "v2.6.4"
     hooks:
       - id: biome-check
         additional_dependencies: ["@biomejs/biome@1.8.3"]
@@ -70,7 +70,7 @@ repos:
       - id: prettier
         files: \.(html|md|yml|yaml)$
   - repo: https://github.com/djlint/djLint
-    rev: v1.47.1
+    rev: v1.49.3
     hooks:
       - id: djlint-reformat-jinja
       - id: djlint-jinja
