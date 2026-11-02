@@ -1141,14 +1141,14 @@ files = [
 
 [[package]]
 name = "joserfc"
-version = "1.7.1"
+version = "1.7.6"
 description = "The ultimate Python library for JOSE RFCs, including JWS, JWE, JWK, JWA, JWT"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "joserfc-1.7.1-py3-none-any.whl", hash = "sha256:b3e3d655612e2e1ef67b2600f2f420e12e537b020208fab1761fad647319c164"},
-    {file = "joserfc-1.7.1.tar.gz", hash = "sha256:77d0b76514879c68c6f433bc5b7357a4ab72008ff1e33d8379fd11d72bd8ca81"},
+    {file = "joserfc-1.7.6-py3-none-any.whl", hash = "sha256:e2d72e3fa937ed8ddd42ad8c1cc337a43e7ffd02efa572a2aa15e2764a05b506"},
+    {file = "joserfc-1.7.6.tar.gz", hash = "sha256:fb1cf6d2977318bef976c2ed2ef2167cc5f8ade8fc96f034e38f7abd656907c4"},
 ]
 
 [package.dependencies]
@@ -3092,4 +3092,4 @@ postgresql = ["asyncpg"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "941ad217a295d92f35b54560adc42f88ee97a461eca3931db1bc2ff5f7cefaf5"
+content-hash = "57ba5aac4dc717b9f6a2dfe2b4cdc6f3b7fd208123294d7d83780ba8d1ef5eb4"
