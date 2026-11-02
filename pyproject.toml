@@ -35,7 +35,7 @@ postgresql = ["asyncpg (>=0.30.0,<0.31.0)"]
 
 [tool.poetry.group.dev.dependencies]
 isort = "^8.0.1"
-black = "^26.5.1"
+black = "^26.10.1"
 pre-commit = "^4.6.0"
 flake8 = "7.5.0"
 mypy = "^2.1.0"
