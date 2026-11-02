@@ -37,7 +37,7 @@ postgresql = ["asyncpg (>=0.30.0,<0.31.0)"]
 isort = "^8.0.1"
 black = "^26.5.1"
 pre-commit = "^4.6.0"
-flake8 = "7.3.0"
+flake8 = "7.5.0"
 mypy = "^2.1.0"
 types-pyyaml = "^6.0.12.20260518"
 faker = "^40.23.0"
