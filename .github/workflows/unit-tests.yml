@@ -35,7 +35,7 @@ jobs:
           poetry run pytest -v --md-report --md-report-flavor gfm --md-report-color never \
             --md-report-exclude-outcomes passed skipped xpassed --md-report-output "$REPORT_OUTPUT" tests/unit
       - name: Render the report to the PR when tests fail
-        uses: marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31 # v2.9.0
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
         if: failure()
         with:
           header: test-report
