@@ -50,7 +50,7 @@ mkdocs-material = "^9.7.6"
 pytest = "^9.1.1"
 pytest-asyncio = "^1.4.0"
 pytest-md-report = "^0.8.0"
-pytest_httpserver = "^1.1.5"
+pytest_httpserver = "^1.2.0"
 
 [tool.poetry.group.goosebit_simple_stats.dependencies]
 goosebit-simple-stats = {path = "plugins/goosebit_simple_stats", develop = true}

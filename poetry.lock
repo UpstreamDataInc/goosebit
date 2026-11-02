@@ -2256,18 +2256,18 @@ testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)"]
 
 [[package]]
 name = "pytest-httpserver"
-version = "1.1.5"
+version = "1.2.0"
 description = "pytest-httpserver is a httpserver for pytest"
 optional = false
 python-versions = ">=3.10"
 groups = ["tests"]
 files = [
-    {file = "pytest_httpserver-1.1.5-py3-none-any.whl", hash = "sha256:ee83feb587ab652c0c6729598db2820e9048233bac8df756818b7845a1621d0a"},
-    {file = "pytest_httpserver-1.1.5.tar.gz", hash = "sha256:dc3d82e1fe00e491829d8939c549bf4bd9b39a260f87113c619b9d517c2f8ff1"},
+    {file = "pytest_httpserver-1.2.0-py3-none-any.whl", hash = "sha256:749937892dbf909c8b703503b491be66fc24073e7988bf9b4d783af4f33da942"},
+    {file = "pytest_httpserver-1.2.0.tar.gz", hash = "sha256:d07744ce2efaafa0575ed3081d416b999c773b09e84aa95065138bedc3e12352"},
 ]
 
 [package.dependencies]
-Werkzeug = ">=2.0.0"
+Werkzeug = ">=3.0.0"
 
 [[package]]
 name = "pytest-md-report"
@@ -3088,4 +3088,4 @@ postgresql = ["asyncpg"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "8c8329ebfaddc6fde65310539fb36b300131ca449daee0801ae2eecd0c710288"
+content-hash = "446dbcd7437464ebf22ffb2369690b067f27ba43ead3fbb4524da48841039cec"
