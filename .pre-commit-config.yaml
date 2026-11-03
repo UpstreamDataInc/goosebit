@@ -1,3 +1,6 @@
+minimum_pre_commit_version: "4.7.0"
+default_language_version:
+  node: system # Reuse Node provided by pre-commit.ci to stay below its build size limit
 ci:
   skip:
     - poetry-lock
@@ -63,7 +66,7 @@ repos:
     rev: "v2.6.4"
     hooks:
       - id: biome-check
-        additional_dependencies: ["@biomejs/biome@1.8.3"]
+        exclude: \.(md|ya?ml)$ # Formatted by Prettier
   - repo: https://github.com/rbubley/mirrors-prettier
     rev: "v3.9.10"
     hooks:
