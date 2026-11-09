@@ -70,7 +70,7 @@ repos:
       - id: prettier
         files: \.(html|md|yml|yaml)$
   - repo: https://github.com/djlint/djLint
-    rev: v1.49.3
+    rev: v1.49.10
     hooks:
       - id: djlint-reformat-jinja
       - id: djlint-jinja
