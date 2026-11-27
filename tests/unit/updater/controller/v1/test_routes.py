@@ -1,3 +1,4 @@
+import time
 from datetime import UTC, datetime
 from typing import Any, Dict
 from unittest.mock import patch
@@ -543,3 +544,56 @@ async def test_rollout_resumed_after_cancel_skips_installed_version(
     response = await async_client.patch("/api/v1/rollouts", json={"ids": [rollout.id], "paused": False})
     assert response.status_code == 200
     await _poll(async_client, device.id, None, expect_update=False)
+
+
+@pytest.mark.asyncio
+async def test_running_device_times_out_without_contact(async_client: AsyncClient, test_data: Dict[str, Any]) -> None:
+    device = test_data["device_rollout"]
+    software = test_data["software_release"]
+    rollout = test_data["rollout_default"]
+
+    await _poll(async_client, device.id, software)
+    await _feedback(async_client, device.id, software, "none", "proceeding")
+
+    # still within the default timeout of 600 seconds
+    await Device.filter(id=device.id).update(last_seen=round(time.time()) - 9 * 60)
+    await DeviceManager.timeout_stale_updates()
+    device_api = await _api_device_get(async_client, device.id)
+    assert device_api["last_state"] == "Running"
+
+    await Device.filter(id=device.id).update(last_seen=round(time.time()) - 11 * 60)
+    await DeviceManager.timeout_stale_updates()
+    device_api = await _api_device_get(async_client, device.id)
+    assert device_api["last_state"] == "Timeout"
+
+    # cached copy carries the new state and the log entry
+    cached = await get_device(dev_id=device.id)
+    assert cached.last_state == UpdateStateEnum.TIMEOUT
+    assert "Update timed out after 600 seconds without contact" in cached.last_log
+
+    await rollout.refresh_from_db()
+    assert rollout.failure_count == 1
+
+    # a second check does not count the same timeout again
+    await DeviceManager.timeout_stale_updates()
+    await rollout.refresh_from_db()
+    assert rollout.failure_count == 1
+
+    # the update is offered again once the device comes back
+    await _poll(async_client, device.id, software)
+
+
+@pytest.mark.asyncio
+async def test_timeout_is_taken_from_software(async_client: AsyncClient, test_data: Dict[str, Any]) -> None:
+    device = test_data["device_rollout"]
+    software = test_data["software_release"]
+    await Software.filter(id=software.id).update(update_timeout=300)
+
+    await _poll(async_client, device.id, software)
+    await _feedback(async_client, device.id, software, "none", "proceeding")
+
+    await Device.filter(id=device.id).update(last_seen=round(time.time()) - 6 * 60)
+    await DeviceManager.timeout_stale_updates()
+
+    device_api = await _api_device_get(async_client, device.id)
+    assert device_api["last_state"] == "Timeout"
