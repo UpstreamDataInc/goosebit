@@ -10,6 +10,7 @@ from tortoise import Model, fields
 from tortoise.exceptions import ValidationError
 
 from goosebit.api.telemetry.metrics import devices_count
+from goosebit.settings import config
 from goosebit.util.version import Version
 
 
@@ -148,6 +149,8 @@ class Software(Model):  # type: ignore[misc]
     hash = fields.CharField(max_length=255)
     version = fields.CharField(max_length=255)
     image_format = fields.IntEnumField(SoftwareImageFormat, default=SoftwareImageFormat.SWU)
+    # callable, so the model description (and thereby migrations) does not depend on the configured value
+    update_timeout = fields.IntField(default=lambda: config.default_update_timeout)
     compatibility = fields.ManyToManyField(
         "models.Hardware",
         related_name="softwares",

@@ -74,3 +74,14 @@ async def test_list_software_version_desc(async_client: AsyncClient, test_data: 
     assert software[0]["version"] == test_data["software_release"].version
     assert software[1]["version"] == test_data["software_rc"].version
     assert software[2]["version"] == test_data["software_beta"].version
+
+
+@pytest.mark.asyncio
+async def test_software_update_timeout_column(async_client: AsyncClient, test_data: dict[str, Any]) -> None:
+    response = await async_client.get("/ui/bff/software/columns")
+    assert response.status_code == 200
+    column = next(column for column in response.json()["columns"] if column["data"] == "update_timeout")
+    assert column["title"] == "Timeout (s)"
+
+    response = await async_client.get("/ui/bff/software")
+    assert all(row["update_timeout"] == 600 for row in response.json()["data"])

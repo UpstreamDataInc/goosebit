@@ -192,6 +192,12 @@ class SoftwareColumns:
         data="size",
         orderable=True,
     )
+    update_timeout = DTColumnDescription(
+        title="Timeout (s)",
+        name="update_timeout",
+        data="update_timeout",
+        orderable=True,
+    )
     created_at = DTColumnDescription(
         title="Uploaded",
         data="created_at",

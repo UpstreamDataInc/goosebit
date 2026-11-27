@@ -38,6 +38,7 @@ class SoftwareSchema(BaseModel):
     size: int
     hash: str
     version: str
+    update_timeout: int
     compatibility: list[HardwareSchema]
 
     @property
