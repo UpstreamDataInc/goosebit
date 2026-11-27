@@ -12,6 +12,9 @@ on:
 
 jobs:
   pypi:
+    # Publishing only makes sense in the upstream repository, never in forks.
+    # The docker and github jobs depend on this job and are skipped as well.
+    if: github.repository == 'UpstreamDataInc/goosebit'
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
