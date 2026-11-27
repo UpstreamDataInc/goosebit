@@ -3,7 +3,8 @@ from typing import Any
 import pytest
 from anyio import Path, open_file
 
-from goosebit.db.models import Rollout
+from goosebit.db.models import Rollout, Software
+from goosebit.settings import config
 
 
 @pytest.mark.asyncio
@@ -117,3 +118,27 @@ async def _upload_software(async_client: Any, httpserver: Any, software_file: st
     software_url = httpserver.url_for(download_url)
     response = await async_client.put("/api/v1/software", data={"url": software_url})
     return response
+
+
+@pytest.mark.asyncio
+async def test_create_software_update_timeout(
+    async_client: Any, httpserver: Any, test_data: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # without an explicit value the configured default applies
+    monkeypatch.setattr(config, "default_update_timeout", 120)
+    response = await _upload_software(async_client, httpserver, "software-header.swu", "/software-header.swu")
+    assert response.status_code == 200
+    assert (await Software.get(id=response.json()["id"])).update_timeout == 120
+
+    resolved = await Path(__file__).resolve()
+    with open(resolved.parent / "software-header-2.swu", "rb") as file:
+        response = await async_client.put("/api/v1/software", files={"file": file}, data={"update_timeout": 15})
+    assert response.status_code == 200
+    software_id = response.json()["id"]
+
+    response = await async_client.get("/api/v1/software")
+    software = next(s for s in response.json()["software"] if s["id"] == software_id)
+    assert software["update_timeout"] == 15
+
+    response = await async_client.put("/api/v1/software", data={"url": "http://x/y.swu", "update_timeout": 0})
+    assert response.status_code == 422
