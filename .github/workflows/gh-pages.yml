@@ -19,6 +19,8 @@ permissions:
 
 jobs:
   publish:
+    # Forks must not deploy the documentation to their own GitHub Pages
+    if: github.repository == 'UpstreamDataInc/goosebit'
     runs-on: ubuntu-latest
     permissions:
       contents: write
