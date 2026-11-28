@@ -89,6 +89,7 @@ async def put_update(
     init: bool = Form(default=None),
     done: bool = Form(default=None),
     filename: str = Form(default=None),
+    update_timeout: int | None = Form(default=None, ge=1),
 ) -> None:
     if url is not None:
         # remote file
@@ -100,7 +101,7 @@ async def put_update(
             else:
                 raise HTTPException(409, "Software with same URL already exists and is referenced by rollout")
 
-        await create_software_update(url, None)
+        await create_software_update(url, None, update_timeout)
     else:
         # local file
         temp_dir = Path(await storage.get_temp_dir())
@@ -120,7 +121,7 @@ async def put_update(
         if done:
             try:
                 absolute = await file_path.absolute()
-                await create_software_update(absolute.as_uri(), temp_file)
+                await create_software_update(absolute.as_uri(), temp_file, update_timeout)
             finally:
                 await temp_file.unlink(missing_ok=True)
 
@@ -140,6 +141,7 @@ async def devices_get_columns() -> DTColumns:
                 SoftwareColumns.version,
                 SoftwareColumns.compatibility,
                 SoftwareColumns.size,
+                SoftwareColumns.update_timeout,
                 SoftwareColumns.created_at,
             ],
         )

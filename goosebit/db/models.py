@@ -10,6 +10,7 @@ from tortoise import Model, fields
 from tortoise.exceptions import ValidationError
 
 from goosebit.api.telemetry.metrics import devices_count
+from goosebit.settings import config
 from goosebit.util.version import Version
 
 
@@ -40,6 +41,7 @@ class UpdateStateEnum(IntEnum):
     FINISHED = 5
     RESERVED = 6
     CANCELED = 7
+    TIMEOUT = 8
 
     def __str__(self) -> str:
         return self.name.capitalize()
@@ -117,6 +119,7 @@ class Rollout(Model):  # type: ignore[misc]
     paused = fields.BooleanField(default=False)
     success_count = fields.IntField(default=0)
     failure_count = fields.IntField(default=0)
+    max_timeouts = fields.IntField(null=True)
 
 
 class Hardware(Model):  # type: ignore[misc]
@@ -148,6 +151,8 @@ class Software(Model):  # type: ignore[misc]
     hash = fields.CharField(max_length=255)
     version = fields.CharField(max_length=255)
     image_format = fields.IntEnumField(SoftwareImageFormat, default=SoftwareImageFormat.SWU)
+    # callable, so the model description (and thereby migrations) does not depend on the configured value
+    update_timeout = fields.IntField(default=lambda: config.default_update_timeout)
     compatibility = fields.ManyToManyField(
         "models.Hardware",
         related_name="softwares",

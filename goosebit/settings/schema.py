@@ -82,6 +82,8 @@ class GooseBitSettings(BaseSettings):
 
     max_concurrent_updates: int = 1000
 
+    default_update_timeout: int = 600
+
     device_auth: DeviceAuthSettings = DeviceAuthSettings()
 
     secret_key: OctKey = Field(default_factory=OctKey.generate_key)

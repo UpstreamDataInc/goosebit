@@ -82,6 +82,8 @@ The registry tracks each device's status, including the last online timestamp, i
 
 Software packages (`*.swu`/`*.raucb` files) can be hosted directly on the gooseBit server or on an external server. gooseBit parses the software metadata to determine compatibility with specific hardware models and revisions.
 
+Each software package has an update timeout in seconds that is set when the package is uploaded (default: the `default_update_timeout` setting, 600). If a device with a running update does not contact the server for longer than this timeout, its state changes from `Running` to `Timeout`. This counts as a failure in the rollout statistics, and the update is offered again on the device's next poll.
+
 ### Device Update Modes
 
 Devices can be configured with different update modes. The default mode is `Rollout`.
@@ -96,7 +98,7 @@ Automatically updates the device to the latest compatible software, based on the
 
 #### 3. Software Rollout
 
-Rollouts target all devices with a specified "feed" value, ensuring that the assigned software is installed on all matching devices. Rollouts also track success and error rates, with future plans for automatic aborts. If multiple rollouts exist for the same feed, the most recent rollout takes precedence.
+Rollouts target all devices with a specified "feed" value, ensuring that the assigned software is installed on all matching devices. Rollouts also track success and error rates. A rollout can be created with a maximum number of timeouts: once more of its devices are in the `Timeout` state, the rollout is paused automatically. If multiple rollouts exist for the same feed, the most recent rollout takes precedence.
 
 ### Pause Updates
 

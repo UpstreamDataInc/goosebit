@@ -1,3 +1,4 @@
+import time
 from datetime import UTC, datetime
 from typing import Any, Dict
 from unittest.mock import patch
@@ -543,3 +544,145 @@ async def test_rollout_resumed_after_cancel_skips_installed_version(
     response = await async_client.patch("/api/v1/rollouts", json={"ids": [rollout.id], "paused": False})
     assert response.status_code == 200
     await _poll(async_client, device.id, None, expect_update=False)
+
+
+@pytest.mark.asyncio
+async def test_running_device_times_out_without_contact(async_client: AsyncClient, test_data: Dict[str, Any]) -> None:
+    device = test_data["device_rollout"]
+    software = test_data["software_release"]
+    rollout = test_data["rollout_default"]
+
+    await _poll(async_client, device.id, software)
+    await _feedback(async_client, device.id, software, "none", "proceeding")
+
+    # still within the default timeout of 600 seconds
+    await Device.filter(id=device.id).update(last_seen=round(time.time()) - 9 * 60)
+    await DeviceManager.timeout_stale_updates()
+    device_api = await _api_device_get(async_client, device.id)
+    assert device_api["last_state"] == "Running"
+
+    await Device.filter(id=device.id).update(last_seen=round(time.time()) - 11 * 60)
+    await DeviceManager.timeout_stale_updates()
+    device_api = await _api_device_get(async_client, device.id)
+    assert device_api["last_state"] == "Timeout"
+
+    # cached copy carries the new state and the log entry
+    cached = await get_device(dev_id=device.id)
+    assert cached.last_state == UpdateStateEnum.TIMEOUT
+    assert "Update timed out after 600 seconds without contact" in cached.last_log
+
+    await rollout.refresh_from_db()
+    assert rollout.failure_count == 1
+
+    # a second check does not count the same timeout again
+    await DeviceManager.timeout_stale_updates()
+    await rollout.refresh_from_db()
+    assert rollout.failure_count == 1
+
+    # the update is offered again once the device comes back
+    await _poll(async_client, device.id, software)
+
+
+@pytest.mark.asyncio
+async def test_timeout_is_taken_from_software(async_client: AsyncClient, test_data: Dict[str, Any]) -> None:
+    device = test_data["device_rollout"]
+    software = test_data["software_release"]
+    await Software.filter(id=software.id).update(update_timeout=300)
+
+    await _poll(async_client, device.id, software)
+    await _feedback(async_client, device.id, software, "none", "proceeding")
+
+    await Device.filter(id=device.id).update(last_seen=round(time.time()) - 6 * 60)
+    await DeviceManager.timeout_stale_updates()
+
+    device_api = await _api_device_get(async_client, device.id)
+    assert device_api["last_state"] == "Timeout"
+
+
+@pytest.mark.asyncio
+async def test_rollout_pauses_when_too_many_devices_time_out(
+    async_client: AsyncClient, test_data: Dict[str, Any]
+) -> None:
+    device1 = test_data["device_rollout"]
+    software = test_data["software_release"]
+    rollout = test_data["rollout_default"]
+    device3 = await Device.create(id="device3", last_state=UpdateStateEnum.REGISTERED, hardware=device1.hardware)
+    stale = round(time.time()) - 61 * 60
+    await Rollout.filter(id=rollout.id).update(max_timeouts=1, created_at=datetime.fromtimestamp(stale - 60, UTC))
+
+    await _poll(async_client, device1.id, software)
+    await _feedback(async_client, device1.id, software, "none", "proceeding")
+    await Device.filter(id=device1.id).update(last_seen=stale)
+    await DeviceManager.timeout_stale_updates()
+
+    # one timed out device is still tolerated
+    await rollout.refresh_from_db()
+    assert rollout.paused is False
+
+    await _poll(async_client, device3.id, software)
+    await _feedback(async_client, device3.id, software, "none", "proceeding")
+    await Device.filter(id=device3.id).update(last_seen=stale)
+    await DeviceManager.timeout_stale_updates()
+
+    await rollout.refresh_from_db()
+    assert rollout.paused is True
+    assert rollout.failure_count == 2
+    await _poll(async_client, device1.id, None, expect_update=False)
+
+
+@pytest.mark.asyncio
+async def test_rollout_ignores_timeouts_from_before_its_creation(
+    async_client: AsyncClient, test_data: Dict[str, Any]
+) -> None:
+    device1 = test_data["device_rollout"]
+    rollout = test_data["rollout_default"]
+    stale = round(time.time()) - 61 * 60
+    await Rollout.filter(id=rollout.id).update(max_timeouts=0, created_at=datetime.fromtimestamp(stale - 60, UTC))
+    # left over from an earlier rollout on the same feed
+    await Device.create(
+        id="device3", last_state=UpdateStateEnum.TIMEOUT, hardware=device1.hardware, last_seen=stale - 3600
+    )
+    device4 = await Device.create(
+        id="device4", last_state=UpdateStateEnum.RUNNING, hardware=device1.hardware, last_seen=stale
+    )
+
+    # only device4 counts, and that already exceeds max_timeouts=0
+    await DeviceManager.timeout_stale_updates()
+    await device4.refresh_from_db()
+    assert device4.last_state == UpdateStateEnum.TIMEOUT
+    await rollout.refresh_from_db()
+    assert rollout.paused is True
+
+
+@pytest.mark.asyncio
+async def test_rollout_without_max_timeouts_is_not_paused(async_client: AsyncClient, test_data: Dict[str, Any]) -> None:
+    device1 = test_data["device_rollout"]
+    rollout = test_data["rollout_default"]
+    stale = round(time.time()) - 61 * 60
+    await Rollout.filter(id=rollout.id).update(created_at=datetime.fromtimestamp(stale - 60, UTC))
+    await Device.filter(id=device1.id).update(last_state=UpdateStateEnum.RUNNING, last_seen=stale)
+
+    await DeviceManager.timeout_stale_updates()
+    await rollout.refresh_from_db()
+    assert rollout.failure_count == 1
+    assert rollout.paused is False
+
+
+@pytest.mark.asyncio
+async def test_rollout_max_timeouts_api(async_client: AsyncClient, test_data: Dict[str, Any]) -> None:
+    software = test_data["software_release"]
+    response = await async_client.put(
+        "/api/v1/rollouts", json={"name": "limited", "feed": "other", "software_id": software.id, "max_timeouts": 3}
+    )
+    assert response.status_code == 200
+
+    rollouts = (await _api_rollouts_get(async_client))["rollouts"]
+    assert {r["name"]: r["max_timeouts"] for r in rollouts} == {None: None, "limited": 3}
+
+    response = await async_client.put(
+        "/api/v1/rollouts", json={"name": "x", "feed": "other", "software_id": software.id, "max_timeouts": -1}
+    )
+    assert response.status_code == 422
+
+    response = await async_client.get("/ui/bff/rollouts/columns")
+    assert any(column["data"] == "max_timeouts" for column in response.json()["columns"])

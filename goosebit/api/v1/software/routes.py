@@ -62,7 +62,12 @@ async def software_delete(_: Request, delete_req: SoftwareDeleteRequest) -> Stat
     "",
     dependencies=[Security(validate_user_permissions, scopes=[GOOSEBIT_PERMISSIONS["software"]["write"]()])],
 )
-async def put_update(_: Request, file: UploadFile | None = File(None), url: str | None = Form(None)) -> dict[str, int]:
+async def put_update(
+    _: Request,
+    file: UploadFile | None = File(None),
+    url: str | None = Form(None),
+    update_timeout: int | None = Form(None, ge=1),
+) -> dict[str, int]:
     if url is not None:
         # remote file
         software = await Software.get_or_none(uri=url)
@@ -73,7 +78,7 @@ async def put_update(_: Request, file: UploadFile | None = File(None), url: str 
             else:
                 raise HTTPException(409, "Software with same URL already exists and is referenced by rollout")
 
-        software = await create_software_update(url, None)
+        software = await create_software_update(url, None, update_timeout)
     elif file is not None:
         # local file
         temp_dir = await storage.get_temp_dir()
@@ -86,7 +91,7 @@ async def put_update(_: Request, file: UploadFile | None = File(None), url: str 
         try:
             async with await open_file(tmp_file_path, "w+b") as f:
                 await f.write(await file.read())
-            software = await create_software_update(file_absolute_path.as_uri(), tmp_file_path)
+            software = await create_software_update(file_absolute_path.as_uri(), tmp_file_path, update_timeout)
         finally:
             await tmp_file_path.unlink(missing_ok=True)
     else:

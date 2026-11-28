@@ -17,7 +17,7 @@ from goosebit.storage import storage
 from . import swdesc
 
 
-async def create_software_update(uri: str, temp_file: Path | None) -> Software:
+async def create_software_update(uri: str, temp_file: Path | None, update_timeout: int | None = None) -> Software:
     parsed_uri = urlparse(uri)
 
     # parse image header into update_info
@@ -62,6 +62,10 @@ async def create_software_update(uri: str, temp_file: Path | None) -> Software:
         hash=update_info["hash"],
         image_format=update_info["image_format"],
     )
+
+    # without an explicit value the model default applies
+    if update_timeout is not None:
+        software.update_timeout = update_timeout
 
     # create compatibility information
     for comp in update_info["compatibility"]:

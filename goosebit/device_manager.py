@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+import time
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Awaitable, Callable, Optional
@@ -20,6 +21,7 @@ from goosebit.db.models import (
     UpdateStateEnum,
 )
 from goosebit.schema.updates import UpdateChunk
+from goosebit.settings import config
 
 caches.set_config(
     {
@@ -199,6 +201,46 @@ class DeviceManager:
         result = await caches.get("default").set(device.id, device, ttl=600)
         assert result, "device being cached"
         return True
+
+    @staticmethod
+    async def timeout_stale_updates() -> None:
+        """Move RUNNING devices to TIMEOUT once they had no contact for their software's update_timeout."""
+        now = round(time.time())
+        min_timeout = min([config.default_update_timeout, *[s.update_timeout for s in await Software.all()]])
+
+        stale = await Device.filter(last_state=UpdateStateEnum.RUNNING, last_seen__lt=now - min_timeout)
+        for device in stale:
+            software = await DeviceManager._get_software(device)
+            timeout = software.update_timeout if software else config.default_update_timeout
+            if device.last_seen >= now - timeout:
+                continue
+
+            # only time out if the device did not report in the meantime
+            rowcount = await Device.filter(
+                id=device.id, last_state=UpdateStateEnum.RUNNING, last_seen=device.last_seen
+            ).update(last_state=UpdateStateEnum.TIMEOUT)
+            if rowcount != 1:
+                continue
+
+            device.last_state = UpdateStateEnum.TIMEOUT
+            # also refreshes the cached copy with the new state
+            await DeviceManager.update_log(device, f"Update timed out after {timeout} seconds without contact")
+
+            rollout = await DeviceManager.get_rollout(device)
+            if rollout:
+                rollout.failure_count += 1
+                if rollout.max_timeouts is not None:
+                    # devices last seen before the rollout existed timed out on an earlier rollout
+                    timed_out = await Device.filter(
+                        update_mode=UpdateModeEnum.ROLLOUT,
+                        feed=rollout.feed,
+                        hardware__softwares__id=rollout.software_id,
+                        last_state=UpdateStateEnum.TIMEOUT,
+                        last_seen__gt=rollout.created_at.timestamp(),
+                    ).count()
+                    if timed_out > rollout.max_timeouts:
+                        rollout.paused = True
+                await rollout.save()
 
     @staticmethod
     async def deployment_action_start(device: Device) -> None:

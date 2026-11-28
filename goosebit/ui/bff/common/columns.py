@@ -159,6 +159,12 @@ class RolloutColumns:
         name="failure_count",
         orderable=True,
     )
+    max_timeouts = DTColumnDescription(
+        title="Max Timeouts",
+        data="max_timeouts",
+        name="max_timeouts",
+        orderable=True,
+    )
 
 
 class SoftwareColumns:
@@ -190,6 +196,12 @@ class SoftwareColumns:
         title="Size",
         name="size",
         data="size",
+        orderable=True,
+    )
+    update_timeout = DTColumnDescription(
+        title="Timeout (s)",
+        name="update_timeout",
+        data="update_timeout",
         orderable=True,
     )
     created_at = DTColumnDescription(

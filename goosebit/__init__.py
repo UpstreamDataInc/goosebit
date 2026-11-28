@@ -1,3 +1,4 @@
+import asyncio
 import importlib.metadata
 from contextlib import asynccontextmanager
 from logging import getLogger
@@ -30,6 +31,15 @@ from goosebit.users import create_initial_user
 logger = getLogger(__name__)
 
 
+async def timeout_loop() -> None:
+    while True:
+        await asyncio.sleep(60)
+        try:
+            await DeviceManager.timeout_stale_updates()
+        except Exception:
+            logger.exception("Checking for timed out updates failed")
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     db_ready = await db.init()
@@ -39,7 +49,9 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     logger.debug(f"Initialized storage backend: {config.storage.backend}")
 
     if db_ready:
+        timeout_task = asyncio.create_task(timeout_loop())
         yield
+        timeout_task.cancel()
     await db.close()
 
 

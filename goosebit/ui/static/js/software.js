@@ -193,6 +193,7 @@ async function sendFileChunks(file) {
         const formData = new FormData();
         formData.append("chunk", chunk);
         formData.append("filename", file.name);
+        formData.append("update_timeout", document.getElementById("file-timeout").value);
         if (i === 0) {
             formData.append("init", "true");
         } else {
@@ -248,6 +249,7 @@ async function sendFileUrl(url) {
 
     const formData = new FormData();
     formData.append("url", url);
+    formData.append("update_timeout", document.getElementById("url-timeout").value);
 
     const response = await fetch("/ui/bff/software", {
         method: "PUT",

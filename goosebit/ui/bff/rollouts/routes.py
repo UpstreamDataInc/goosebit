@@ -95,6 +95,7 @@ async def devices_get_columns() -> DTColumns:
                 RolloutColumns.paused,
                 RolloutColumns.success_count,
                 RolloutColumns.failure_count,
+                RolloutColumns.max_timeouts,
             ],
         )
     )
