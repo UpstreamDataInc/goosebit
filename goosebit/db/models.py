@@ -119,6 +119,7 @@ class Rollout(Model):  # type: ignore[misc]
     paused = fields.BooleanField(default=False)
     success_count = fields.IntField(default=0)
     failure_count = fields.IntField(default=0)
+    max_timeouts = fields.IntField(null=True)
 
 
 class Hardware(Model):  # type: ignore[misc]

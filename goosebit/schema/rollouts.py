@@ -19,6 +19,7 @@ class RolloutSchema(BaseModel):
     paused: bool
     success_count: int
     failure_count: int
+    max_timeouts: int | None
 
     @field_serializer("created_at")
     def serialize_created_at(self, created_at: datetime, _info: Any) -> int:

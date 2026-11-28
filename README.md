@@ -98,7 +98,7 @@ Automatically updates the device to the latest compatible software, based on the
 
 #### 3. Software Rollout
 
-Rollouts target all devices with a specified "feed" value, ensuring that the assigned software is installed on all matching devices. Rollouts also track success and error rates, with future plans for automatic aborts. If multiple rollouts exist for the same feed, the most recent rollout takes precedence.
+Rollouts target all devices with a specified "feed" value, ensuring that the assigned software is installed on all matching devices. Rollouts also track success and error rates. A rollout can be created with a maximum number of timeouts: once more of its devices are in the `Timeout` state, the rollout is paused automatically. If multiple rollouts exist for the same feed, the most recent rollout takes precedence.
 
 ### Pause Updates
 

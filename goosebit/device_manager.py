@@ -229,6 +229,17 @@ class DeviceManager:
             rollout = await DeviceManager.get_rollout(device)
             if rollout:
                 rollout.failure_count += 1
+                if rollout.max_timeouts is not None:
+                    # devices last seen before the rollout existed timed out on an earlier rollout
+                    timed_out = await Device.filter(
+                        update_mode=UpdateModeEnum.ROLLOUT,
+                        feed=rollout.feed,
+                        hardware__softwares__id=rollout.software_id,
+                        last_state=UpdateStateEnum.TIMEOUT,
+                        last_seen__gt=rollout.created_at.timestamp(),
+                    ).count()
+                    if timed_out > rollout.max_timeouts:
+                        rollout.paused = True
                 await rollout.save()
 
     @staticmethod

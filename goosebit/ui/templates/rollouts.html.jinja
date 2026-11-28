@@ -44,6 +44,14 @@
                                             required></select>
                                     <div class="invalid-feedback">Software missing.</div>
                                 </div>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Max. timeouts</span>
+                                    <input class="form-control"
+                                           type="number"
+                                           min="0"
+                                           id="rollout-max-timeouts"
+                                           placeholder="unlimited - pauses the rollout once more devices time out" />
+                                </div>
                                 <button type="submit" class="btn btn-outline-light w-100">Save changes</button>
                             </div>
                         </div>

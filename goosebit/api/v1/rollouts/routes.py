@@ -33,6 +33,7 @@ async def rollouts_put(_: Request, rollout: RolloutsPutRequest) -> RolloutsPutRe
         name=rollout.name,
         feed=rollout.feed,
         software_id=rollout.software_id,
+        max_timeouts=rollout.max_timeouts,
     )
     return RolloutsPutResponse(success=True, id=created_rollout.id)
 
